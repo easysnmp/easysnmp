@@ -110,6 +110,13 @@ static int _debug_level = 0;
 
 #define SAFE_FREE(x) do {if (x != NULL) free(x);} while(/*CONSTCOND*/0)
 
+/*
+ * This extern is necessary for Net-SNMP version < 5.7.3;
+ * the symbol netsnmp_memdup will be resolved by client_intf_compat.c
+ * which will define the function (which was introduced in 5.7.3).
+ */
+extern void *netsnmp_memdup(const void *from, size_t size);
+
 void
 __libraries_init(char *appname)
 {
