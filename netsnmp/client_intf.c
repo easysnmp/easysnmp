@@ -18,6 +18,7 @@ typedef int Py_ssize_t;
 #endif
 #include <netdb.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_REGEX_H
 #include <regex.h>
@@ -109,6 +110,22 @@ static int _debug_level = 0;
 #endif	/* DEBUGGING */
 
 #define SAFE_FREE(x) do {if (x != NULL) free(x);} while(/*CONSTCOND*/0)
+
+/*
+ * Ripped wholesale from library/tools.h from Net-SNMP 5.7.3
+ * to remain compatible with versions 5.7.2 and earlier.
+ */
+static void *compat_netsnmp_memdup(const void *from, size_t size)
+{
+    void *to = NULL;
+
+    if (from) {
+        to = malloc(size);
+        if (to)
+            memcpy(to, from, size);
+    }
+    return to;
+}
 
 void
 __libraries_init(char *appname)
@@ -833,7 +850,7 @@ OCT:
                 ret = FAILURE;
                 addr = 0;
             }
-            vars->val.integer = netsnmp_memdup(&addr, sizeof(addr));
+            vars->val.integer = compat_netsnmp_memdup(&addr, sizeof(addr));
             vars->val_len = sizeof(addr);
         }
         break;
