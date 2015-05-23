@@ -27,6 +27,7 @@ before_install:
   - make -j4 NETSNMP_DONT_CHECK_VERSION=1
   - sudo make install
   - cd ..
+  - net-snmp-config --version --libdir --base-cflags
 
 install: "pip install ."
 
