@@ -13,10 +13,8 @@ before_install:
   - tar zxvf net-snmp-$NET_SNMP_VERSION.tar.gz
   - cd net-snmp-$NET_SNMP_VERSION
   - autoreconf -f -i
-  - ./configure --prefix=/usr/local
-    --sysconfdir=/etc
-    --sbindir=/usr/local/sbin
-    --mandir=/usr/share/man
+  - ./configure
+    --prefix=/usr/local
     --enable-ucd-snmp-compatibility
     --enable-ipv6
     --with-default-snmp-version="3"
