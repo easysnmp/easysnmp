@@ -13,8 +13,9 @@ before_install:
   - tar zxvf net-snmp-$NET_SNMP_VERSION.tar.gz
   - cd net-snmp-$NET_SNMP_VERSION
   - autoreconf -f -i
-  - ./configure --prefix=/usr
-    --sysconfdir=/etc --sbindir=/usr/bin
+  - ./configure --prefix=/usr/local
+    --sysconfdir=/etc
+    --sbindir=/usr/local/sbin
     --mandir=/usr/share/man
     --enable-ucd-snmp-compatibility
     --enable-ipv6
@@ -27,7 +28,7 @@ before_install:
   - make -j4 NETSNMP_DONT_CHECK_VERSION=1
   - sudo make install
   - cd ..
-  - net-snmp-config --version --libdir --base-cflags
+  - net-snmp-config --version --prefix
 
 install: "pip install ."
 
