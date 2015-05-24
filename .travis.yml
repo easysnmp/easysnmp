@@ -10,11 +10,11 @@ env:
 
 before_install:
   # Install build dependencies
-  - sudo apt-get update -qq
-  - sudo apt-get install -y python-dev build-essential perl libperl-dev
+  - sudo apt-get update
+  - sudo apt-get install -y autoconf libtool make libperl-dev python-dev
 
   # Download and extract the required version of Net-SNMP
-  - wget "http://downloads.sourceforge.net/sourceforge/net-snmp/net-snmp-$NET_SNMP_VERSION.tar.gz"
+  - wget http://downloads.sourceforge.net/sourceforge/net-snmp/net-snmp-$NET_SNMP_VERSION.tar.gz
   - tar zxvf net-snmp-$NET_SNMP_VERSION.tar.gz
   - cd net-snmp-$NET_SNMP_VERSION
 
@@ -32,6 +32,7 @@ before_install:
     --with-persistent-directory="/var/net-snmp"
   - make -j4 NETSNMP_DONT_CHECK_VERSION=1
   - sudo make install
+  - sudo ldconfig
   - cd ..
 
   # Clean up the extracted files
@@ -40,14 +41,20 @@ before_install:
   # Display the build version of Net-SNMP
   - net-snmp-config --version
 
-  # TODO: Setup the SNMP agent to run with the provided snmpd.conf
+  # Install the SNMP MIBs
+  - sudo apt-get install -y snmp-mibs-downloader
+
+  # Copy our test SNMP config and start up SNMPD
+  - sudo cp tests/snmpd.conf /usr/local/etc
+  - sudo /usr/local/sbin/snmpd -c /usr/local/etc/snmpd.conf
 
 install:
   # Install all test requirements
   - pip install -r requirements.txt
 
-  # Install the PyNetSNMP package
-  - pip install .
+  # Build the PyNetSNMP C library and copy it to our library for testing
+  - python setup.py build
+  - cp build/lib.*/netsnmp/*.so netsnmp/
 
 script:
   - py.test
