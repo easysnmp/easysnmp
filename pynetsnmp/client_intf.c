@@ -74,9 +74,9 @@ typedef int Py_ssize_t;
 
 typedef netsnmp_session SnmpSession;
 typedef struct tree SnmpMibNode;
-static int __is_numeric_oid (char*);
+static int __is_numeric_oid (char *);
 static int __is_leaf (struct tree*);
-static int __translate_appl_type (char*);
+static int __translate_appl_type (char *);
 static int __translate_asn_type (int);
 static int __snprint_value (char *, size_t,
                             netsnmp_variable_list*, struct tree *,
@@ -148,7 +148,7 @@ __libraries_init(char *appname)
 
 static int
 __is_numeric_oid (oidstr)
-char* oidstr;
+char * oidstr;
 {
   if (!oidstr) return 0;
   for (; *oidstr; oidstr++) {
@@ -162,52 +162,52 @@ __is_leaf (tp)
 struct tree* tp;
 {
   char buf[MAX_TYPE_NAME_LEN];
-  return (tp && (__get_type_str(tp->type,buf) ||
-          (tp->parent && __get_type_str(tp->parent->type,buf) )));
+  return (tp && (__get_type_str(tp->type, buf) ||
+          (tp->parent && __get_type_str(tp->parent->type, buf) )));
 }
 
 static int
 __translate_appl_type(typestr)
-char* typestr;
+char * typestr;
 {
   if (typestr == NULL || *typestr == '\0')
     return TYPE_UNKNOWN;
 
-  if (!strncasecmp(typestr,"INTEGER32",8))
+  if (!strncasecmp(typestr, "INTEGER32", 8))
     return(TYPE_INTEGER32);
-  if (!strncasecmp(typestr,"INTEGER",3))
+  if (!strncasecmp(typestr, "INTEGER", 3))
     return(TYPE_INTEGER);
-  if (!strncasecmp(typestr,"UNSIGNED32",3))
+  if (!strncasecmp(typestr, "UNSIGNED32", 3))
     return(TYPE_UNSIGNED32);
-  if (!strcasecmp(typestr,"COUNTER")) /* check all in case counter64 */
+  if (!strcasecmp(typestr, "COUNTER")) /* check all in case counter64 */
     return(TYPE_COUNTER);
-  if (!strncasecmp(typestr,"GAUGE",3))
+  if (!strncasecmp(typestr, "GAUGE", 3))
     return(TYPE_GAUGE);
-  if (!strncasecmp(typestr,"IPADDR",3))
+  if (!strncasecmp(typestr, "IPADDR", 3))
     return(TYPE_IPADDR);
-  if (!strncasecmp(typestr,"OCTETSTR",3))
+  if (!strncasecmp(typestr, "OCTETSTR", 3))
     return(TYPE_OCTETSTR);
-  if (!strncasecmp(typestr,"TICKS",3))
+  if (!strncasecmp(typestr, "TICKS", 3))
     return(TYPE_TIMETICKS);
-  if (!strncasecmp(typestr,"OPAQUE",3))
+  if (!strncasecmp(typestr, "OPAQUE", 3))
     return(TYPE_OPAQUE);
-  if (!strncasecmp(typestr,"OBJECTID",3))
+  if (!strncasecmp(typestr, "OBJECTID", 3))
     return(TYPE_OBJID);
-  if (!strncasecmp(typestr,"NETADDR",3))
+  if (!strncasecmp(typestr, "NETADDR", 3))
     return(TYPE_NETADDR);
-  if (!strncasecmp(typestr,"COUNTER64",3))
+  if (!strncasecmp(typestr, "COUNTER64", 3))
     return(TYPE_COUNTER64);
-  if (!strncasecmp(typestr,"NULL",3))
+  if (!strncasecmp(typestr, "NULL", 3))
     return(TYPE_NULL);
-  if (!strncasecmp(typestr,"BITS",3))
+  if (!strncasecmp(typestr, "BITS", 3))
     return(TYPE_BITSTRING);
-  if (!strncasecmp(typestr,"ENDOFMIBVIEW",3))
+  if (!strncasecmp(typestr, "ENDOFMIBVIEW", 3))
     return(SNMP_ENDOFMIBVIEW);
-  if (!strncasecmp(typestr,"NOSUCHOBJECT",7))
+  if (!strncasecmp(typestr, "NOSUCHOBJECT", 7))
     return(SNMP_NOSUCHOBJECT);
-  if (!strncasecmp(typestr,"NOSUCHINSTANCE",7))
+  if (!strncasecmp(typestr, "NOSUCHINSTANCE", 7))
     return(SNMP_NOSUCHINSTANCE);
-  if (!strncasecmp(typestr,"UINTEGER",3))
+  if (!strncasecmp(typestr, "UINTEGER", 3))
     return(TYPE_UINTEGER); /* historic - should not show up */
                            /* but it does?                  */
   if (!strncasecmp(typestr, "NOTIF", 3))
@@ -252,7 +252,7 @@ int type;
     case ASN_COUNTER64:
       return(TYPE_COUNTER64);
     default:
-      fprintf(stderr, "translate_asn_type: unhandled asn type (%d)\n",type);
+      fprintf(stderr, "translate_asn_type: unhandled asn type (%d)\n", type);
       return(TYPE_OTHER);
   }
 }
@@ -270,7 +270,7 @@ int type;
 int flag;
 {
   int len = 0;
-  u_char* ip;
+  u_char * ip;
   struct enum_list *ep;
 
   buf[0] = '\0';
@@ -309,11 +309,11 @@ int flag;
          len = var->val_len;
          if (len > buf_len)
              len = buf_len;
-         memcpy(buf, (char*)var->val.string, len);
+         memcpy(buf, (char *)var->val.string, len);
          break;
 
       case ASN_IPADDRESS:
-        ip = (u_char*)var->val.string;
+        ip = (u_char *)var->val.string;
         snprintf(buf, buf_len, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
         len = STRLEN(buf);
         break;
@@ -342,13 +342,13 @@ int flag;
       case ASN_OPAQUE_COUNTER64:
       case ASN_OPAQUE_U64:
 #endif
-        printU64(buf,(struct counter64 *)var->val.counter64);
+        printU64(buf, (struct counter64 *)var->val.counter64);
         len = STRLEN(buf);
         break;
 
 #ifdef OPAQUE_SPECIAL_TYPES
       case ASN_OPAQUE_I64:
-        printI64(buf,(struct counter64 *)var->val.counter64);
+        printI64(buf, (struct counter64 *)var->val.counter64);
         len = STRLEN(buf);
         break;
 #endif
@@ -371,7 +371,7 @@ int flag;
 
       case ASN_NSAP:
       default:
-        fprintf(stderr,"snprint_value: asn type not handled %d\n",var->type);
+        fprintf(stderr, "snprint_value: asn type not handled %d\n", var->type);
     }
   }
   return(len);
@@ -386,7 +386,7 @@ int len;
   int i;
   buf[0] = '\0';
   for (i=0; i < len; i++) {
-    sprintf(buf,".%lu",*objid++);
+    sprintf(buf, ".%lu", *objid++);
     buf += STRLEN(buf);
   }
   return SUCCESS;
@@ -477,7 +477,7 @@ char * str;
       break;
     case TYPE_UINTEGER:
       strcpy(str, "UINTEGER"); /* historic - should not show up */
-                                /* but it does?                  */
+                               /* but it does?                  */
       break;
     case TYPE_NOTIFTYPE:
       strcpy(str, "NOTIF");
@@ -493,7 +493,7 @@ char * str;
     default: /* unsupported types for now */
       strcpy(str, "");
       if (_debug_level)
-        printf("__get_type_str:FAILURE(%d)\n", type);
+        printf("DEBUG (get_type_str): failure (%d)\n", type);
       return(FAILURE);
   }
   return SUCCESS;
@@ -574,7 +574,7 @@ int flag;
     lcp--;
   }
 
-  if (!found_label || (!isdigit((int)*(icp+1)) && (flag & FAIL_ON_NULL_IID)))
+  if (!found_label || (!isdigit((int)*(icp + 1)) && (flag & FAIL_ON_NULL_IID)))
     return(FAILURE);
 
   if (flag & NON_LEAF_NAME) { /* dont know where to start instance id */
@@ -586,20 +586,20 @@ int flag;
      * to make the label entirely numeric (i.e., convert "iso" => "1")
      */
     if (*lcp == '.' && lcp == name) {
-      if (!strncmp(".ccitt.",lcp,7)) {
+      if (!strncmp(".ccitt.", lcp, 7)) {
         name += 2;
         *name = '.';
-        *(name+1) = '0';
+        *(name + 1) = '0';
       }
-      else if (!strncmp(".iso.",lcp,5)) {
+      else if (!strncmp(".iso.", lcp, 5)) {
         name += 2;
         *name = '.';
-        *(name+1) = '1';
+        *(name + 1) = '1';
       }
-      else if (!strncmp(".joint-iso-ccitt.",lcp,17)) {
+      else if (!strncmp(".joint-iso-ccitt.", lcp, 17)) {
         name += 2;
         *name = '.';
-        *(name+1) = '2';
+        *(name + 1) = '2';
       }
     }
   }
@@ -673,7 +673,7 @@ int    best_guess;
       *type = (tp ? tp->type : TYPE_UNKNOWN);
     if ((oid_arr == NULL) || (oid_arr_len == NULL))
       return rtp;
-    memcpy(oid_arr,(char*)newname,newname_len*sizeof(oid));
+    memcpy(oid_arr, (char *)newname, newname_len*sizeof(oid));
     *oid_arr_len = newname_len;
   }
   /* if best_guess is off and multi part tag or module::tag */
@@ -681,7 +681,7 @@ int    best_guess;
   /* module::single symbolic                                */
   /* module::partial full symbolic                          */
   /* FULL symbolic OID                                      */
-  else if (strchr(tag,'.') || strchr(tag,':')) {
+  else if (strchr(tag, '.') || strchr(tag, ':')) {
     if (!__scan_num_objid(tag, newname, &newname_len)) { /* make sure it's not a numeric tag */
       newname_len = MAX_OID_LEN;
       if (read_objid(tag, newname, &newname_len)) {   /* long name */
@@ -699,7 +699,7 @@ int    best_guess;
       *type = (tp ? tp->type : TYPE_UNKNOWN);
     if ((oid_arr == NULL) || (oid_arr_len == NULL))
       return rtp;
-    memcpy(oid_arr,(char*)newname,newname_len*sizeof(oid));
+    memcpy(oid_arr, (char *)newname, newname_len*sizeof(oid));
     *oid_arr_len = newname_len;
   }
   /* else best_guess is off and it is a single leaf */
@@ -756,11 +756,11 @@ char * soid_str;
   soid_buf = strdup(soid_str);
   if (!soid_buf)
     return FAILURE;
-  cp = strtok_r(soid_buf,".",&st);
+  cp = strtok_r(soid_buf, ".", &st);
   while (cp) {
     sscanf(cp, "%lu", &(doid_arr[(*doid_arr_len)++]));
     /* doid_arr[(*doid_arr_len)++] =  atoi(cp); */
-    cp = strtok_r(NULL,".",&st);
+    cp = strtok_r(NULL, ".", &st);
   }
   free(soid_buf);
   return(SUCCESS);
@@ -784,14 +784,14 @@ __add_var_val_str(pdu, name, name_length, val, len, type)
 
   if (pdu->variables == NULL){
     pdu->variables = vars =
-      (netsnmp_variable_list *)calloc(1,sizeof(netsnmp_variable_list));
+      (netsnmp_variable_list *)calloc(1, sizeof(netsnmp_variable_list));
   }
   else {
     for (vars = pdu->variables; vars->next_variable; vars = vars->next_variable)
       /*EXIT*/;
 
     vars->next_variable =
-      (netsnmp_variable_list *)calloc(1,sizeof(netsnmp_variable_list));
+      (netsnmp_variable_list *)calloc(1, sizeof(netsnmp_variable_list));
     vars = vars->next_variable;
   }
 
@@ -804,7 +804,7 @@ __add_var_val_str(pdu, name, name_length, val, len, type)
       vars->type = ASN_INTEGER;
       vars->val.integer = malloc(sizeof(long));
       if (val)
-        *(vars->val.integer) = strtol(val,NULL,0);
+        *(vars->val.integer) = strtol(val, NULL, 0);
       else {
         ret = FAILURE;
         *(vars->val.integer) = 0;
@@ -827,7 +827,7 @@ __add_var_val_str(pdu, name, name_length, val, len, type)
 UINT:
       vars->val.integer = malloc(sizeof(long));
       if (val)
-        sscanf(val,"%lu",vars->val.integer);
+        sscanf(val, "%lu", vars->val.integer);
       else {
         ret = FAILURE;
         *(vars->val.integer) = 0;
@@ -852,7 +852,7 @@ OCT:
         memcpy((char *)vars->val.string, val, len);
       else {
         ret = FAILURE;
-        vars->val.string = (u_char*)strdup("");
+        vars->val.string = (u_char *)strdup("");
         vars->val_len = 0;
       }
       break;
@@ -877,7 +877,7 @@ OCT:
       vars->type = ASN_OBJECT_ID;
       vars->val_len = MAX_OID_LEN;
       /* if (read_objid(val, oidbuf, &(vars->val_len))) { */
-      /* tp = __tag2oid(val,NULL,oidbuf,&(vars->val_len),NULL,0); */
+      /* tp = __tag2oid(val, NULL, oidbuf, &(vars->val_len), NULL, 0); */
       if (!val || !snmp_parse_oid(val, oidbuf, &vars->val_len)) {
         vars->val.objid = NULL;
         ret = FAILURE;
@@ -965,7 +965,7 @@ retry:
         /* in SNMPv2c, SNMPv2u, SNMPv2*, and SNMPv3 PDUs */
         case SNMP_ERR_INCONSISTENTNAME:
         default:
-          strlcpy(err_str, (char*)snmp_errstring((*response)->errstat),
+          strlcpy(err_str, (char *)snmp_errstring((*response)->errstat),
                   STR_BUF_SIZE);
           *err_num = (int)(*response)->errstat;
           *err_ind = (*response)->errindex;
@@ -990,7 +990,7 @@ done:
     free(tmp_err_str);
   }
   if (_debug_level && *err_num)
-    printf("XXX sync PDU: %s\n", err_str);
+    printf("DEBUG (sync PDU): %s\n", err_str);
   return(status);
 }
 
@@ -1165,7 +1165,7 @@ netsnmp_create_session(PyObject *self, PyObject *args)
   }
   if (session.version == -1) {
     if (verbose)
-      printf("error:snmp_new_session:Unsupported SNMP version (%d)\n", version);
+      printf("ERROR (snmp_new_session): Unsupported SNMP version (%d)\n", version);
     goto end;
   }
 
@@ -1181,7 +1181,7 @@ netsnmp_create_session(PyObject *self, PyObject *args)
 
   if (ss == NULL) {
     if (verbose)
-      printf("error:snmp_new_session: Couldn't open SNMP session");
+      printf("ERROR (snmp_new_session): Couldn't open SNMP session");
   }
 end:
   return PyLong_FromVoidPtr((void *)ss);
@@ -1227,7 +1227,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
   }
   else {
     if (verbose)
-      printf("error:snmp_new_v3_session:Unsupported SNMP version (%d)\n", version);
+      printf("ERROR (snmp_new_v3_session): Unsupported SNMP version (%d)\n", version);
     goto end;
   }
 
@@ -1242,10 +1242,10 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
   session.securityLevel = sec_level;
   session.securityModel = USM_SEC_MODEL_NUMBER;
   session.securityEngineIDLen =
-    hex_to_binary2((unsigned char*)sec_eng_id, STRLEN(sec_eng_id),
+    hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
                    (char **) &session.securityEngineID);
   session.contextEngineIDLen =
-    hex_to_binary2((unsigned char*)sec_eng_id, STRLEN(sec_eng_id),
+    hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
                    (char **) &session.contextEngineID);
   session.engineBoots = eng_boots;
   session.engineTime = eng_time;
@@ -1272,7 +1272,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
   }
   else {
     if (verbose)
-      printf("error:snmp_new_v3_session:Unsupported authentication protocol(%s)\n", auth_proto);
+      printf("ERROR (snmp_new_v3_session): Unsupported authentication protocol(%s)\n", auth_proto);
     goto end;
   }
   if (session.securityLevel >= SNMP_SEC_LEVEL_AUTHNOPRIV) {
@@ -1284,7 +1284,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
                       session.securityAuthKey,
                       &session.securityAuthKeyLen) != SNMPERR_SUCCESS) {
         if (verbose)
-          printf("error:snmp_new_v3_session:Error generating Ku from authentication password.\n");
+          printf("ERROR (snmp_new_v3_session): Error generating Ku from authentication password.\n");
         goto end;
       }
     }
@@ -1311,7 +1311,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
   }
   else {
     if (verbose)
-      printf("error:snmp_new_v3_session:Unsupported privacy protocol(%s)\n", priv_proto);
+      printf("ERROR (snmp_new_v3_session): Unsupported privacy protocol(%s)\n", priv_proto);
     goto end;
   }
 
@@ -1323,7 +1323,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
                     session.securityPrivKey,
                     &session.securityPrivKeyLen) != SNMPERR_SUCCESS) {
       if (verbose)
-        printf("error:v3_session: couldn't gen Ku from priv pass phrase.\n");
+        printf("ERROR (v3_session): couldn't gen Ku from priv pass phrase.\n");
       goto end;
     }
   }
@@ -1333,7 +1333,7 @@ netsnmp_create_session_v3(PyObject *self, PyObject *args)
 end:
   if (ss == NULL) {
     if (verbose)
-      printf("error:v3_session: couldn't open SNMP session(%s).\n",
+      printf("ERROR (v3_session): couldn't open SNMP session(%s).\n",
              snmp_api_errstring(snmp_errno));
   }
   free (session.securityEngineID);
@@ -1376,7 +1376,7 @@ netsnmp_create_session_tunneled(PyObject *self, PyObject *args)
   if (version != 3) {
     session.version = SNMP_VERSION_3;
     if (verbose)
-        printf("Using version 3 as it's the only version that supports tunneling\n");
+        printf("WARNING: Using version 3 as it's the only version that supports tunneling\n");
   }
 
   session.peername = peer;
@@ -1531,7 +1531,7 @@ netsnmp_get(PyObject *self, PyObject *args)
         }
         else {
           if (verbose)
-            printf("error: get: unknown object ID (%s)",
+            printf("ERROR (get): unknown object ID (%s)",
                    (tag ? tag : "<null>"));
           snmp_free_pdu(pdu);
           Py_DECREF(varbind);
@@ -1546,7 +1546,7 @@ netsnmp_get(PyObject *self, PyObject *args)
       if (PyErr_Occurred()) {
         /* propagate error */
         if (verbose)
-          printf("error: get: unknown python error");
+          printf("ERROR (get): unknown python error");
         snmp_free_pdu(pdu);
         goto done;
       }
@@ -1598,32 +1598,32 @@ netsnmp_get(PyObject *self, PyObject *args)
 
       if (PyObject_HasAttrString(varbind, "tag")) {
         *str_buf = '.';
-        *(str_buf+1) = '\0';
+        *(str_buf + 1) = '\0';
         out_len = 0;
         tp = netsnmp_sprint_realloc_objid_tree(&str_bufp, &str_buf_len,
                                                &out_len, 0, &buf_over,
-                                               vars->name,vars->name_length);
+                                               vars->name, vars->name_length);
         if (_debug_level)
-          printf("netsnmp_get:str_bufp:%s:%d:%d\n", str_bufp,
+          printf("DEBUG (netsnmp_get): str_bufp: %s:%d:%d\n", str_bufp,
                  (int)str_buf_len, (int)out_len);
 
-        str_buf[sizeof(str_buf)-1] = '\0';
+        str_buf[sizeof(str_buf) - 1] = '\0';
 
         if (__is_leaf(tp)) {
           type = (tp->type ? tp->type : tp->parent->type);
           getlabel_flag &= ~NON_LEAF_NAME;
           if (_debug_level)
-            printf("netsnmp_get:is_leaf:%d\n",type);
+            printf("DEBUG (netsnmp_get): is_leaf: %d\n", type);
         }
         else {
           getlabel_flag |= NON_LEAF_NAME;
           type = __translate_asn_type(vars->type);
           if (_debug_level)
-            printf("netsnmp_get:!is_leaf:%d\n",tp->type);
+            printf("DEBUG (netsnmp_get): !is_leaf: %d\n", tp->type);
         }
 
         if (_debug_level)
-          printf("netsnmp_get:str_buf:%s\n",str_buf);
+          printf("DEBUG (netsnmp_get): str_buf: %s\n", str_buf);
 
         __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
@@ -1654,7 +1654,7 @@ netsnmp_get(PyObject *self, PyObject *args)
         Py_DECREF(varbind);
       }
       else {
-        printf("netsnmp_get: bad varbind (%d)\n", varlist_ind);
+        printf("DEBUG (netsnmp_get): bad varbind (%d)\n", varlist_ind);
         Py_XDECREF(varbind);
       }
     }
@@ -1752,8 +1752,8 @@ netsnmp_getnext(PyObject *self, PyObject *args)
         }
 
         if (_debug_level)
-          printf("netsnmp_getnext: filling request: %s:%s:%d:%d\n",
-                 tag, iid, oid_arr_len,best_guess);
+          printf("DEBUG (netsnmp_getnext): filling request: %s:%s:%d:%d\n",
+                 tag, iid, oid_arr_len, best_guess);
 
         if (oid_arr_len) {
           snmp_add_null_var(pdu, oid_arr, oid_arr_len);
@@ -1761,7 +1761,7 @@ netsnmp_getnext(PyObject *self, PyObject *args)
         }
         else {
           if (verbose)
-            printf("error: get: unknown object ID (%s)",
+            printf("ERROR (get): unknown object ID (%s)",
                    (tag ? tag : "<null>"));
           snmp_free_pdu(pdu);
           Py_DECREF(varbind);
@@ -1776,7 +1776,7 @@ netsnmp_getnext(PyObject *self, PyObject *args)
       if (PyErr_Occurred()) {
         /* propagate error */
         if (verbose)
-          printf("error: get: unknown python error");
+          printf("ERROR (get): unknown python error");
         snmp_free_pdu(pdu);
         goto done;
       }
@@ -1829,12 +1829,12 @@ netsnmp_getnext(PyObject *self, PyObject *args)
 
       if (PyObject_HasAttrString(varbind, "tag")) {
         *str_buf = '.';
-        *(str_buf+1) = '\0';
+        *(str_buf + 1) = '\0';
         out_len = 0;
         tp = netsnmp_sprint_realloc_objid_tree(&str_bufp, &str_buf_len,
                                                &out_len, 0, &buf_over,
-                                               vars->name,vars->name_length);
-        str_buf[sizeof(str_buf)-1] = '\0';
+                                               vars->name, vars->name_length);
+        str_buf[sizeof(str_buf) - 1] = '\0';
 
         if (__is_leaf(tp)) {
           type = (tp->type ? tp->type : tp->parent->type);
@@ -1848,7 +1848,7 @@ netsnmp_getnext(PyObject *self, PyObject *args)
         __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
         if (_debug_level)
-          printf("netsnmp_getnext: filling response: %s:%s\n", tag, iid);
+          printf("DEBUG (netsnmp_getnext): filling response: %s:%s\n", tag, iid);
 
         py_netsnmp_attr_set_string(varbind, "tag", tag, STRLEN(tag));
         py_netsnmp_attr_set_string(varbind, "iid", iid, STRLEN(iid));
@@ -1878,7 +1878,7 @@ netsnmp_getnext(PyObject *self, PyObject *args)
         Py_DECREF(varbind);
       }
       else {
-        printf("netsnmp_getnext: bad varbind (%d)\n", varlist_ind);
+        printf("DEBUG (netsnmp_getnext): bad varbind (%d)\n", varlist_ind);
         Py_XDECREF(varbind);
       }
     }
@@ -2014,15 +2014,15 @@ netsnmp_walk(PyObject *self, PyObject *args)
       }
 
       if (_debug_level)
-        printf("netsnmp_walk: filling request: %s:%s:%d:%d\n",
-               tag, iid, oid_arr_len[varlist_ind],best_guess);
+        printf("DEBUG (netsnmp_walk): filling request: %s:%s:%d:%d\n",
+               tag, iid, oid_arr_len[varlist_ind], best_guess);
 
       if (oid_arr_len[varlist_ind]) {
         snmp_add_null_var(pdu, oid_arr[varlist_ind], oid_arr_len[varlist_ind]);
       }
       else {
         if (verbose)
-          printf("error: walk: unknown object ID (%s)",
+          printf("ERROR (walk): unknown object ID (%s)",
                  (tag ? tag : "<null>"));
         snmp_free_pdu(pdu);
         Py_DECREF(varbind);
@@ -2039,7 +2039,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
     if (PyErr_Occurred()) {
       /* propagate error */
       if (verbose)
-        printf("error: walk: unknown python error (varlist)");
+        printf("ERROR (walk): unknown python error (varlist)");
       snmp_free_pdu(pdu);
       goto done;
     }
@@ -2050,7 +2050,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
     if (!val_tuple) {
       /* propagate error */
       if (verbose)
-        printf("error: walk: couldn't allocate a new value tuple");
+        printf("ERROR (walk): couldn't allocate a new value tuple");
       snmp_free_pdu(pdu);
       goto done;
     }
@@ -2090,7 +2090,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
     if (PyErr_Occurred()) {
       /* propagate error */
       if (verbose)
-        printf("error: walk: deleting old varbinds failed\n");
+        printf("ERROR (walk): deleting old varbinds failed\n");
       snmp_free_pdu(pdu);
       goto done;
     }
@@ -2167,8 +2167,9 @@ netsnmp_walk(PyObject *self, PyObject *args)
             out_len = 0;
             tp = netsnmp_sprint_realloc_objid_tree(&str_bufp, &str_buf_len,
                                                    &out_len, 0, &buf_over,
-                                                   vars->name,vars->name_length);
-            str_buf[sizeof(str_buf)-1] = '\0';
+                                                   vars->name,
+                                                   vars->name_length);
+            str_buf[sizeof(str_buf) - 1] = '\0';
 
             if (__is_leaf(tp)) {
               type = (tp->type ? tp->type : tp->parent->type);
@@ -2182,7 +2183,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
             __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
             if (_debug_level)
-              printf("netsnmp_walk: filling response: %s:%s\n", tag, iid);
+              printf("DEBUG (netsnmp_walk): filling response: %s:%s\n", tag, iid);
 
             py_netsnmp_attr_set_string(varbind, "tag", tag, STRLEN(tag));
             py_netsnmp_attr_set_string(varbind, "iid", iid, STRLEN(iid));
@@ -2192,8 +2193,8 @@ netsnmp_walk(PyObject *self, PyObject *args)
             py_netsnmp_attr_set_string(varbind, "type", type_str,
                                        strlen(type_str));
 
-            len = __snprint_value((char *) str_buf,sizeof(str_buf),
-                                  vars,tp,type,sprintval_flag);
+            len = __snprint_value((char *) str_buf, sizeof(str_buf),
+                                  vars, tp, type, sprintval_flag);
             str_buf[len] = '\0';
 
             py_netsnmp_attr_set_string(varbind, "val", (char *) str_buf, len);
@@ -2203,15 +2204,15 @@ netsnmp_walk(PyObject *self, PyObject *args)
 
             /* save in return tuple as well */
             /* save in return tuple as well - steals ref */
-            _PyTuple_Resize(&val_tuple, result_count+1);
+            _PyTuple_Resize(&val_tuple, result_count + 1);
             PyTuple_SetItem(val_tuple, result_count++,
                             Py_BuildValue("s#", str_buf, len));
           }
           else {
               /* Return None for this variable. */
-              _PyTuple_Resize(&val_tuple, result_count+1);
+              _PyTuple_Resize(&val_tuple, result_count + 1);
               PyTuple_SetItem(val_tuple, result_count++, Py_BuildValue(""));
-              printf("netsnmp_walk: bad varbind (%d)\n", varlist_ind);
+              printf("DEBUG (netsnmp_walk): bad varbind (%d)\n", varlist_ind);
           }
           Py_XDECREF(varbind);
 
@@ -2237,7 +2238,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
     if (PyErr_Occurred()) {
       /* propagate error */
       if (verbose)
-        printf("error: walk response processing: unknown python error");
+        printf("ERROR (walk) response processing: unknown python error");
       Py_DECREF(val_tuple);
     }
   }
@@ -2348,7 +2349,7 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
         }
         else {
           if (verbose)
-            printf("error: get: unknown object ID (%s)",
+            printf("ERROR (get): unknown object ID (%s)",
                    (tag ? tag : "<null>"));
           snmp_free_pdu(pdu);
           Py_DECREF(varbind);
@@ -2363,7 +2364,7 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
       if (PyErr_Occurred()) {
         /* propagate error */
         if (verbose)
-          printf("error: get: unknown python error");
+          printf("ERROR (get): unknown python error");
         snmp_free_pdu(pdu);
         goto done;
       }
@@ -2410,7 +2411,7 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
         if (PyErr_Occurred()) {
             /* propagate error */
             if (verbose)
-                printf("error: bulk: deleting old varbinds failed\n");
+                printf("ERROR (bulk): deleting old varbinds failed\n");
             snmp_free_pdu(pdu);
             goto done;
         }
@@ -2423,14 +2424,15 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
 
           if (PyObject_HasAttrString(varbind, "tag")) {
             *str_buf = '.';
-            *(str_buf+1) = '\0';
+            *(str_buf + 1) = '\0';
             out_len = 0;
             buf_over = 0;
             str_bufp = str_buf;
             tp = netsnmp_sprint_realloc_objid_tree(&str_bufp, &str_buf_len,
                                                    &out_len, 0, &buf_over,
-                                                   vars->name,vars->name_length);
-            str_buf[sizeof(str_buf)-1] = '\0';
+                                                   vars->name,
+                                                   vars->name_length);
+            str_buf[sizeof(str_buf) - 1] = '\0';
             if (__is_leaf(tp)) {
               type = (tp->type ? tp->type : tp->parent->type);
               getlabel_flag &= ~NON_LEAF_NAME;
@@ -2460,7 +2462,7 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
             PyList_Append(varbinds, varbind);
 
             /* save in return tuple as well - steals ref */
-            _PyTuple_Resize(&val_tuple, varbind_ind+1);
+            _PyTuple_Resize(&val_tuple, varbind_ind + 1);
             PyTuple_SetItem(val_tuple, varbind_ind,
                                Py_BuildValue("s#", str_buf, len));
 
@@ -2493,7 +2495,7 @@ netsnmp_getbulk(PyObject *self, PyObject *args)
     if (PyErr_Occurred()) {
       /* propagate error */
       if (verbose)
-        printf("error: getbulk response processing: unknown python error");
+        printf("ERROR (getbulk) response processing: unknown python error");
       if (val_tuple)
           Py_DECREF(val_tuple);
       val_tuple = NULL;
@@ -2571,7 +2573,7 @@ netsnmp_set(PyObject *self, PyObject *args)
 
         if (oid_arr_len==0) {
           if (verbose)
-            printf("error: set: unknown object ID (%s)",
+            printf("ERROR (set): unknown object ID (%s)",
                  (tag?tag:"<null>"));
           snmp_free_pdu(pdu);
           goto done;
@@ -2585,7 +2587,7 @@ netsnmp_set(PyObject *self, PyObject *args)
           type = __translate_appl_type(type_str);
           if (type == TYPE_UNKNOWN) {
             if (verbose)
-              printf("error: set: no type found for object");
+              printf("ERROR (set): no type found for object");
             snmp_free_pdu(pdu);
             goto done;
           }
@@ -2597,7 +2599,7 @@ netsnmp_set(PyObject *self, PyObject *args)
         }
         memset(tmp_val_str, 0, sizeof(tmp_val_str));
         if ( tmplen >= sizeof(tmp_val_str)) {
-            tmplen = sizeof(tmp_val_str)-1;
+            tmplen = sizeof(tmp_val_str) - 1;
         }
         memcpy(tmp_val_str, val, tmplen);
         if (type==TYPE_INTEGER && use_enums && tp && tp->enums) {
@@ -2614,7 +2616,7 @@ netsnmp_set(PyObject *self, PyObject *args)
                                    (char *) tmp_val_str, len, type);
 
         if (verbose && status == FAILURE)
-          printf("error: set: adding variable/value to PDU");
+          printf("ERROR (set): adding variable/value to PDU");
 
         /* release reference when done */
         Py_DECREF(varbind);
@@ -2625,7 +2627,7 @@ netsnmp_set(PyObject *self, PyObject *args)
       if (PyErr_Occurred()) {
         /* propagate error */
         if (verbose)
-          printf("error: set: unknown python error");
+          printf("ERROR (set): unknown python error");
         snmp_free_pdu(pdu);
         goto done;
       }
@@ -2638,9 +2640,9 @@ netsnmp_set(PyObject *self, PyObject *args)
     if (response) snmp_free_pdu(response);
 
     if (status == STAT_SUCCESS)
-      ret = Py_BuildValue("i",1); /* success, return True */
+      ret = Py_BuildValue("i", 1); /* success, return True */
     else
-      ret = Py_BuildValue("i",0); /* fail, return False */
+      ret = Py_BuildValue("i", 0); /* fail, return False */
   }
 done:
   Py_XDECREF(varbind);
