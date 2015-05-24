@@ -1,13 +1,13 @@
 import platform
 
-import netsnmp
+import pynetsnmp
 
 from .fixtures import sess_v1
 
 
-def test_netsnmp_v1_get():
-    var = netsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
-    res = netsnmp.snmp_get(
+def test_pynetsnmp_v1_get():
+    var = pynetsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
+    res = pynetsnmp.snmp_get(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -20,9 +20,9 @@ def test_netsnmp_v1_get():
     assert var.type == 'OCTETSTR'
 
 
-def test_netsnmp_v1_get_next():
-    var = netsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
-    res = netsnmp.snmp_get_next(
+def test_pynetsnmp_v1_get_next():
+    var = pynetsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
+    res = pynetsnmp.snmp_get_next(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -35,9 +35,9 @@ def test_netsnmp_v1_get_next():
     assert var.type == 'OBJECTID'
 
 
-def test_netsnmp_v1_set():
-    var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmp_get(
+def test_pynetsnmp_v1_set():
+    var = pynetsnmp.Varbind('sysLocation', '0')
+    res = pynetsnmp.snmp_get(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -45,15 +45,15 @@ def test_netsnmp_v1_set():
 
     assert res[0] != 'my new location'
 
-    var = netsnmp.Varbind('sysLocation', '0', 'my new location')
-    res = netsnmp.snmp_set(
+    var = pynetsnmp.Varbind('sysLocation', '0', 'my new location')
+    res = pynetsnmp.snmp_set(
         var, version=1, hostname='localhost', community='public'
     )
 
     assert res == 1
 
-    var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmp_get(
+    var = pynetsnmp.Varbind('sysLocation', '0')
+    res = pynetsnmp.snmp_get(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -63,30 +63,30 @@ def test_netsnmp_v1_set():
 
 
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
-# def test_netsnmp_v1_set_restart_agent():
-#     var = netsnmp.Varbind('sysUpTime', '0')
-#     res = netsnmp.snmp_get(
+# def test_pynetsnmp_v1_set_restart_agent():
+#     var = pynetsnmp.Varbind('sysUpTime', '0')
+#     res = pynetsnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
 #     print "uptime = ", res[0]
 
-#     var = netsnmp.Varbind('versionRestartAgent','0', 1)
-#     res = netsnmp.snmp_set(
+#     var = pynetsnmp.Varbind('versionRestartAgent','0', 1)
+#     res = pynetsnmp.snmp_set(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
-#     var = netsnmp.Varbind('sysUpTime','0')
-#     res = netsnmp.snmp_get(
+#     var = pynetsnmp.Varbind('sysUpTime','0')
+#     res = pynetsnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
 #     print "uptime = ", res[0]
 
 
-def test_netsnmp_v1_set_via_varbind():
-    var = netsnmp.Varbind('nsCacheEntry')
-    res = netsnmp.snmp_get_next(
+def test_pynetsnmp_v1_set_via_varbind():
+    var = pynetsnmp.Varbind('nsCacheEntry')
+    res = pynetsnmp.snmp_get_next(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -99,11 +99,11 @@ def test_netsnmp_v1_set_via_varbind():
     assert var.type == 'INTEGER'
 
     var.val = 65
-    res = netsnmp.snmp_set(
+    res = pynetsnmp.snmp_set(
         var, version=1, hostname='localhost', community='public'
     )
 
-    res = netsnmp.snmp_get(
+    res = pynetsnmp.snmp_get(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -116,15 +116,15 @@ def test_netsnmp_v1_set_via_varbind():
     assert var.type == 'INTEGER'
 
 
-def test_netsnmp_v1_set_multiple(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind(
+def test_pynetsnmp_v1_set_multiple(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind(
             '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116', '', '.1.3.6.1.6.1.1'
         ),
-        netsnmp.Varbind(
+        pynetsnmp.Varbind(
             '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116', '', '1234'
         ),
-        netsnmp.Varbind(
+        pynetsnmp.Varbind(
             '.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', '',  4
         )
     )
@@ -133,10 +133,10 @@ def test_netsnmp_v1_set_multiple(sess_v1):
 
     assert res == 1
 
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('snmpTargetAddrTDomain'),
-        netsnmp.Varbind('snmpTargetAddrTAddress'),
-        netsnmp.Varbind('snmpTargetAddrRowStatus')
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('snmpTargetAddrTDomain'),
+        pynetsnmp.Varbind('snmpTargetAddrTAddress'),
+        pynetsnmp.Varbind('snmpTargetAddrRowStatus')
     )
     res = sess_v1.get_next(varlist)
 
@@ -162,19 +162,19 @@ def test_netsnmp_v1_set_multiple(sess_v1):
     assert varlist[2].type == 'INTEGER'
 
 
-def test_netsnmp_v1_set_clear(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', '', 6)
+def test_pynetsnmp_v1_set_clear(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', '', 6)
     )
 
     res = sess_v1.set(varlist)
 
     assert res == 1
 
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('snmpTargetAddrTDomain'),
-        netsnmp.Varbind('snmpTargetAddrTAddress'),
-        netsnmp.Varbind('snmpTargetAddrRowStatus')
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('snmpTargetAddrTDomain'),
+        pynetsnmp.Varbind('snmpTargetAddrTAddress'),
+        pynetsnmp.Varbind('snmpTargetAddrRowStatus')
     )
     res = sess_v1.get_next(varlist)
 
@@ -200,10 +200,10 @@ def test_netsnmp_v1_set_clear(sess_v1):
     assert varlist[2].type == 'COUNTER'
 
 
-def test_netsnmp_v1_walk():
-    var = netsnmp.Varbind('system')
+def test_pynetsnmp_v1_walk():
+    var = pynetsnmp.Varbind('system')
 
-    res = netsnmp.snmp_walk(
+    res = pynetsnmp.snmp_walk(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -215,15 +215,15 @@ def test_netsnmp_v1_walk():
     assert res[5] == 'my new location'
 
 
-def test_netsnmp_v1_walk_varlist():
-    varlist = netsnmp.VarList(netsnmp.Varbind('system'))
+def test_pynetsnmp_v1_walk_varlist():
+    varlist = pynetsnmp.VarList(pynetsnmp.Varbind('system'))
     assert len(varlist) == 1
     assert varlist[0].tag == 'system'
     assert varlist[0].iid == ''
     assert varlist[0].val is None
     assert varlist[0].type is None
 
-    res = netsnmp.snmp_walk(
+    res = pynetsnmp.snmp_walk(
         varlist, version=1, hostname='localhost', community='public'
     )
 
@@ -251,11 +251,11 @@ def test_netsnmp_v1_walk_varlist():
     assert varlist[5].type == 'OCTETSTR'
 
 
-def test_netsnmp_v1_session_get(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime', 0),
-        netsnmp.Varbind('sysContact', 0),
-        netsnmp.Varbind('sysLocation', 0)
+def test_pynetsnmp_v1_session_get(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime', 0),
+        pynetsnmp.Varbind('sysContact', 0),
+        pynetsnmp.Varbind('sysLocation', 0)
     )
 
     vals = sess_v1.get(varlist)
@@ -282,11 +282,11 @@ def test_netsnmp_v1_session_get(sess_v1):
     assert varlist[2].type == 'OCTETSTR'
 
 
-def test_netsnmp_v1_session_get_next(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime', 0),
-        netsnmp.Varbind('sysContact', 0),
-        netsnmp.Varbind('sysLocation', 0)
+def test_pynetsnmp_v1_session_get_next(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime', 0),
+        pynetsnmp.Varbind('sysContact', 0),
+        pynetsnmp.Varbind('sysLocation', 0)
     )
 
     vals = sess_v1.get_next(varlist)
@@ -313,13 +313,13 @@ def test_netsnmp_v1_session_get_next(sess_v1):
     assert varlist[2].type == 'TICKS'
 
 
-def test_netsnmp_v1_session_get_bulk_unspported(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime'),
-        netsnmp.Varbind('sysORLastChange'),
-        netsnmp.Varbind('sysORID'),
-        netsnmp.Varbind('sysORDescr'),
-        netsnmp.Varbind('sysORUpTime')
+def test_pynetsnmp_v1_session_get_bulk_unspported(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime'),
+        pynetsnmp.Varbind('sysORLastChange'),
+        pynetsnmp.Varbind('sysORID'),
+        pynetsnmp.Varbind('sysORDescr'),
+        pynetsnmp.Varbind('sysORUpTime')
     )
 
     vals = sess_v1.get_bulk(2, 8, varlist)
@@ -337,16 +337,16 @@ def test_netsnmp_v1_session_get_bulk_unspported(sess_v1):
         assert varlist[index].type is None
 
 
-def test_netsnmp_v1_session_set(sess_v1):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysLocation', '0', 'my newer location'))
+def test_pynetsnmp_v1_session_set(sess_v1):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysLocation', '0', 'my newer location'))
 
     res = sess_v1.set(varlist)
 
     assert res == 1
 
-    var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmp_get(
+    var = pynetsnmp.Varbind('sysLocation', '0')
+    res = pynetsnmp.snmp_get(
         var, version=1, hostname='localhost', community='public'
     )
 
@@ -354,8 +354,8 @@ def test_netsnmp_v1_session_set(sess_v1):
     assert res[0] == 'my newer location'
 
 
-def test_netsnmp_v1_session_walk(sess_v1):
-    varlist = netsnmp.VarList(netsnmp.Varbind('system'))
+def test_pynetsnmp_v1_session_walk(sess_v1):
+    varlist = pynetsnmp.VarList(pynetsnmp.Varbind('system'))
 
     vals = sess_v1.walk(varlist)
 
