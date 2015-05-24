@@ -38,6 +38,16 @@ def test_netsnmp_v1_getnext():
 
 
 def test_netsnmp_v1_set():
+    var = netsnmp.Varbind('sysLocation', '0')
+    res = netsnmp.snmpget(var,
+                          Version=1,
+                          DestHost='localhost',
+                          Community='public')
+
+    assert len(res) == 1
+
+    assert res[0] != 'my new location'
+
     var = netsnmp.Varbind('sysLocation', '0', 'my new location')
     res = netsnmp.snmpset(var,
                           Version=1,
