@@ -1,0 +1,34 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+
+env:
+  - NET_SNMP_VERSION=5.7.2
+  - NET_SNMP_VERSION=5.7.3
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y python-dev build-essential perl libperl-dev
+  - wget "http://downloads.sourceforge.net/sourceforge/net-snmp/net-snmp-$NET_SNMP_VERSION.tar.gz"
+  - tar zxvf net-snmp-$NET_SNMP_VERSION.tar.gz
+  - cd net-snmp-$NET_SNMP_VERSION
+  - autoreconf -f -i
+  - ./configure
+    --prefix=/usr/local
+    --enable-ucd-snmp-compatibility
+    --enable-ipv6
+    --with-default-snmp-version="3"
+    --with-sys-contact="root@localhost"
+    --with-sys-location="Unknown"
+    --with-logfile="/var/log/snmpd.log"
+    --with-mib-modules="host misc/ipfwacc ucd-snmp/diskio tunnel ucd-snmp/dlmod"
+    --with-persistent-directory="/var/net-snmp"
+  - make -j4 NETSNMP_DONT_CHECK_VERSION=1
+  - sudo make install
+  - cd ..
+  - rm -rf net-snmp-$NET_SNMP_VERSION
+  - net-snmp-config --version --prefix
+
+install: "pip install ."
+
+script: echo "pip installation succeeded [TODO- run tests]"
