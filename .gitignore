@@ -1,6 +1,12 @@
 # Python byte-compiled, optimized and DLL files
 *.py[cod]
 
+# Cache
+.cache
+
+# Compiled libraries
+*.so
+
 # Nosetests and coverage information
 .coverage
 nosetests.xml

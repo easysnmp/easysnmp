@@ -1,0 +1,12 @@
+# Flake8
+flake8==2.4.1
+mccabe==0.3
+pep8==1.5.7
+pyflakes==0.8.1
+
+# py.test
+cov-core==1.15.0
+coverage==3.7.1
+py==1.4.27
+pytest==2.7.1
+pytest-cov==1.8.1

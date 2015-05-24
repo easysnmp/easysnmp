@@ -1,17 +1,24 @@
 language: python
+
 python:
-  - "2.6"
-  - "2.7"
+  - 2.6
+  - 2.7
 
 env:
   - NET_SNMP_VERSION=5.7.2
   - NET_SNMP_VERSION=5.7.3
+
 before_install:
+  # Install build dependencies
   - sudo apt-get update -qq
   - sudo apt-get install -y python-dev build-essential perl libperl-dev
+
+  # Download and extract the required version of Net-SNMP
   - wget "http://downloads.sourceforge.net/sourceforge/net-snmp/net-snmp-$NET_SNMP_VERSION.tar.gz"
   - tar zxvf net-snmp-$NET_SNMP_VERSION.tar.gz
   - cd net-snmp-$NET_SNMP_VERSION
+
+  # Build and install Net-SNMP
   - autoreconf -f -i
   - ./configure
     --prefix=/usr/local
@@ -26,9 +33,21 @@ before_install:
   - make -j4 NETSNMP_DONT_CHECK_VERSION=1
   - sudo make install
   - cd ..
+
+  # Clean up the extracted files
   - rm -rf net-snmp-$NET_SNMP_VERSION
-  - net-snmp-config --version --prefix
 
-install: "pip install ."
+  # Display the build version of Net-SNMP
+  - net-snmp-config --version
 
-script: echo "pip installation succeeded [TODO- run tests]"
+  # TODO: Setup the SNMP agent to run with the provided snmpd.conf
+
+install:
+  # Install all test requirements
+  - pip install -r requirements.txt
+
+  # Install the PyNetSNMP package
+  - pip install .
+
+script:
+  - py.test
