@@ -1,15 +1,15 @@
 import platform
 
-import netsnmp
+import pynetsnmp
 
 from .fixtures import sess_v3
 
 
-def test_netsnmp_v3_session_get(sess_v3):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime', 0),
-        netsnmp.Varbind('sysContact', 0),
-        netsnmp.Varbind('sysLocation', 0)
+def test_pynetsnmp_v3_session_get(sess_v3):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime', 0),
+        pynetsnmp.Varbind('sysContact', 0),
+        pynetsnmp.Varbind('sysLocation', 0)
     )
 
     vals = sess_v3.get(varlist)
@@ -36,11 +36,11 @@ def test_netsnmp_v3_session_get(sess_v3):
     assert varlist[2].type == 'OCTETSTR'
 
 
-def test_netsnmp_v3_session_get_next(sess_v3):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime', 0),
-        netsnmp.Varbind('sysContact', 0),
-        netsnmp.Varbind('sysLocation', 0)
+def test_pynetsnmp_v3_session_get_next(sess_v3):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime', 0),
+        pynetsnmp.Varbind('sysContact', 0),
+        pynetsnmp.Varbind('sysLocation', 0)
     )
 
     vals = sess_v3.get_next(varlist)
@@ -67,13 +67,13 @@ def test_netsnmp_v3_session_get_next(sess_v3):
     assert varlist[2].type == 'TICKS'
 
 
-def test_netsnmp_v3_session_get_bulk(sess_v3):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysUpTime'),
-        netsnmp.Varbind('sysORLastChange'),
-        netsnmp.Varbind('sysORID'),
-        netsnmp.Varbind('sysORDescr'),
-        netsnmp.Varbind('sysORUpTime')
+def test_pynetsnmp_v3_session_get_bulk(sess_v3):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysUpTime'),
+        pynetsnmp.Varbind('sysORLastChange'),
+        pynetsnmp.Varbind('sysORID'),
+        pynetsnmp.Varbind('sysORDescr'),
+        pynetsnmp.Varbind('sysORUpTime')
     )
 
     vals = sess_v3.get_bulk(2, 8, varlist)
@@ -92,17 +92,17 @@ def test_netsnmp_v3_session_get_bulk(sess_v3):
     assert varlist[4].type == 'TICKS'
 
 
-def test_netsnmp_v3_session_set(sess_v3):
-    varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysLocation', '0', 'my final destination')
+def test_pynetsnmp_v3_session_set(sess_v3):
+    varlist = pynetsnmp.VarList(
+        pynetsnmp.Varbind('sysLocation', '0', 'my final destination')
     )
 
     res = sess_v3.set(varlist)
 
     assert res == 1
 
-    var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmp_get(
+    var = pynetsnmp.Varbind('sysLocation', '0')
+    res = pynetsnmp.snmp_get(
         var, version=3, hostname='localhost',
         security_level='authPriv', security_username='initial',
         privacy_password='priv_pass', auth_password='auth_pass'
@@ -112,8 +112,8 @@ def test_netsnmp_v3_session_set(sess_v3):
     assert res[0] == 'my final destination'
 
 
-def test_netsnmp_v3_session_walk(sess_v3):
-    varlist = netsnmp.VarList(netsnmp.Varbind('system'))
+def test_pynetsnmp_v3_session_walk(sess_v3):
+    varlist = pynetsnmp.VarList(pynetsnmp.Varbind('system'))
 
     vals = sess_v3.walk(varlist)
 

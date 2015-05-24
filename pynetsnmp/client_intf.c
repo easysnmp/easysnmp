@@ -79,8 +79,8 @@ static int __is_leaf (struct tree*);
 static int __translate_appl_type (char*);
 static int __translate_asn_type (int);
 static int __snprint_value (char *, size_t,
-                              netsnmp_variable_list*, struct tree *,
-                             int, int);
+                            netsnmp_variable_list*, struct tree *,
+                            int, int);
 static int __sprint_num_objid (char *, oid *, int);
 static int __scan_num_objid (char *, oid *, size_t *);
 static int __get_type_str (int, char *);
@@ -1001,7 +1001,7 @@ py_netsnmp_construct_varbind(void)
   PyObject *dict;
   PyObject *callable;
 
-  module = PyImport_ImportModule("netsnmp");
+  module = PyImport_ImportModule("pynetsnmp");
   dict = PyModule_GetDict(module);
 
   callable = PyDict_GetItemString(dict, "Varbind");
@@ -1063,7 +1063,7 @@ static int
 py_netsnmp_verbose(void)
 {
   int verbose = 0;
-  PyObject *pkg = PyImport_ImportModule("netsnmp");
+  PyObject *pkg = PyImport_ImportModule("pynetsnmp");
   if (pkg) {
     verbose = py_netsnmp_attr_long(pkg, "verbose");
     Py_DECREF(pkg);

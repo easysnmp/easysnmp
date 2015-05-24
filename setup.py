@@ -41,14 +41,14 @@ setup(
     author_email='fgimiansoftware@gmail.com',
     url='https://github.com/fgimian/PyNetSNMP',
     license="BSD",
-    packages=['netsnmp'],
+    packages=['pynetsnmp'],
 
     # TODO: Update this to use py.test and our new test suite
     # test_suite="netsnmp.tests.test",
 
     ext_modules=[
         Extension(
-            "netsnmp.client_intf", ["netsnmp/client_intf.c"],
+            "pynetsnmp.client_intf", ["pynetsnmp/client_intf.c"],
             library_dirs=libdirs, include_dirs=incdirs, libraries=libs
         )
     ]
