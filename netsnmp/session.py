@@ -59,6 +59,7 @@ class Session(object):
         self.community = community
         self.timeout = timeout
         self.retries = retries
+        # TODO: Implement the ability to set the remote port explicitly
         self.remote_port = remote_port
         self.local_port = local_port
         self.security_level = security_level
