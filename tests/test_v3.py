@@ -94,7 +94,8 @@ def test_netsnmp_v3_session_get_bulk(sess_v3):
 
 def test_netsnmp_v3_session_set(sess_v3):
     varlist = netsnmp.VarList(
-        netsnmp.Varbind('sysLocation', '0', 'my final destination'))
+        netsnmp.Varbind('sysLocation', '0', 'my final destination')
+    )
 
     res = sess_v3.set(varlist)
 
