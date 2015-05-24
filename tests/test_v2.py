@@ -127,8 +127,8 @@ def test_netsnmp_v2_session_walk(sess_v2):
 
     vals = sess_v2.walk(varlist)
 
-    assert len(vals) == 37
-    assert len(varlist) == 37
+    assert len(vals) >= 7
+    assert len(varlist) >= 7
 
     assert varlist[0].tag == '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr'
     assert varlist[0].iid == '0'
@@ -144,29 +144,16 @@ def test_netsnmp_v2_session_walk(sess_v2):
     assert vals[3] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert varlist[3].type == 'OCTETSTR'
 
-    assert varlist[7].tag == (
-        '.iso.org.dod.internet.mgmt.mib-2.system.sysORTable.sysOREntry'
-        '.sysORID'
-    )
-    assert varlist[7].iid == '1'
-    assert varlist[7].val == '.1.3.6.1.6.3.11.3.1.1'
-    assert vals[7] == '.1.3.6.1.6.3.11.3.1.1'
-    assert varlist[7].type == 'OBJECTID'
+    assert varlist[4].tag == '.iso.org.dod.internet.mgmt.mib-2.system.sysName'
+    assert varlist[4].iid == '0'
+    assert varlist[4].val == platform.node()
+    assert vals[4] == platform.node()
+    assert varlist[4].type == 'OCTETSTR'
 
-    assert varlist[17].tag == (
-        '.iso.org.dod.internet.mgmt.mib-2.system.sysORTable.sysOREntry'
-        '.sysORDescr'
+    assert varlist[5].tag == (
+        '.iso.org.dod.internet.mgmt.mib-2.system.sysLocation'
     )
-    assert varlist[17].iid == '1'
-    assert varlist[17].val == 'The MIB for Message Processing and Dispatching.'
-    assert vals[17] == 'The MIB for Message Processing and Dispatching.'
-    assert varlist[17].type == 'OCTETSTR'
-
-    assert varlist[27].tag == (
-        '.iso.org.dod.internet.mgmt.mib-2.system.sysORTable.sysOREntry'
-        '.sysORUpTime'
-    )
-    assert varlist[27].iid == '1'
-    assert int(varlist[27].val) >= 0
-    assert int(vals[27]) >= 0
-    assert varlist[27].type == 'TICKS'
+    assert varlist[5].iid == '0'
+    assert varlist[5].val == 'my even newer location'
+    assert vals[5] >= 'my even newer location'
+    assert varlist[5].type == 'OCTETSTR'
