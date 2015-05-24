@@ -77,11 +77,10 @@ class Session(object):
         self.their_hostname = their_hostname
         self.trust_cert = trust_cert
 
-        self.sess_ptr = None
-
         # The following variables are required for internal use as they are
         # passed to the C interface.  Sadly, they must stay in CamelCase
         # for the time being.
+        self.sess_ptr = None
         self.UseLongNames = 0
         self.UseNumeric = 0
         self.UseSprintValue = 0
