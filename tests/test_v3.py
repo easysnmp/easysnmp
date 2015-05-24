@@ -117,8 +117,8 @@ def test_netsnmp_v3_session_walk(sess_v3):
 
     vals = sess_v3.walk(varlist)
 
-    assert len(vals) == 37
-    assert len(varlist) == 37
+    assert len(vals) >= 7
+    assert len(varlist) >= 7
 
     assert varlist[0].tag == 'sysDescr'
     assert varlist[0].iid == '0'
@@ -132,20 +132,14 @@ def test_netsnmp_v3_session_walk(sess_v3):
     assert vals[3] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert varlist[3].type == 'OCTETSTR'
 
-    assert varlist[7].tag == 'sysORID'
-    assert varlist[7].iid == '1'
-    assert varlist[7].val == 'snmpMPDCompliance'
-    assert vals[7] == 'snmpMPDCompliance'
-    assert varlist[7].type == 'OBJECTID'
+    assert varlist[4].tag == 'sysName'
+    assert varlist[4].iid == '0'
+    assert varlist[4].val == platform.node()
+    assert vals[4] == platform.node()
+    assert varlist[4].type == 'OCTETSTR'
 
-    assert varlist[17].tag == 'sysORDescr'
-    assert varlist[17].iid == '1'
-    assert varlist[17].val == 'The MIB for Message Processing and Dispatching.'
-    assert vals[17] == 'The MIB for Message Processing and Dispatching.'
-    assert varlist[17].type == 'OCTETSTR'
-
-    assert varlist[27].tag == 'sysORUpTime'
-    assert varlist[27].iid == '1'
-    assert ':' in varlist[27].val
-    assert ':' in vals[27]
-    assert varlist[27].type == 'TICKS'
+    assert varlist[5].tag == 'sysLocation'
+    assert varlist[5].iid == '0'
+    assert varlist[5].val == 'my final destination'
+    assert vals[5] >= 'my final destination'
+    assert varlist[5].type == 'OCTETSTR'
