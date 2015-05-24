@@ -3,4 +3,3 @@
 
 netsnmp_feature_require(snprint_value)
 netsnmp_feature_require(enable_stderrlog)
-

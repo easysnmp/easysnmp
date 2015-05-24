@@ -12,12 +12,13 @@ class Varbind(object):
         self.iid = tostr(iid)
         self.val = tostr(val)
         self.type = tostr(type)
-        # parse iid out of tag if needed
+
+        # Parse iid out of tag if needed
         if iid is None and tag is not None:
             regex = re.compile(r'^((?:\.\d+)+|(?:\w+(?:[-:]*\w+)+))\.?(.*)$')
             match = regex.match(tag)
             if match:
-                (self.tag, self.iid) = match.group(1, 2)
+                self.tag, self.iid = match.group(1, 2)
 
     def __setattr__(self, name, val):
         self.__dict__[name] = tostr(val)

@@ -3,55 +3,74 @@ from .session import Session
 
 
 def snmp_get(*args, **kargs):
-    sess = Session(**kargs)
+    """Perform an SNMP GET operation to retrieve a particular piece of
+    information
+    """
+
     var_list = VarList()
     for arg in args:
         if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.get(var_list)
-    return res
+
+    session = Session(**kargs)
+    return session.get(var_list)
 
 
 def snmp_set(*args, **kargs):
-    sess = Session(**kargs)
+    """Perform an SNMP SET operation to retrieve a particular piece of
+    information
+    """
+
     var_list = VarList()
     for arg in args:
         if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.set(var_list)
-    return res
+
+    session = Session(**kargs)
+    return session.set(var_list)
 
 
 def snmp_get_next(*args, **kargs):
-    sess = Session(**kargs)
+    """Uses an SNMP GETNEXT operation to retrieve the next variable after
+    the chosen item
+    """
+
     var_list = VarList()
     for arg in args:
         if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.get_next(var_list)
-    return res
+
+    session = Session(**kargs)
+    return session.get_next(var_list)
 
 
 def snmp_get_bulk(non_repeaters, max_repetitions, *args, **kargs):
-    sess = Session(**kargs)
+    """Performs a bulk SNMP GET operation to retrieve multiple pieces of
+    information in a single packet
+    """
+
     var_list = VarList()
     for arg in args:
         if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.get_bulk(non_repeaters, max_repetitions, var_list)
-    return res
+
+    session = Session(**kargs)
+    return session.get_bulk(non_repeaters, max_repetitions, var_list)
 
 
 def snmp_walk(*args, **kargs):
-    sess = Session(**kargs)
+    """Uses SNMP GETNEXT operation to automatically retrieve multiple
+    pieces of information in an OID for you
+    """
+
     if isinstance(args[0], VarList):
         var_list = args[0]
     else:
@@ -61,5 +80,6 @@ def snmp_walk(*args, **kargs):
                 var_list.append(arg)
             else:
                 var_list.append(Varbind(arg))
-    res = sess.walk(var_list)
-    return res
+
+    session = Session(**kargs)
+    return session.walk(var_list)
