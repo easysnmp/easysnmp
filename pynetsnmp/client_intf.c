@@ -1612,15 +1612,18 @@ netsnmp_get(PyObject *self, PyObject *args)
         if (__is_leaf(tp)) {
           type = (tp->type ? tp->type : tp->parent->type);
           getlabel_flag &= ~NON_LEAF_NAME;
-          if (_debug_level) printf("netsnmp_get:is_leaf:%d\n",type);
+          if (_debug_level)
+            printf("netsnmp_get:is_leaf:%d\n",type);
         }
         else {
           getlabel_flag |= NON_LEAF_NAME;
           type = __translate_asn_type(vars->type);
-          if (_debug_level) printf("netsnmp_get:!is_leaf:%d\n",tp->type);
+          if (_debug_level)
+            printf("netsnmp_get:!is_leaf:%d\n",tp->type);
         }
 
-        if (_debug_level) printf("netsnmp_get:str_buf:%s\n",str_buf);
+        if (_debug_level)
+          printf("netsnmp_get:str_buf:%s\n",str_buf);
 
         __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
@@ -2020,7 +2023,7 @@ netsnmp_walk(PyObject *self, PyObject *args)
       else {
         if (verbose)
           printf("error: walk: unknown object ID (%s)",
-           (tag ? tag : "<null>"));
+                 (tag ? tag : "<null>"));
         snmp_free_pdu(pdu);
         Py_DECREF(varbind);
         goto done;
