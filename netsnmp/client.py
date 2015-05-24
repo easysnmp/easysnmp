@@ -1,53 +1,54 @@
-import client_intf
-import string
 import re
-import types
 from sys import stderr
+
+import client_intf
 
 # control verbosity of error output
 verbose = 1
 
-secLevelMap = { 'noAuthNoPriv':1, 'authNoPriv':2, 'authPriv':3 }
+secLevelMap = {'noAuthNoPriv': 1, 'authNoPriv': 2, 'authPriv': 3}
+
 
 def _parse_session_args(kargs):
     sessArgs = {
-        'Version':3,
-        'DestHost':'localhost',
-        'Community':'public',
-        'Timeout':1000000,
-        'Retries':3,
-        'RemotePort':161,
-        'LocalPort':0,
-        'SecLevel':'noAuthNoPriv',
-        'SecName':'initial',
-        'PrivProto':'DEFAULT',
-        'PrivPass':'',
-        'AuthProto':'DEFAULT',
-        'AuthPass':'',
-        'ContextEngineId':'',
-        'SecEngineId':'',
-        'Context':'',
-        'Engineboots':0,
-        'Enginetime':0,
-        'UseNumeric':0,
-        'OurIdentity':'',
-        'TheirIdentity':'',
-        'TheirHostname':'',
-        'TrustCert':''
+        'Version': 3,
+        'DestHost': 'localhost',
+        'Community': 'public',
+        'Timeout': 1000000,
+        'Retries': 3,
+        'RemotePort': 161,
+        'LocalPort': 0,
+        'SecLevel': 'noAuthNoPriv',
+        'SecName': 'initial',
+        'PrivProto': 'DEFAULT',
+        'PrivPass': '',
+        'AuthProto': 'DEFAULT',
+        'AuthPass': '',
+        'ContextEngineId': '',
+        'SecEngineId': '',
+        'Context': '',
+        'Engineboots': 0,
+        'Enginetime': 0,
+        'UseNumeric': 0,
+        'OurIdentity': '',
+        'TheirIdentity': '',
+        'TheirHostname': '',
+        'TrustCert': ''
         }
     keys = kargs.keys()
     for key in keys:
-        if sessArgs.has_key(key):
+        if key in sessArgs:
             sessArgs[key] = kargs[key]
         else:
             print >>stderr, "ERROR: unknown key", key
     return sessArgs
 
+
 def STR(obj):
-    if obj != None:
+    if obj is not None:
         obj = str(obj)
     return obj
-    
+
 
 class Varbind(object):
     def __init__(self, tag=None, iid=None, val=None, type=None):
@@ -56,11 +57,11 @@ class Varbind(object):
         self.val = STR(val)
         self.type = STR(type)
         # parse iid out of tag if needed
-        if iid == None and tag != None:
+        if iid is None and tag is not None:
             regex = re.compile(r'^((?:\.\d+)+|(?:\w+(?:[-:]*\w+)+))\.?(.*)$')
             match = regex.match(tag)
             if match:
-                (self.tag, self.iid) = match.group(1,2)
+                (self.tag, self.iid) = match.group(1, 2)
 
     def __setattr__(self, name, val):
         self.__dict__[name] = STR(val)
@@ -74,19 +75,19 @@ class VarList(object):
         self.varbinds = []
 
         for var in vs:
-            if isinstance(var, netsnmp.client.Varbind):
+            if isinstance(var, Varbind):
                 self.varbinds.append(var)
             else:
                 self.varbinds.append(Varbind(var))
 
     def __len__(self):
         return len(self.varbinds)
-    
+
     def __getitem__(self, index):
         return self.varbinds[index]
 
     def __setitem__(self, index, val):
-        if isinstance(val, netsnmp.client.Varbind):
+        if isinstance(val, Varbind):
             self.varbinds[index] = val
         else:
             raise TypeError
@@ -104,12 +105,11 @@ class VarList(object):
         return self.varbinds[i:j]
 
     def append(self, *vars):
-         for var in vars:
-            if isinstance(var, netsnmp.client.Varbind):
+        for var in vars:
+            if isinstance(var, Varbind):
                 self.varbinds.append(var)
             else:
                 raise TypeError
-       
 
 
 class Session(object):
@@ -124,15 +124,14 @@ class Session(object):
         self.ErrorStr = ''
         self.ErrorNum = 0
         self.ErrorInd = 0
-    
+
         sess_args = _parse_session_args(args)
 
-        for k,v in sess_args.items():
+        for k, v in sess_args.items():
             self.__dict__[k] = v
 
-            
         # check for transports that may be tunneled
-        transportCheck = re.compile('^(tls|dtls|ssh)');
+        transportCheck = re.compile('^(tls|dtls|ssh)')
         match = transportCheck.match(sess_args['DestHost'])
 
         if match:
@@ -149,8 +148,7 @@ class Session(object):
                 sess_args['OurIdentity'],
                 sess_args['TheirIdentity'],
                 sess_args['TheirHostname'],
-                sess_args['TrustCert'],
-                );
+                sess_args['TrustCert'])
         elif sess_args['Version'] == 3:
             self.sess_ptr = client_intf.session_v3(
                 sess_args['Version'],
@@ -177,7 +175,7 @@ class Session(object):
                 sess_args['LocalPort'],
                 sess_args['Retries'],
                 sess_args['Timeout'])
-        
+
     def get(self, varlist):
         res = client_intf.get(self, varlist)
         return res
@@ -185,7 +183,7 @@ class Session(object):
     def set(self, varlist):
         res = client_intf.set(self, varlist)
         return res
-    
+
     def getnext(self, varlist):
         res = client_intf.getnext(self, varlist)
         return res
@@ -204,63 +202,65 @@ class Session(object):
         res = client_intf.delete_session(self)
         return res
 
-import netsnmp
-        
+
 def snmpget(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
-        if isinstance(arg, netsnmp.client.Varbind):
+        if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
     res = sess.get(var_list)
     return res
 
+
 def snmpset(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
-        if isinstance(arg, netsnmp.client.Varbind):
+        if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
     res = sess.set(var_list)
     return res
 
+
 def snmpgetnext(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
-        if isinstance(arg, netsnmp.client.Varbind):
+        if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
     res = sess.getnext(var_list)
     return res
 
-def snmpgetbulk(nonrepeaters, maxrepetitions,*args, **kargs):
+
+def snmpgetbulk(nonrepeaters, maxrepetitions, *args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
-        if isinstance(arg, netsnmp.client.Varbind):
+        if isinstance(arg, Varbind):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
     res = sess.getbulk(nonrepeaters, maxrepetitions, var_list)
     return res
 
+
 def snmpwalk(*args, **kargs):
     sess = Session(**kargs)
-    if isinstance(args[0], netsnmp.client.VarList):
+    if isinstance(args[0], VarList):
         var_list = args[0]
     else:
         var_list = VarList()
         for arg in args:
-            if isinstance(arg, netsnmp.client.Varbind):
+            if isinstance(arg, Varbind):
                 var_list.append(arg)
             else:
                 var_list.append(Varbind(arg))
     res = sess.walk(var_list)
     return res
-    
