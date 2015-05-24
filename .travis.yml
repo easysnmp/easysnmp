@@ -54,7 +54,7 @@ install:
 
   # Build the PyNetSNMP C library and copy it to our library for testing
   - python setup.py build
-  - cp build/lib.*/netsnmp/*.so netsnmp/
+  - cp build/lib.*/pynetsnmp/*.so pynetsnmp/
 
 script:
   - py.test
