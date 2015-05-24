@@ -3,3 +3,6 @@ from .easy import (
 )  # flake8: noqa
 from .session import Session  # flake8: noqa
 from .variables import Varbind, VarList  # flake8: noqa
+
+# Control verbosity of error output (used in the C interface)
+verbose = 1
