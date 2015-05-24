@@ -34,12 +34,12 @@ def test_netsnmp_v2_session_get(sess_v2):
     assert vars[2].type == 'OCTETSTR'
 
 
-def test_netsnmp_v2_session_getnext(sess_v2):
+def test_netsnmp_v2_session_get_next(sess_v2):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime', 0),
                            netsnmp.Varbind('sysContact', 0),
                            netsnmp.Varbind('sysLocation', 0))
 
-    vals = sess_v2.getnext(vars)
+    vals = sess_v2.get_next(vars)
 
     assert len(vals) == 3
     assert len(vars) == 3
@@ -64,14 +64,14 @@ def test_netsnmp_v2_session_getnext(sess_v2):
     assert vars[2].type == 'TICKS'
 
 
-def test_netsnmp_v2_session_getbulk(sess_v2):
+def test_netsnmp_v2_session_get_bulk(sess_v2):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime'),
                            netsnmp.Varbind('sysORLastChange'),
                            netsnmp.Varbind('sysORID'),
                            netsnmp.Varbind('sysORDescr'),
                            netsnmp.Varbind('sysORUpTime'))
 
-    vals = sess_v2.getbulk(2, 8, vars)
+    vals = sess_v2.get_bulk(2, 8, vars)
 
     assert len(vals) == 26
     assert len(vars) == 26
@@ -99,10 +99,10 @@ def test_netsnmp_v2_session_set(sess_v2):
     assert res == 1
 
     var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmpget(var,
-                          Version=2,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=2,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
     assert res[0] == 'my even newer location'

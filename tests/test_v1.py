@@ -7,10 +7,10 @@ from .fixtures import sess_v1
 
 def test_netsnmp_v1_get():
     var = netsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
-    res = netsnmp.snmpget(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
 
@@ -21,12 +21,12 @@ def test_netsnmp_v1_get():
     assert var.type == 'OCTETSTR'
 
 
-def test_netsnmp_v1_getnext():
+def test_netsnmp_v1_get_next():
     var = netsnmp.Varbind('.1.3.6.1.2.1.1.1', '0')
-    res = netsnmp.snmpgetnext(var,
-                              Version=1,
-                              DestHost='localhost',
-                              Community='public')
+    res = netsnmp.snmp_get_next(var,
+                                version=1,
+                                hostname='localhost',
+                                community='public')
 
     assert len(res) == 1
 
@@ -39,28 +39,28 @@ def test_netsnmp_v1_getnext():
 
 def test_netsnmp_v1_set():
     var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmpget(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
 
     assert res[0] != 'my new location'
 
     var = netsnmp.Varbind('sysLocation', '0', 'my new location')
-    res = netsnmp.snmpset(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_set(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert res == 1
 
     var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmpget(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
 
@@ -70,34 +70,34 @@ def test_netsnmp_v1_set():
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
 # def test_netsnmp_v1_set_restart_agent():
 #     var = netsnmp.Varbind('sysUpTime', '0')
-#     res = netsnmp.snmpget(var,
-#                           Version=1,
-#                           DestHost='localhost',
-#                           Community='public')
+#     res = netsnmp.snmp_get(var,
+#                            version=1,
+#                            hostname='localhost',
+#                            community='public')
 #
 #     print "uptime = ", res[0]
 #
 #     var = netsnmp.Varbind('versionRestartAgent','0', 1)
-#     res = netsnmp.snmpset(var,
-#                           Version=1,
-#                           DestHost='localhost',
-#                           Community='public')
+#     res = netsnmp.snmp_set(var,
+#                            version=1,
+#                            hostname='localhost',
+#                            community='public')
 #
 #     var = netsnmp.Varbind('sysUpTime','0')
-#     res = netsnmp.snmpget(var,
-#                           Version=1,
-#                           DestHost='localhost',
-#                           Community='public')
+#     res = netsnmp.snmp_get(var,
+#                            version=1,
+#                            hostname='localhost',
+#                            community='public')
 #
 #     print "uptime = ", res[0]
 
 
 def test_netsnmp_v1_set_via_varbind():
     var = netsnmp.Varbind('nsCacheEntry')
-    res = netsnmp.snmpgetnext(var,
-                              Version=1,
-                              DestHost='localhost',
-                              Community='public')
+    res = netsnmp.snmp_get_next(var,
+                                version=1,
+                                hostname='localhost',
+                                community='public')
 
     assert len(res) == 1
 
@@ -108,15 +108,15 @@ def test_netsnmp_v1_set_via_varbind():
     assert var.type == 'INTEGER'
 
     var.val = 65
-    res = netsnmp.snmpset(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_set(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
-    res = netsnmp.snmpget(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
 
@@ -143,7 +143,7 @@ def test_netsnmp_v1_set_multiple(sess_v1):
     vars = netsnmp.VarList(netsnmp.Varbind('snmpTargetAddrTDomain'),
                            netsnmp.Varbind('snmpTargetAddrTAddress'),
                            netsnmp.Varbind('snmpTargetAddrRowStatus'))
-    res = sess_v1.getnext(vars)
+    res = sess_v1.get_next(vars)
 
     assert len(vars) == 3
     assert len(res) == 3
@@ -178,7 +178,7 @@ def test_netsnmp_v1_set_clear(sess_v1):
     vars = netsnmp.VarList(netsnmp.Varbind('snmpTargetAddrTDomain'),
                            netsnmp.Varbind('snmpTargetAddrTAddress'),
                            netsnmp.Varbind('snmpTargetAddrRowStatus'))
-    res = sess_v1.getnext(vars)
+    res = sess_v1.get_next(vars)
 
     assert len(vars) == 3
     assert len(res) == 3
@@ -205,10 +205,10 @@ def test_netsnmp_v1_set_clear(sess_v1):
 def test_netsnmp_v1_walk():
     var = netsnmp.Varbind('system')
 
-    res = netsnmp.snmpwalk(var,
-                           Version=1,
-                           DestHost='localhost',
-                           Community='public')
+    res = netsnmp.snmp_walk(var,
+                            version=1,
+                            hostname='localhost',
+                            community='public')
 
     assert len(res) == 37
 
@@ -227,10 +227,10 @@ def test_netsnmp_v1_walk_varlist():
     assert vars[0].val is None
     assert vars[0].type is None
 
-    res = netsnmp.snmpwalk(vars,
-                           Version=1,
-                           DestHost='localhost',
-                           Community='public')
+    res = netsnmp.snmp_walk(vars,
+                            version=1,
+                            hostname='localhost',
+                            community='public')
 
     assert len(res) == 37
     assert len(vars) == 37
@@ -290,12 +290,12 @@ def test_netsnmp_v1_session_get(sess_v1):
     assert vars[2].type == 'OCTETSTR'
 
 
-def test_netsnmp_v1_session_getnext(sess_v1):
+def test_netsnmp_v1_session_get_next(sess_v1):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime', 0),
                            netsnmp.Varbind('sysContact', 0),
                            netsnmp.Varbind('sysLocation', 0))
 
-    vals = sess_v1.getnext(vars)
+    vals = sess_v1.get_next(vars)
 
     assert len(vals) == 3
     assert len(vars) == 3
@@ -319,14 +319,14 @@ def test_netsnmp_v1_session_getnext(sess_v1):
     assert vars[2].type == 'TICKS'
 
 
-def test_netsnmp_v1_session_getbulk_unspported(sess_v1):
+def test_netsnmp_v1_session_get_bulk_unspported(sess_v1):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime'),
                            netsnmp.Varbind('sysORLastChange'),
                            netsnmp.Varbind('sysORID'),
                            netsnmp.Varbind('sysORDescr'),
                            netsnmp.Varbind('sysORUpTime'))
 
-    vals = sess_v1.getbulk(2, 8, vars)
+    vals = sess_v1.get_bulk(2, 8, vars)
 
     assert vals is None
 
@@ -350,10 +350,10 @@ def test_netsnmp_v1_session_set(sess_v1):
     assert res == 1
 
     var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmpget(var,
-                          Version=1,
-                          DestHost='localhost',
-                          Community='public')
+    res = netsnmp.snmp_get(var,
+                           version=1,
+                           hostname='localhost',
+                           community='public')
 
     assert len(res) == 1
     assert res[0] == 'my newer location'

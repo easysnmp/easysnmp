@@ -34,12 +34,12 @@ def test_netsnmp_v3_session_get(sess_v3):
     assert vars[2].type == 'OCTETSTR'
 
 
-def test_netsnmp_v3_session_getnext(sess_v3):
+def test_netsnmp_v3_session_get_next(sess_v3):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime', 0),
                            netsnmp.Varbind('sysContact', 0),
                            netsnmp.Varbind('sysLocation', 0))
 
-    vals = sess_v3.getnext(vars)
+    vals = sess_v3.get_next(vars)
 
     assert len(vars) == 3
     assert len(vals) == 3
@@ -63,14 +63,14 @@ def test_netsnmp_v3_session_getnext(sess_v3):
     assert vars[2].type == 'TICKS'
 
 
-def test_netsnmp_v3_session_getbulk(sess_v3):
+def test_netsnmp_v3_session_get_bulk(sess_v3):
     vars = netsnmp.VarList(netsnmp.Varbind('sysUpTime'),
                            netsnmp.Varbind('sysORLastChange'),
                            netsnmp.Varbind('sysORID'),
                            netsnmp.Varbind('sysORDescr'),
                            netsnmp.Varbind('sysORUpTime'))
 
-    vals = sess_v3.getbulk(2, 8, vars)
+    vals = sess_v3.get_bulk(2, 8, vars)
 
     assert len(vals) == 26
     assert len(vars) == 26
@@ -95,13 +95,13 @@ def test_netsnmp_v3_session_set(sess_v3):
     assert res == 1
 
     var = netsnmp.Varbind('sysLocation', '0')
-    res = netsnmp.snmpget(var,
-                          Version=3,
-                          DestHost='localhost',
-                          SecLevel='authPriv',
-                          SecName='initial',
-                          PrivPass='priv_pass',
-                          AuthPass='auth_pass')
+    res = netsnmp.snmp_get(var,
+                           version=3,
+                           hostname='localhost',
+                           security_level='authPriv',
+                           security_username='initial',
+                           privacy_password='priv_pass',
+                           auth_password='auth_pass')
 
     assert len(res) == 1
     assert res[0] == 'my final destination'
