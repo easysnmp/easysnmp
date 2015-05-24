@@ -17,38 +17,43 @@ class Session(object):
     """
 
     def __init__(
-        self, Version=3, DestHost='localhost', Community='public',
-        Timeout=1000000, Retries=3, RemotePort=161, LocalPort=0,
-        SecLevel='noAuthNoPriv', SecName='initial', PrivProto='DEFAULT',
-        PrivPass='', AuthProto='DEFAULT', AuthPass='', ContextEngineId='',
-        SecEngineId='', Context='', Engineboots=0, Enginetime=0, UseNumeric=0,
-        OurIdentity='', TheirIdentity='', TheirHostname='', TrustCert=''
+        self, version=3, hostname='localhost', community='public',
+        timeout=1000000, retries=3, remote_port=161, local_port=0,
+        security_level='noAuthNoPriv', security_username='initial',
+        privacy_protocol='DEFAULT', privacy_password='',
+        auth_protocol='DEFAULT', auth_password='', context_engine_id='',
+        security_engine_id='', context='', engine_boots=0, engine_time=0,
+        our_identity='', their_identity='', their_hostname='',
+        trust_cert=''
     ):
-        self.Version = Version
-        self.DestHost = DestHost
-        self.Community = Community
-        self.Timeout = Timeout
-        self.Retries = Retries
-        self.RemotePort = RemotePort
-        self.LocalPort = LocalPort
-        self.SecLevel = SecLevel
-        self.SecName = SecName
-        self.PrivProto = PrivProto
-        self.PrivPass = PrivPass
-        self.AuthProto = AuthProto
-        self.AuthPass = AuthPass
-        self.ContextEngineId = ContextEngineId
-        self.SecEngineId = SecEngineId
-        self.Context = Context
-        self.Engineboots = Engineboots
-        self.Enginetime = Enginetime
-        self.UseNumeric = UseNumeric
-        self.OurIdentity = OurIdentity
-        self.TheirIdentity = TheirIdentity
-        self.TheirHostname = TheirHostname
-        self.TrustCert = TrustCert
+        self.version = version
+        self.hostname = hostname
+        self.community = community
+        self.timeout = timeout
+        self.retries = retries
+        self.remote_port = remote_port
+        self.local_port = local_port
+        self.security_level = security_level
+        self.security_username = security_username
+        self.privacy_protocol = privacy_protocol
+        self.privacy_password = privacy_password
+        self.auth_protocol = auth_protocol
+        self.auth_password = auth_password
+        self.context_engine_id = context_engine_id
+        self.security_engine_id = security_engine_id
+        self.context = context
+        self.engine_boots = engine_boots
+        self.engine_time = engine_time
+        self.our_identity = our_identity
+        self.their_identity = their_identity
+        self.their_hostname = their_hostname
+        self.trust_cert = trust_cert
 
         self.sess_ptr = None
+
+        # The following variables are required for internal use as they are
+        # passed to the C interface.  Sadly, they must stay in CamelCase
+        # for the time being.
         self.UseLongNames = 0
         self.UseNumeric = 0
         self.UseSprintValue = 0
@@ -59,72 +64,80 @@ class Session(object):
         self.ErrorNum = 0
         self.ErrorInd = 0
 
-        # check for transports that may be tunneled
-        transportCheck = re.compile('^(tls|dtls|ssh)')
-        match = transportCheck.match(self.DestHost)
+        # Check for transports that may be tunneled
+        transport_check = re.compile('^(tls|dtls|ssh)')
+        match = transport_check.match(self.hostname)
 
+        # Tunneled
         if match:
             self.sess_ptr = client_intf.session_tunneled(
-                self.Version,
-                self.DestHost,
-                self.LocalPort,
-                self.Retries,
-                self.Timeout,
-                self.SecName,
-                SECURITY_LEVEL_MAPPING[self.SecLevel],
-                self.ContextEngineId,
-                self.Context,
-                self.OurIdentity,
-                self.TheirIdentity,
-                self.TheirHostname,
-                self.TrustCert)
-        elif self.Version == 3:
+                self.version,
+                self.hostname,
+                self.local_port,
+                self.retries,
+                self.timeout,
+                self.security_username,
+                SECURITY_LEVEL_MAPPING[self.security_level],
+                self.context_engine_id,
+                self.context,
+                self.our_identity,
+                self.their_identity,
+                self.their_hostname,
+                self.trust_cert
+            )
+        # SNMP v3
+        elif self.version == 3:
             self.sess_ptr = client_intf.session_v3(
-                self.Version,
-                self.DestHost,
-                self.LocalPort,
-                self.Retries,
-                self.Timeout,
-                self.SecName,
-                SECURITY_LEVEL_MAPPING[self.SecLevel],
-                self.SecEngineId,
-                self.ContextEngineId,
-                self.Context,
-                self.AuthProto,
-                self.AuthPass,
-                self.PrivProto,
-                self.PrivPass,
-                self.Engineboots,
-                self.Enginetime)
+                self.version,
+                self.hostname,
+                self.local_port,
+                self.retries,
+                self.timeout,
+                self.security_username,
+                SECURITY_LEVEL_MAPPING[self.security_level],
+                self.security_engine_id,
+                self.context_engine_id,
+                self.context,
+                self.auth_protocol,
+                self.auth_password,
+                self.privacy_protocol,
+                self.privacy_password,
+                self.engine_boots,
+                self.engine_time
+            )
+        # SNMP v1 & v2
         else:
             self.sess_ptr = client_intf.session(
-                self.Version,
-                self.Community,
-                self.DestHost,
-                self.LocalPort,
-                self.Retries,
-                self.Timeout)
+                self.version,
+                self.community,
+                self.hostname,
+                self.local_port,
+                self.retries,
+                self.timeout
+            )
 
-    def get(self, varlist):
-        res = client_intf.get(self, varlist)
+    def get(self, var_list):
+        res = client_intf.get(self, var_list)
         return res
 
-    def set(self, varlist):
-        res = client_intf.set(self, varlist)
+    def set(self, var_list):
+        res = client_intf.set(self, var_list)
         return res
 
-    def getnext(self, varlist):
-        res = client_intf.getnext(self, varlist)
+    def get_next(self, var_list):
+        res = client_intf.getnext(self, var_list)
         return res
 
-    def getbulk(self, nonrepeaters, maxrepetitions, varlist):
-        if self.Version == 1:
+    def get_bulk(self, non_repeaters, max_repetitions, var_list):
+        if self.version == 1:
             return None
-        res = client_intf.getbulk(self, nonrepeaters, maxrepetitions, varlist)
+        res = client_intf.getbulk(
+            self, non_repeaters, max_repetitions, var_list
+        )
         return res
 
-    def walk(self, varlist):
-        res = client_intf.walk(self, varlist)
+    def walk(self, var_list):
+        res = client_intf.walk(self, var_list)
         return res
 
     def __del__(self):

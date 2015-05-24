@@ -2,7 +2,7 @@ from .variables import Varbind, VarList
 from .session import Session
 
 
-def snmpget(*args, **kargs):
+def snmp_get(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
@@ -14,7 +14,7 @@ def snmpget(*args, **kargs):
     return res
 
 
-def snmpset(*args, **kargs):
+def snmp_set(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
@@ -26,7 +26,7 @@ def snmpset(*args, **kargs):
     return res
 
 
-def snmpgetnext(*args, **kargs):
+def snmp_get_next(*args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
@@ -34,11 +34,11 @@ def snmpgetnext(*args, **kargs):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.getnext(var_list)
+    res = sess.get_next(var_list)
     return res
 
 
-def snmpgetbulk(nonrepeaters, maxrepetitions, *args, **kargs):
+def snmp_get_bulk(non_repeaters, max_repetitions, *args, **kargs):
     sess = Session(**kargs)
     var_list = VarList()
     for arg in args:
@@ -46,11 +46,11 @@ def snmpgetbulk(nonrepeaters, maxrepetitions, *args, **kargs):
             var_list.append(arg)
         else:
             var_list.append(Varbind(arg))
-    res = sess.getbulk(nonrepeaters, maxrepetitions, var_list)
+    res = sess.get_bulk(non_repeaters, max_repetitions, var_list)
     return res
 
 
-def snmpwalk(*args, **kargs):
+def snmp_walk(*args, **kargs):
     sess = Session(**kargs)
     if isinstance(args[0], VarList):
         var_list = args[0]
