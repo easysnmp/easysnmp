@@ -26,7 +26,8 @@ def test_netsnmp_long_variable():
 
 def test_netsnmp_variable_doesnt_extract_iid():
     var = netsnmp.Varbind(
-        '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0')
+        '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0'
+    )
     assert var.tag == '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0'
     assert var.iid is None
     assert var.val is None

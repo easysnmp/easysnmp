@@ -1,25 +1,53 @@
 import re
 
-
 import client_intf
 
-# Mapping between security level strings and their associated integer values
+# Mapping between security level strings and their associated integer values.
+# Here we provide camelCase naming as per the original spec but also more
+# Pythonic variations for those who wish to use them.
 SECURITY_LEVEL_MAPPING = {
     'noAuthNoPriv': 1,
     'authNoPriv': 2,
-    'authPriv': 3
+    'authPriv': 3,
+    'no_auth_or_privacy': 1,
+    'auth_without_privacy': 2,
+    'auth_with_privacy': 3
 }
 
 
 class Session(object):
     """A Net-SNMP session which may be setup once and then used to query
     and manipulate SNMP data.
+
+    :param version: the SNMP version to use (1, 2 or 3)
+    :param hostname: hostname of the device to communicate with
+    :param community: community string to use when communicating
+                      (SNMP v1 and v2 only)
+    :param timeout:
+    :param retries:
+    :param remote_port:
+    :param local_port:
+    :param security_level:
+    :param security_username:
+    :param privacy_protocol:
+    :param privacy_password:
+    :param auth_protocol:
+    :param auth_password:
+    :param context_engine_id:
+    :param security_engine_id:
+    :param context:
+    :param engine_boots:
+    :param engine_time:
+    :param our_identity:
+    :param their_identity:
+    :param their_hostname:
+    :param trust_cert:
     """
 
     def __init__(
         self, version=3, hostname='localhost', community='public',
         timeout=1000000, retries=3, remote_port=161, local_port=0,
-        security_level='noAuthNoPriv', security_username='initial',
+        security_level='no_auth_or_privacy', security_username='initial',
         privacy_protocol='DEFAULT', privacy_password='',
         auth_protocol='DEFAULT', auth_password='', context_engine_id='',
         security_engine_id='', context='', engine_boots=0, engine_time=0,
@@ -65,11 +93,10 @@ class Session(object):
         self.ErrorInd = 0
 
         # Check for transports that may be tunneled
-        transport_check = re.compile('^(tls|dtls|ssh)')
-        match = transport_check.match(self.hostname)
+        tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
 
         # Tunneled
-        if match:
+        if tunneled:
             self.sess_ptr = client_intf.session_tunneled(
                 self.version,
                 self.hostname,
@@ -85,6 +112,7 @@ class Session(object):
                 self.their_hostname,
                 self.trust_cert
             )
+
         # SNMP v3
         elif self.version == 3:
             self.sess_ptr = client_intf.session_v3(
@@ -105,6 +133,7 @@ class Session(object):
                 self.engine_boots,
                 self.engine_time
             )
+
         # SNMP v1 & v2
         else:
             self.sess_ptr = client_intf.session(
@@ -117,29 +146,50 @@ class Session(object):
             )
 
     def get(self, var_list):
-        res = client_intf.get(self, var_list)
-        return res
+        """Perform an SNMP GET operation using the prepared session to
+        retrieve a particular piece of information
+        """
+
+        result = client_intf.get(self, var_list)
+        return result
 
     def set(self, var_list):
-        res = client_intf.set(self, var_list)
-        return res
+        """Perform an SNMP SET operation using the prepared session to
+        retrieve a particular piece of information
+        """
+
+        result = client_intf.set(self, var_list)
+        return result
 
     def get_next(self, var_list):
-        res = client_intf.getnext(self, var_list)
-        return res
+        """Uses an SNMP GETNEXT operation using the prepared session to
+        retrieve the next variable after the chosen item
+        """
+
+        result = client_intf.getnext(self, var_list)
+        return result
 
     def get_bulk(self, non_repeaters, max_repetitions, var_list):
+        """Performs a bulk SNMP GET operation using the prepared session to
+        retrieve multiple pieces of information in a single packet
+        """
+
         if self.version == 1:
             return None
-        res = client_intf.getbulk(
+
+        result = client_intf.getbulk(
             self, non_repeaters, max_repetitions, var_list
         )
-        return res
+        return result
 
     def walk(self, var_list):
-        res = client_intf.walk(self, var_list)
-        return res
+        """Uses SNMP GETNEXT operation using the prepared session to
+        automatically retrieve multiple pieces of information in an OID
+        """
+
+        result = client_intf.walk(self, var_list)
+        return result
 
     def __del__(self):
-        res = client_intf.delete_session(self)
-        return res
+        """Deletes the session and frees up memory"""
+        return client_intf.delete_session(self)
