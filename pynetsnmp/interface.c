@@ -261,7 +261,7 @@ static int __snprint_value(char *buf, size_t buf_len,
                            struct tree *tp, int type, int flag)
 {
   int len = 0;
-  u_char * ip;
+  u_char *ip;
   struct enum_list *ep;
 
   buf[0] = '\0';
@@ -517,7 +517,7 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
         else
           break;
       }
-      lcp --;
+      lcp--;
     }
 
     /* Make sure we found at least a label and index. */
@@ -525,8 +525,8 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
       return(FAILURE);
 
     /* Push forward past leading '.' chars and separate the strings. */
-    lcp ++;
-    *icp ++ = '\0';
+    lcp++;
+    *icp++ = '\0';
 
     *last_label = (flag & USE_LONG_NAMES) ? name : lcp;
     *iid        = icp;
@@ -994,7 +994,7 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
 {
   long long val = -1;
 
-  if (obj && attr_name  && PyObject_HasAttrString(obj, attr_name)) {
+  if (obj && attr_name && PyObject_HasAttrString(obj, attr_name)) {
     PyObject *attr = PyObject_GetAttrString(obj, attr_name);
     if (attr) {
       val = PyInt_AsLong(attr);
@@ -1009,7 +1009,7 @@ static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
 {
   void *val = NULL;
 
-  if (obj && attr_name  && PyObject_HasAttrString(obj, attr_name)) {
+  if (obj && attr_name && PyObject_HasAttrString(obj, attr_name)) {
     PyObject *attr = PyObject_GetAttrString(obj, attr_name);
     if (attr) {
       val = PyLong_AsVoidPtr(attr);
@@ -1078,9 +1078,9 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
   int version;
   char *community;
   char *peer;
-  int  lport;
-  int  retries;
-  int  timeout;
+  int lport;
+  int retries;
+  int timeout;
   SnmpSession session = {0};
   SnmpSession *ss = NULL;
   int error = 0;
@@ -1142,20 +1142,20 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 {
   int version;
   char *peer;
-  int  lport;
-  int  retries;
-  int  timeout;
-  char *  sec_name;
-  int     sec_level;
-  char *  sec_eng_id;
-  char *  context_eng_id;
-  char *  context;
-  char *  auth_proto;
-  char *  auth_pass;
-  char *  priv_proto;
-  char *  priv_pass;
-  int     eng_boots;
-  int     eng_time;
+  int lport;
+  int retries;
+  int timeout;
+  char *sec_name;
+  int sec_level;
+  char *sec_eng_id;
+  char *context_eng_id;
+  char *context;
+  char *auth_proto;
+  char *auth_pass;
+  char *priv_proto;
+  char *priv_pass;
+  int eng_boots;
+  int eng_time;
   SnmpSession session = {0};
   SnmpSession *ss = NULL;
   int error = 0;
@@ -1310,17 +1310,17 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self, PyObject *args)
 {
   int version;
   char *peer;
-  int  lport;
-  int  retries;
-  int  timeout;
-  char *  sec_name;
-  int     sec_level;
-  char *  context_eng_id;
-  char *  context;
-  char *  our_identity;
-  char *  their_identity;
-  char *  their_hostname;
-  char *  trust_cert;
+  int lport;
+  int retries;
+  int timeout;
+  char *sec_name;
+  int sec_level;
+  char *context_eng_id;
+  char *context;
+  char *our_identity;
+  char *their_identity;
+  char *their_hostname;
+  char *trust_cert;
   SnmpSession session = {0};
   SnmpSession *ss = NULL;
   int error = 0;
@@ -2229,7 +2229,7 @@ done:
   Py_XDECREF(varbinds);
   SAFE_FREE(oid_arr_len);
   SAFE_FREE(oid_arr_broken_check_len);
-  for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind ++) {
+  for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++) {
     SAFE_FREE(oid_arr[varlist_ind]);
     SAFE_FREE(oid_arr_broken_check[varlist_ind]);
   }
