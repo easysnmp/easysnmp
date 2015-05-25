@@ -2,8 +2,8 @@
 
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;
-#define PY_SSIZE_T_MAX INT_MAX
-#define PY_SSIZE_T_MIN INT_MIN
+#define PY_SSIZE_T_MAX (INT_MAX)
+#define PY_SSIZE_T_MIN (INT_MIN)
 #endif
 
 #include <net-snmp/net-snmp-config.h>
@@ -24,27 +24,27 @@ typedef int Py_ssize_t;
 #include <regex.h>
 #endif
 
-#define SUCCESS 1
-#define FAILURE 0
+#define SUCCESS (1)
+#define FAILURE (0)
 
-#define VARBIND_TAG_F 0
-#define VARBIND_IID_F 1
-#define VARBIND_VAL_F 2
-#define VARBIND_TYPE_F 3
+#define VARBIND_TAG_F  (0)
+#define VARBIND_IID_F  (1)
+#define VARBIND_VAL_F  (2)
+#define VARBIND_TYPE_F (3)
 
-#define TYPE_UNKNOWN 0
-#define MAX_TYPE_NAME_LEN 32
-#define STR_BUF_SIZE (MAX_TYPE_NAME_LEN * MAX_OID_LEN)
-#define ENG_ID_BUF_SIZE 32
+#define TYPE_UNKNOWN      (0)
+#define MAX_TYPE_NAME_LEN (32)
+#define STR_BUF_SIZE      ((MAX_TYPE_NAME_LEN) * (MAX_OID_LEN))
+#define ENG_ID_BUF_SIZE   (32)
 
-#define NO_RETRY_NOSUCH 0
+#define NO_RETRY_NOSUCH (0)
 
 /* these should be part of transform_oids.h ? */
-#define USM_AUTH_PROTO_MD5_LEN 10
-#define USM_AUTH_PROTO_SHA_LEN 10
-#define USM_PRIV_PROTO_DES_LEN 10
+#define USM_AUTH_PROTO_MD5_LEN (10)
+#define USM_AUTH_PROTO_SHA_LEN (10)
+#define USM_PRIV_PROTO_DES_LEN (10)
 
-#define STRLEN(x) (x ? strlen(x) : 0)
+#define STRLEN(x) ((x) ? strlen((x)) : 0)
 
 /* from perl/SNMP/perlsnmp.h: */
 #ifndef timeradd
@@ -69,7 +69,7 @@ typedef int Py_ssize_t;
         (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                      \
         if ((result)->tv_usec < 0)                                            \
         {                                                                     \
-            --(result)->tv_sec;                                               \
+            --((result)->tv_sec);                                             \
             (result)->tv_usec += 1000000;                                     \
         }                                                                     \
     } while (0)
@@ -95,11 +95,11 @@ static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
 static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
-#define USE_NUMERIC_OIDS 0x08
-#define NON_LEAF_NAME 0x04
-#define USE_LONG_NAMES 0x02
-#define FAIL_ON_NULL_IID 0x01
-#define NO_FLAGS 0x00
+#define USE_NUMERIC_OIDS (0x08)
+#define NON_LEAF_NAME    (0x04)
+#define USE_LONG_NAMES   (0x02)
+#define FAIL_ON_NULL_IID (0x01)
+#define NO_FLAGS         (0x00)
 
 
 /* Wrapper around fprintf(stderr, ...) for clean and easy debug output. */
@@ -120,12 +120,12 @@ static int _debug_level = 0;
 #define SAFE_FREE(x)                                                          \
     do                                                                        \
     {                                                                         \
-        if (x != NULL)                                                        \
+        if ((x) != NULL)                                                      \
         {                                                                     \
-            free(x);                                                          \
+            free((x));                                                        \
         }                                                                     \
     }                                                                         \
-    while (/*CONSTCOND*/0)
+    while (0)
 
 static PyObject *PyNetSNMPInterfaceError;
 
@@ -324,9 +324,9 @@ static int __translate_asn_type(int type)
     }
 }
 
-#define USE_BASIC 0
-#define USE_ENUMS 1
-#define USE_SPRINT_VALUE 2
+#define USE_BASIC        (0)
+#define USE_ENUMS        (1)
+#define USE_SPRINT_VALUE (2)
 static int __snprint_value(char *buf, size_t buf_len,
                            netsnmp_variable_list *var,
                            struct tree *tp, int type, int flag)
@@ -581,7 +581,7 @@ static int __get_type_str(int type, char *str)
    <labeln> and <iid> in seperate strings (note: will destructively
    alter input string, 'name') */
 static int __get_label_iid(char *name, char **last_label, char **iid,
-                                                     int flag)
+                           int flag)
 {
     char *lcp;
     char *icp;
