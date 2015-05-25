@@ -15,8 +15,8 @@ def sess_v2():
     sess = pynetsnmp.Session(
         version=2, hostname='localhost', community='public'
     )
-    sess.UseEnums = 1
-    sess.UseLongNames = 1
+    sess.use_enums = 1
+    sess.use_long_names = 1
     return sess
 
 
@@ -27,5 +27,5 @@ def sess_v3():
         security_level='authPriv', security_username='initial',
         privacy_password='priv_pass', auth_password='auth_pass'
     )
-    sess.UseSprintValue = 1
+    sess.use_sprint_value = 1
     return sess

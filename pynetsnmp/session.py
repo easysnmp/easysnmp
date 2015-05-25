@@ -79,18 +79,17 @@ class Session(object):
         self.trust_cert = trust_cert
 
         # The following variables are required for internal use as they are
-        # passed to the C interface.  Sadly, they must stay in CamelCase
-        # for the time being.
+        # passed to the C interface.
         self.sess_ptr = None
-        self.UseLongNames = 0
-        self.UseNumeric = 0
-        self.UseSprintValue = 0
-        self.UseEnums = 0
-        self.BestGuess = 0
-        self.RetryNoSuch = 0
-        self.ErrorStr = ''
-        self.ErrorNum = 0
-        self.ErrorInd = 0
+        self.use_long_names = 0
+        self.use_numeric = 0
+        self.use_sprint_value = 0
+        self.use_enums = 0
+        self.best_guess = 0
+        self.retry_no_such = 0
+        self.error_str = ''
+        self.error_num = 0
+        self.error_ind = 0
 
         # Check for transports that may be tunneled
         tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
