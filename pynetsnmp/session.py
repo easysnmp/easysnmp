@@ -1,6 +1,6 @@
 import re
 
-import client_intf
+import interface
 
 # Mapping between security level strings and their associated integer values.
 # Here we provide camelCase naming as per the original spec but also more
@@ -97,7 +97,7 @@ class Session(object):
 
         # Tunneled
         if tunneled:
-            self.sess_ptr = client_intf.session_tunneled(
+            self.sess_ptr = interface.session_tunneled(
                 self.version,
                 self.hostname,
                 self.local_port,
@@ -115,7 +115,7 @@ class Session(object):
 
         # SNMP v3
         elif self.version == 3:
-            self.sess_ptr = client_intf.session_v3(
+            self.sess_ptr = interface.session_v3(
                 self.version,
                 self.hostname,
                 self.local_port,
@@ -136,7 +136,7 @@ class Session(object):
 
         # SNMP v1 & v2
         else:
-            self.sess_ptr = client_intf.session(
+            self.sess_ptr = interface.session(
                 self.version,
                 self.community,
                 self.hostname,
@@ -150,7 +150,7 @@ class Session(object):
         retrieve a particular piece of information
         """
 
-        result = client_intf.get(self, var_list)
+        result = interface.get(self, var_list)
         return result
 
     def set(self, var_list):
@@ -158,7 +158,7 @@ class Session(object):
         retrieve a particular piece of information
         """
 
-        result = client_intf.set(self, var_list)
+        result = interface.set(self, var_list)
         return result
 
     def get_next(self, var_list):
@@ -166,7 +166,7 @@ class Session(object):
         retrieve the next variable after the chosen item
         """
 
-        result = client_intf.getnext(self, var_list)
+        result = interface.getnext(self, var_list)
         return result
 
     def get_bulk(self, non_repeaters, max_repetitions, var_list):
@@ -177,7 +177,7 @@ class Session(object):
         if self.version == 1:
             return None
 
-        result = client_intf.getbulk(
+        result = interface.getbulk(
             self, non_repeaters, max_repetitions, var_list
         )
         return result
@@ -187,9 +187,9 @@ class Session(object):
         automatically retrieve multiple pieces of information in an OID
         """
 
-        result = client_intf.walk(self, var_list)
+        result = interface.walk(self, var_list)
         return result
 
     def __del__(self):
         """Deletes the session and frees up memory"""
-        return client_intf.delete_session(self)
+        return interface.delete_session(self)

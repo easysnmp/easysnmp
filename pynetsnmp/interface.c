@@ -2673,16 +2673,16 @@ static PyMethodDef ClientMethods[] = {
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-PyMODINIT_FUNC initclient_intf(void)
+PyMODINIT_FUNC initinterface(void)
 {
   // Initialise the module
   PyObject *module;
-  module = Py_InitModule("client_intf", ClientMethods);
+  module = Py_InitModule("interface", ClientMethods);
   if (module == NULL)
       return;
 
   // Initialise our exception
-  PyNetSNMPInterfaceError = PyErr_NewException("client_intf.PyNetSNMPInterfaceError",
+  PyNetSNMPInterfaceError = PyErr_NewException("interface.PyNetSNMPInterfaceError",
                                                NULL, NULL);
   Py_INCREF(PyNetSNMPInterfaceError);
   PyModule_AddObject(module, "PyNetSNMPInterfaceError",
