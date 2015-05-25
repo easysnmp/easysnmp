@@ -123,7 +123,10 @@ static int _debug_level = 0;
     }                                                                         \
     while (0)
 
-static PyObject *PyNetSNMPInterfaceError;
+enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
+
+static PyObject *PyLogger = NULL;
+static PyObject *PyNetSNMPInterfaceError = NULL;
 
 /*
  * Ripped wholesale from library/tools.h from Net-SNMP 5.7.3
@@ -3153,6 +3156,41 @@ static PyObject *py_get_logger(char *logger_name)
     return logger;
 }
 
+static void py_log_msg(int type, char *msg)
+{
+    /* build msg string */
+    PyObject *string = Py_BuildValue("s", msg);
+
+    /* call function depending on loglevel */
+    switch (type)
+    {
+        case INFO:
+            PyObject_CallMethod(PyLogger, "info", "O", string);
+            break;
+
+        case WARNING:
+            PyObject_CallMethod(PyLogger, "warn", "O", string);
+            break;
+
+        case ERROR:
+            PyObject_CallMethod(PyLogger, "error", "O", string);
+            break;
+
+        case DEBUG:
+            PyObject_CallMethod(PyLogger, "debug", "O", string);
+            break;
+
+        case EXCEPTION:
+            PyObject_CallMethod(PyLogger, "exception", "O", string);
+            break;
+
+        default:
+            break;
+    }
+
+    Py_DECREF(string);
+}
+
 /*
  * Array of defined methods when initialising the module,
  * each entry must contain the following:
@@ -3229,20 +3267,49 @@ static PyMethodDef ClientMethods[] =
     } /* Sentinel */
 };
 
+/* entry point when importing the module */
 PyMODINIT_FUNC initinterface(void)
 {
-    // Initialise the module
+    int ret;
+
     PyObject *module;
+
+    /* Initialise the module */
     module = Py_InitModule("interface", ClientMethods);
     if (module == NULL)
     {
-        return;
+        goto bail;
     }
 
-    // Initialise our exception
-    PyNetSNMPInterfaceError = PyErr_NewException("interface.PyNetSNMPInterfaceError",
-                                                 NULL, NULL);
-    Py_INCREF(PyNetSNMPInterfaceError);
-    PyModule_AddObject(module, "PyNetSNMPInterfaceError",
-                       PyNetSNMPInterfaceError);
+    /* Initialise our exception */
+    PyNetSNMPInterfaceError =
+        PyErr_NewException("interface.PyNetSNMPInterfaceError", NULL, NULL);
+
+    Py_XINCREF(PyNetSNMPInterfaceError);
+    ret = PyModule_AddObject(module, "PyNetSNMPInterfaceError",
+                             PyNetSNMPInterfaceError);
+
+    if (ret != 0)
+    {
+        goto bail;
+    }
+
+    /* initialise logging (note: automatically has refcount 1) */
+    PyLogger = py_get_logger("netsnmp_interface");
+
+    if (PyLogger == NULL)
+    {
+        goto bail;
+    }
+
+    py_log_msg(DEBUG, "initialised netsnmp_interface");
+
+    return;
+
+bail:
+
+    Py_XDECREF(PyLogger);
+    Py_XDECREF(PyNetSNMPInterfaceError);
+
+    return;
 }
