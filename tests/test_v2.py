@@ -2,10 +2,10 @@ import platform
 
 import pynetsnmp
 
-from .fixtures import sess_v2
+from .fixtures import sess_v2  # noqa
 
 
-def test_pynetsnmp_v2_session_get(sess_v2):
+def test_pynetsnmp_v2_session_get(sess_v2):  # noqa
     varlist = pynetsnmp.VarList(
         pynetsnmp.Varbind('sysUpTime', 0),
         pynetsnmp.Varbind('sysContact', 0),
@@ -41,7 +41,7 @@ def test_pynetsnmp_v2_session_get(sess_v2):
     assert varlist[2].type == 'OCTETSTR'
 
 
-def test_pynetsnmp_v2_session_get_next(sess_v2):
+def test_pynetsnmp_v2_session_get_next(sess_v2):  # noqa
     varlist = pynetsnmp.VarList(
         pynetsnmp.Varbind('sysUpTime', 0),
         pynetsnmp.Varbind('sysContact', 0),
@@ -75,7 +75,7 @@ def test_pynetsnmp_v2_session_get_next(sess_v2):
     assert varlist[2].type == 'TICKS'
 
 
-def test_pynetsnmp_v2_session_get_bulk(sess_v2):
+def test_pynetsnmp_v2_session_get_bulk(sess_v2):  # noqa
     varlist = pynetsnmp.VarList(
         pynetsnmp.Varbind('sysUpTime'),
         pynetsnmp.Varbind('sysORLastChange'),
@@ -104,7 +104,7 @@ def test_pynetsnmp_v2_session_get_bulk(sess_v2):
     assert varlist[4].type == 'TICKS'
 
 
-def test_pynetsnmp_v2_session_set(sess_v2):
+def test_pynetsnmp_v2_session_set(sess_v2):  # noqa
     varlist = pynetsnmp.VarList(
         pynetsnmp.Varbind('sysLocation', '0', 'my even newer location')
     )
@@ -122,7 +122,7 @@ def test_pynetsnmp_v2_session_set(sess_v2):
     assert res[0] == 'my even newer location'
 
 
-def test_pynetsnmp_v2_session_walk(sess_v2):
+def test_pynetsnmp_v2_session_walk(sess_v2):  # noqa
     varlist = pynetsnmp.VarList(pynetsnmp.Varbind('system'))
 
     vals = sess_v2.walk(varlist)
