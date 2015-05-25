@@ -3130,26 +3130,105 @@ done:
 }
 
 
-static PyMethodDef ClientMethods[] = {
-    {"session", netsnmp_create_session, METH_VARARGS,
-     "create a netsnmp session."},
-    {"session_v3", netsnmp_create_session_v3, METH_VARARGS,
-     "create a netsnmp session."},
-    {"session_tunneled", netsnmp_create_session_tunneled, METH_VARARGS,
-     "create a tunneled netsnmp session over tls, dtls or ssh."},
-    {"delete_session", netsnmp_delete_session, METH_VARARGS,
-     "create a netsnmp session."},
-    {"get", netsnmp_get, METH_VARARGS,
-     "perform an SNMP GET operation."},
-    {"getnext", netsnmp_getnext, METH_VARARGS,
-     "perform an SNMP GETNEXT operation."},
-    {"getbulk", netsnmp_getbulk, METH_VARARGS,
-     "perform an SNMP GETBULK operation."},
-    {"set", netsnmp_set, METH_VARARGS,
-     "perform an SNMP SET operation."},
-    {"walk", netsnmp_walk, METH_VARARGS,
-     "perform an SNMP WALK operation."},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
+
+/**
+ * Get a logger object from the logging module.
+ * Shamelessly stolen from:
+ * http://proj.badc.rl.ac.uk/svn/ndg/TI05-delivery/trunk/components/server/ext/bbftpd.c
+ */
+static PyObject *py_init_logger(char *logger_name)
+{
+    PyObject *logging;
+    PyObject *logger;
+
+    logging = PyImport_ImportModuleNoBlock("logging");
+
+    if (logging == NULL)
+    {
+        PyErr_SetString(PyExc_ImportError,
+                        "Could not import module 'logging'");
+        return NULL;
+    }
+
+    logger = PyObject_CallMethod(logging, "getLogger", "s", logger_name);
+
+    return logger;
+}
+
+/*
+ * Array of defined methods when initialising the module,
+ * each entry must contain the following:
+ *
+ *     (char *)      ml_name:   name of method
+ *     (PyCFunction) ml_meth:   pointer to the C implementation
+ *     (int)         ml_flags:  flag bit indicating how call should be
+ *     (char *)      ml_doc:    points to contents of method docstring
+ *
+ * See: https://docs.python.org/2/c-api/structures.html for more info.
+ *
+ */
+static PyMethodDef ClientMethods[] =
+{
+    {
+        "session",
+        netsnmp_create_session,
+        METH_VARARGS,
+        "create a netsnmp session."
+    },
+    {
+        "session_v3",
+        netsnmp_create_session_v3,
+        METH_VARARGS,
+        "create a netsnmp session."
+    },
+    {
+        "session_tunneled",
+        netsnmp_create_session_tunneled,
+        METH_VARARGS,
+        "create a tunneled netsnmp session over tls, dtls or ssh."
+    },
+    {
+        "delete_session",
+        netsnmp_delete_session,
+        METH_VARARGS,
+        "create a netsnmp session."
+    },
+    {
+        "get",
+        netsnmp_get,
+        METH_VARARGS,
+        "perform an SNMP GET operation."
+    },
+    {
+        "getnext",
+        netsnmp_getnext,
+        METH_VARARGS,
+        "perform an SNMP GETNEXT operation."
+    },
+    {
+        "getbulk",
+        netsnmp_getbulk,
+        METH_VARARGS,
+        "perform an SNMP GETBULK operation."
+    },
+    {
+        "set",
+        netsnmp_set,
+        METH_VARARGS,
+        "perform an SNMP SET operation."
+    },
+    {
+        "walk",
+        netsnmp_walk,
+        METH_VARARGS,
+        "perform an SNMP WALK operation."
+    },
+    {
+        NULL,
+        NULL,
+        0,
+        NULL
+    } /* Sentinel */
 };
 
 PyMODINIT_FUNC initinterface(void)
