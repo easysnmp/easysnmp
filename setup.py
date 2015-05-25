@@ -48,7 +48,7 @@ setup(
 
     ext_modules=[
         Extension(
-            "pynetsnmp.client_intf", ["pynetsnmp/client_intf.c"],
+            "pynetsnmp.interface", ["pynetsnmp/interface.c"],
             library_dirs=libdirs, include_dirs=incdirs, libraries=libs
         )
     ]
