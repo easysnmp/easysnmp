@@ -1500,7 +1500,8 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         session.securityPrivProto =
             snmp_duplicate_objid(p, session.securityPrivProtoLen);
     }
-    else {
+    else
+    {
         char buffer[500];
         sprintf(buffer, "unsupported privacy protocol(%s)", priv_proto);
         PyErr_SetString(PyNetSNMPInterfaceError, buffer);
@@ -1908,13 +1909,15 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                     /* Translate error to None */
                     PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
                 }
-                else {
+                else
+                {
                     PyTuple_SetItem(val_tuple, varlist_ind,
                                     Py_BuildValue("s#", str_buf, len));
                 }
                 Py_DECREF(varbind);
             }
-            else {
+            else
+            {
                 printf("DEBUG (netsnmp_get): bad varbind (%d)\n", varlist_ind);
                 Py_XDECREF(varbind);
             }
