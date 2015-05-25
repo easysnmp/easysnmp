@@ -3133,10 +3133,8 @@ done:
 
 /**
  * Get a logger object from the logging module.
- * Shamelessly stolen from:
- * http://proj.badc.rl.ac.uk/svn/ndg/TI05-delivery/trunk/components/server/ext/bbftpd.c
  */
-static PyObject *py_init_logger(char *logger_name)
+static PyObject *py_get_logger(char *logger_name)
 {
     PyObject *logging;
     PyObject *logger;
