@@ -65,7 +65,7 @@ typedef int Py_ssize_t;
   do {                                                                        \
     (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                             \
     (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                          \
-    if ((result)->tv_usec < 0) {                           ;                   \
+    if ((result)->tv_usec < 0) {                                              \
       --(result)->tv_sec;                                                     \
       (result)->tv_usec += 1000000;                                           \
     }                                                                         \
@@ -89,7 +89,7 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
                               int *oid_arr_len, int *type, int best_guess);
 static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
-static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int *name_length,
+static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
 #define USE_NUMERIC_OIDS 0x08
@@ -734,7 +734,7 @@ static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str)
 /*
  * add a varbind to PDU
  */
-static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int *name_length,
+static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type)
 {
   netsnmp_variable_list *vars;
