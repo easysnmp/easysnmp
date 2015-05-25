@@ -65,7 +65,7 @@ typedef int Py_ssize_t;
   do {                                                                        \
     (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                             \
     (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                          \
-    if ((result)->tv_usec < 0) {                                              \
+    if ((result)->tv_usec < 0) {                           ;                   \
       --(result)->tv_sec;                                                     \
       (result)->tv_usec += 1000000;                                           \
     }                                                                         \
@@ -74,21 +74,24 @@ typedef int Py_ssize_t;
 
 typedef netsnmp_session SnmpSession;
 typedef struct tree SnmpMibNode;
-static int __is_numeric_oid (char *);
-static int __is_leaf (struct tree*);
-static int __translate_appl_type (char *);
-static int __translate_asn_type (int);
-static int __snprint_value (char *, size_t,
-                            netsnmp_variable_list*, struct tree *,
-                            int, int);
-static int __sprint_num_objid (char *, oid *, int);
-static int __scan_num_objid (char *, oid *, size_t *);
-static int __get_type_str (int, char *);
-static int __get_label_iid (char *, char **, char **, int);
-static struct tree * __tag2oid (char *, char *, oid  *, int  *, int *, int);
-static int __concat_oid_str (oid *, int *, char *);
-static int __add_var_val_str (netsnmp_pdu *, oid *, int, char *,
-                                 int, int);
+static int __is_numeric_oid(char *oidstr);
+static int __is_leaf(struct tree *tp);
+static int __translate_appl_type(char *typestr);
+static int __translate_asn_type(int type);
+static int __snprint_value(char *buf, size_t buf_len,
+                           netsnmp_variable_list *var,
+                           struct tree *tp, int type, int flag);
+static int __sprint_num_objid(char *buf, oid *objid, int len);
+static int __scan_num_objid(char *buf, oid *objid, size_t *len);
+static int __get_type_str(int type, char *str);
+static int __get_label_iid(char *name, char **last_label, char **iid,
+                           int flag);
+static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
+                              int *oid_arr_len, int *type, int best_guess);
+static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
+static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int *name_length,
+                             char *val, int len, int type);
+
 #define USE_NUMERIC_OIDS 0x08
 #define NON_LEAF_NAME 0x04
 #define USE_LONG_NAMES 0x02
@@ -127,8 +130,7 @@ static void *compat_netsnmp_memdup(const void *from, size_t size)
   return to;
 }
 
-void
-__libraries_init(char *appname)
+void __libraries_init(char *appname)
 {
   static int have_inited = 0;
 
@@ -146,9 +148,7 @@ __libraries_init(char *appname)
                      NETSNMP_OID_OUTPUT_SUFFIX);
 }
 
-static int
-__is_numeric_oid (oidstr)
-char * oidstr;
+static int __is_numeric_oid(char *oidstr)
 {
   if (!oidstr) return 0;
   for (; *oidstr; oidstr++) {
@@ -157,18 +157,14 @@ char * oidstr;
   return(1);
 }
 
-static int
-__is_leaf (tp)
-struct tree* tp;
+static int __is_leaf(struct tree *tp)
 {
   char buf[MAX_TYPE_NAME_LEN];
   return (tp && (__get_type_str(tp->type, buf) ||
           (tp->parent && __get_type_str(tp->parent->type, buf) )));
 }
 
-static int
-__translate_appl_type(typestr)
-char * typestr;
+static int __translate_appl_type(char *typestr)
 {
   if (typestr == NULL || *typestr == '\0')
     return TYPE_UNKNOWN;
@@ -217,9 +213,7 @@ char * typestr;
   return(TYPE_UNKNOWN);
 }
 
-static int
-__translate_asn_type(type)
-int type;
+static int __translate_asn_type(int type)
 {
   switch (type) {
     case ASN_INTEGER:
@@ -260,14 +254,9 @@ int type;
 #define USE_BASIC 0
 #define USE_ENUMS 1
 #define USE_SPRINT_VALUE 2
-static int
-__snprint_value (buf, buf_len, var, tp, type, flag)
-char * buf;
-size_t buf_len;
-netsnmp_variable_list * var;
-struct tree * tp;
-int type;
-int flag;
+static int __snprint_value(char *buf, size_t buf_len,
+                           netsnmp_variable_list *var,
+                           struct tree *tp, int type, int flag)
 {
   int len = 0;
   u_char * ip;
@@ -377,11 +366,8 @@ int flag;
   return(len);
 }
 
-static int
-__sprint_num_objid (buf, objid, len)
-char *buf;
-oid *objid;
-int len;
+
+static int __sprint_num_objid(char *buf, oid *objid, int len)
 {
   int i;
   buf[0] = '\0';
@@ -392,11 +378,7 @@ int len;
   return SUCCESS;
 }
 
-static int
-__scan_num_objid (buf, objid, len)
-char *buf;
-oid *objid;
-size_t *len;
+static int __scan_num_objid(char *buf, oid *objid, size_t *len)
 {
   char *cp;
   *len = 0;
@@ -421,10 +403,7 @@ size_t *len;
   return SUCCESS;
 }
 
-static int
-__get_type_str (type, str)
-int type;
-char * str;
+static int __get_type_str(int type, char *str)
 {
   switch (type) {
     case TYPE_OBJID:
@@ -502,12 +481,8 @@ char * str;
 /* does a destructive disection of <label1>...<labeln>.<iid> returning
    <labeln> and <iid> in seperate strings (note: will destructively
    alter input string, 'name') */
-static int
-__get_label_iid (name, last_label, iid, flag)
-char * name;
-char ** last_label;
-char ** iid;
-int flag;
+static int __get_label_iid(char *name, char **last_label, char **iid,
+                           int flag)
 {
   char *lcp;
   char *icp;
@@ -615,14 +590,8 @@ int flag;
 
 /* Convert a tag (string) to an OID array              */
 /* Tag can be either a symbolic name, or an OID string */
-static struct tree *
-__tag2oid(tag, iid, oid_arr, oid_arr_len, type, best_guess)
-char * tag;
-char * iid;
-oid  * oid_arr;
-int  * oid_arr_len;
-int  * type;
-int    best_guess;
+static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
+                              int *oid_arr_len, int *type, int best_guess)
 {
   struct tree *tp = NULL;
   struct tree *rtp = NULL;
@@ -739,11 +708,7 @@ done:
  *
  * returns : SUCCESS, FAILURE
  */
-static int
-__concat_oid_str(doid_arr, doid_arr_len, soid_str)
-oid *doid_arr;
-int *doid_arr_len;
-char * soid_str;
+static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str)
 {
   char *soid_buf;
   char *cp;
@@ -769,14 +734,8 @@ char * soid_str;
 /*
  * add a varbind to PDU
  */
-static int
-__add_var_val_str(pdu, name, name_length, val, len, type)
-  netsnmp_pdu *pdu;
-  oid *name;
-  int name_length;
-  char * val;
-  int len;
-  int type;
+static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int *name_length,
+                             char *val, int len, int type)
 {
   netsnmp_variable_list *vars;
   oid oidbuf[MAX_OID_LEN];
