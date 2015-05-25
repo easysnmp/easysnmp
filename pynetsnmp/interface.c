@@ -8,6 +8,7 @@ typedef int Py_ssize_t;
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/snmpv3_api.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <errno.h>
@@ -38,11 +39,6 @@ typedef int Py_ssize_t;
 #define ENG_ID_BUF_SIZE   (32)
 
 #define NO_RETRY_NOSUCH (0)
-
-/* these should be part of transform_oids.h ? */
-#define USM_AUTH_PROTO_MD5_LEN (10)
-#define USM_AUTH_PROTO_SHA_LEN (10)
-#define USM_PRIV_PROTO_DES_LEN (10)
 
 #define STRLEN(x) ((x) ? strlen((x)) : 0)
 
