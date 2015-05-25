@@ -1,6 +1,6 @@
 import re
 
-import interface
+from . import interface
 
 # Mapping between security level strings and their associated integer values.
 # Here we provide camelCase naming as per the original spec but also more
