@@ -1043,13 +1043,13 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
  *
  * Currently there are 3 attributes we care about
  *
- * ErrorNum - Copy of the value of netsnmp_session.s_errno. This is the system
+ * error_num - Copy of the value of netsnmp_session.s_errno. This is the system
  * errno that was generated during our last call into the net-snmp library.
  *
- * ErrorInd - Copy of the value of netsmp_session.s_snmp_errno. These error
+ * error_ind - Copy of the value of netsmp_session.s_snmp_errno. These error
  * numbers are separate from the system errno's and describe SNMP errors.
  *
- * ErrorStr - A string describing the ErrorInd that was returned during our last
+ * error_str - A string describing the error_ind that was returned during our last
  * operation.
  *
  * @param[in] session The python object that represents our current Session
@@ -1062,14 +1062,14 @@ static void __py_netsnmp_update_session_errors(PyObject *session, char *err_str,
 {
   PyObject *tmp_for_conversion;
 
-  py_netsnmp_attr_set_string(session, "ErrorStr", err_str, STRLEN(err_str));
+  py_netsnmp_attr_set_string(session, "error_str", err_str, STRLEN(err_str));
 
   tmp_for_conversion = PyInt_FromLong(err_num);
-  PyObject_SetAttrString(session, "ErrorNum", tmp_for_conversion);
+  PyObject_SetAttrString(session, "error_num", tmp_for_conversion);
   Py_DECREF(tmp_for_conversion);
 
   tmp_for_conversion = PyInt_FromLong(err_ind);
-  PyObject_SetAttrString(session, "ErrorInd", tmp_for_conversion);
+  PyObject_SetAttrString(session, "error_ind", tmp_for_conversion);
   Py_DECREF(tmp_for_conversion);
 }
 
@@ -1460,20 +1460,20 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
     ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-    if (py_netsnmp_attr_string(session, "ErrorStr", &tmpstr, &tmplen) < 0) {
+    if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0) {
       goto done;
     }
 
-    if (py_netsnmp_attr_long(session, "UseLongNames"))
+    if (py_netsnmp_attr_long(session, "use_long_names"))
       getlabel_flag |= USE_LONG_NAMES;
-    if (py_netsnmp_attr_long(session, "UseNumeric"))
+    if (py_netsnmp_attr_long(session, "use_numeric"))
       getlabel_flag |= USE_NUMERIC_OIDS;
-    if (py_netsnmp_attr_long(session, "UseEnums"))
+    if (py_netsnmp_attr_long(session, "use_enums"))
       sprintval_flag = USE_ENUMS;
-    if (py_netsnmp_attr_long(session, "UseSprintValue"))
+    if (py_netsnmp_attr_long(session, "use_sprint_value"))
       sprintval_flag = USE_SPRINT_VALUE;
-    best_guess = py_netsnmp_attr_long(session, "BestGuess");
-    retry_nosuch = py_netsnmp_attr_long(session, "RetryNoSuch");
+    best_guess = py_netsnmp_attr_long(session, "best_guess");
+    retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
 
     pdu = snmp_pdu_create(SNMP_MSG_GET);
 
@@ -1532,17 +1532,17 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                     NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
-    if (py_netsnmp_attr_long(session, "UseLongNames")) {
+    if (py_netsnmp_attr_long(session, "use_long_names")) {
       getlabel_flag |= USE_LONG_NAMES;
 
       netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
                          NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                          NETSNMP_OID_OUTPUT_FULL);
     }
-    /* Setting UseNumeric forces UseLongNames on so check for UseNumeric
-       after UseLongNames (above) to make sure the final outcome of
+    /* Setting use_numeric forces use_long_names on so check for use_numeric
+       after use_long_names (above) to make sure the final outcome of
        NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is NETSNMP_OID_OUTPUT_NUMERIC */
-    if (py_netsnmp_attr_long(session, "UseNumeric")) {
+    if (py_netsnmp_attr_long(session, "use_numeric")) {
       getlabel_flag |= USE_LONG_NAMES;
       getlabel_flag |= USE_NUMERIC_OIDS;
 
@@ -1687,23 +1687,23 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
     ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-    if (py_netsnmp_attr_string(session, "ErrorStr", &tmpstr, &tmplen) < 0) {
+    if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0) {
       goto done;
     }
     memcpy(&err_str, tmpstr, tmplen);
-    err_num = py_netsnmp_attr_long(session, "ErrorNum");
-    err_ind = py_netsnmp_attr_long(session, "ErrorInd");
+    err_num = py_netsnmp_attr_long(session, "error_num");
+    err_ind = py_netsnmp_attr_long(session, "error_ind");
 
-    if (py_netsnmp_attr_long(session, "UseLongNames"))
+    if (py_netsnmp_attr_long(session, "use_long_names"))
       getlabel_flag |= USE_LONG_NAMES;
-    if (py_netsnmp_attr_long(session, "UseNumeric"))
+    if (py_netsnmp_attr_long(session, "use_numeric"))
       getlabel_flag |= USE_NUMERIC_OIDS;
-    if (py_netsnmp_attr_long(session, "UseEnums"))
+    if (py_netsnmp_attr_long(session, "use_enums"))
       sprintval_flag = USE_ENUMS;
-    if (py_netsnmp_attr_long(session, "UseSprintValue"))
+    if (py_netsnmp_attr_long(session, "use_sprint_value"))
       sprintval_flag = USE_SPRINT_VALUE;
-    best_guess = py_netsnmp_attr_long(session, "BestGuess");
-    retry_nosuch = py_netsnmp_attr_long(session, "RetryNoSuch");
+    best_guess = py_netsnmp_attr_long(session, "best_guess");
+    retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
 
     pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
@@ -1767,17 +1767,17 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                     NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
-    if (py_netsnmp_attr_long(session, "UseLongNames")) {
+    if (py_netsnmp_attr_long(session, "use_long_names")) {
       getlabel_flag |= USE_LONG_NAMES;
 
       netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
                          NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                          NETSNMP_OID_OUTPUT_FULL);
     }
-    /* Setting UseNumeric forces UseLongNames on so check for UseNumeric
-       after UseLongNames (above) to make sure the final outcome of
+    /* Setting use_numeric forces use_long_names on so check for use_numeric
+       after use_long_names (above) to make sure the final outcome of
        NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is NETSNMP_OID_OUTPUT_NUMERIC */
-    if (py_netsnmp_attr_long(session, "UseNumeric")) {
+    if (py_netsnmp_attr_long(session, "use_numeric")) {
       getlabel_flag |= USE_LONG_NAMES;
       getlabel_flag |= USE_NUMERIC_OIDS;
 
@@ -1930,23 +1930,23 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     }
     ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-    if (py_netsnmp_attr_string(session, "ErrorStr", &tmpstr, &tmplen) < 0) {
+    if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0) {
       goto done;
     }
     memcpy(&err_str, tmpstr, tmplen);
-    err_num = py_netsnmp_attr_long(session, "ErrorNum");
-    err_ind = py_netsnmp_attr_long(session, "ErrorInd");
+    err_num = py_netsnmp_attr_long(session, "error_num");
+    err_ind = py_netsnmp_attr_long(session, "error_ind");
 
-    if (py_netsnmp_attr_long(session, "UseLongNames"))
+    if (py_netsnmp_attr_long(session, "use_long_names"))
       getlabel_flag |= USE_LONG_NAMES;
-    if (py_netsnmp_attr_long(session, "UseNumeric"))
+    if (py_netsnmp_attr_long(session, "use_numeric"))
       getlabel_flag |= USE_NUMERIC_OIDS;
-    if (py_netsnmp_attr_long(session, "UseEnums"))
+    if (py_netsnmp_attr_long(session, "use_enums"))
       sprintval_flag = USE_ENUMS;
-    if (py_netsnmp_attr_long(session, "UseSprintValue"))
+    if (py_netsnmp_attr_long(session, "use_sprint_value"))
       sprintval_flag = USE_SPRINT_VALUE;
-    best_guess = py_netsnmp_attr_long(session, "BestGuess");
-    retry_nosuch = py_netsnmp_attr_long(session, "RetryNoSuch");
+    best_guess = py_netsnmp_attr_long(session, "best_guess");
+    retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
 
     pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
@@ -2044,7 +2044,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                     NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
-    if (py_netsnmp_attr_long(session, "UseLongNames")) {
+    if (py_netsnmp_attr_long(session, "use_long_names")) {
       getlabel_flag |= USE_LONG_NAMES;
 
       netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
@@ -2052,10 +2052,10 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                          NETSNMP_OID_OUTPUT_FULL);
     }
 
-    /* Setting UseNumeric forces UseLongNames on so check for UseNumeric
-       after UseLongNames (above) to make sure the final outcome of
+    /* Setting use_numeric forces use_long_names on so check for use_numeric
+       after use_long_names (above) to make sure the final outcome of
        NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is NETSNMP_OID_OUTPUT_NUMERIC */
-    if (py_netsnmp_attr_long(session, "UseNumeric")) {
+    if (py_netsnmp_attr_long(session, "use_numeric")) {
       getlabel_flag |= USE_LONG_NAMES;
       getlabel_flag |= USE_NUMERIC_OIDS;
 
@@ -2293,23 +2293,23 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
       ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-      if (py_netsnmp_attr_string(session, "ErrorStr", &tmpstr, &tmplen) < 0) {
+      if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0) {
         goto done;
       }
       memcpy(&err_str, tmpstr, tmplen);
-      err_num = py_netsnmp_attr_long(session, "ErrorNum");
-      err_ind = py_netsnmp_attr_long(session, "ErrorInd");
+      err_num = py_netsnmp_attr_long(session, "error_num");
+      err_ind = py_netsnmp_attr_long(session, "error_ind");
 
-      if (py_netsnmp_attr_long(session, "UseLongNames"))
+      if (py_netsnmp_attr_long(session, "use_long_names"))
         getlabel_flag |= USE_LONG_NAMES;
-      if (py_netsnmp_attr_long(session, "UseNumeric"))
+      if (py_netsnmp_attr_long(session, "use_numeric"))
         getlabel_flag |= USE_NUMERIC_OIDS;
-      if (py_netsnmp_attr_long(session, "UseEnums"))
+      if (py_netsnmp_attr_long(session, "use_enums"))
         sprintval_flag = USE_ENUMS;
-      if (py_netsnmp_attr_long(session, "UseSprintValue"))
+      if (py_netsnmp_attr_long(session, "use_sprint_value"))
         sprintval_flag = USE_SPRINT_VALUE;
-      best_guess = py_netsnmp_attr_long(session, "BestGuess");
-      retry_nosuch = py_netsnmp_attr_long(session, "RetryNoSuch");
+      best_guess = py_netsnmp_attr_long(session, "best_guess");
+      retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
 
       pdu = snmp_pdu_create(SNMP_MSG_GETBULK);
 
@@ -2369,17 +2369,17 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
       old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                       NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
-      if (py_netsnmp_attr_long(session, "UseLongNames")) {
+      if (py_netsnmp_attr_long(session, "use_long_names")) {
         getlabel_flag |= USE_LONG_NAMES;
 
         netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
                            NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                            NETSNMP_OID_OUTPUT_FULL);
       }
-      /* Setting UseNumeric forces UseLongNames on so check for UseNumeric
-         after UseLongNames (above) to make sure the final outcome of
+      /* Setting use_numeric forces use_long_names on so check for use_numeric
+         after use_long_names (above) to make sure the final outcome of
          NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is NETSNMP_OID_OUTPUT_NUMERIC */
-      if (py_netsnmp_attr_long(session, "UseNumeric")) {
+      if (py_netsnmp_attr_long(session, "use_numeric")) {
         getlabel_flag |= USE_LONG_NAMES;
         getlabel_flag |= USE_NUMERIC_OIDS;
 
@@ -2540,13 +2540,13 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
     ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
     /* PyObject_SetAttrString(); */
-    if (py_netsnmp_attr_string(session, "ErrorStr", &tmpstr, &tmplen) < 0) {
+    if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0) {
       goto done;
     }
 
-    use_enums = py_netsnmp_attr_long(session, "UseEnums");
+    use_enums = py_netsnmp_attr_long(session, "use_enums");
 
-    best_guess = py_netsnmp_attr_long(session, "BestGuess");
+    best_guess = py_netsnmp_attr_long(session, "best_guess");
 
     pdu = snmp_pdu_create(SNMP_MSG_SET);
 
