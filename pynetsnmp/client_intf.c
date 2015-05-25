@@ -742,15 +742,20 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int *name_length,
   int ret = SUCCESS;
 
   if (pdu->variables == NULL){
-    pdu->variables = vars =
-      (netsnmp_variable_list *)calloc(1, sizeof(netsnmp_variable_list));
+    vars = (netsnmp_variable_list *) calloc(1, sizeof(netsnmp_variable_list));
+    pdu->variables = vars;
   }
   else {
-    for (vars = pdu->variables; vars->next_variable; vars = vars->next_variable)
+    /* make a copy of PDU variables */
+    for (vars = pdu->variables;
+         vars->next_variable;
+         vars = vars->next_variable)
+    {
       /*EXIT*/;
+    }
 
     vars->next_variable =
-      (netsnmp_variable_list *)calloc(1, sizeof(netsnmp_variable_list));
+      (netsnmp_variable_list *) calloc(1, sizeof(netsnmp_variable_list));
     vars = vars->next_variable;
   }
 
@@ -859,9 +864,9 @@ OCT:
 
 /* takes ss and pdu as input and updates the 'response' argument */
 /* the input 'pdu' argument will be freed */
-static int
-__send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu, netsnmp_pdu **response,
-                int retry_nosuch, char *err_str, int *err_num, int *err_ind)
+static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
+                           netsnmp_pdu **response, int retry_nosuch,
+                           char *err_str, int *err_num, int *err_ind)
 {
   int status = 0;
   long command = pdu->command;
@@ -953,8 +958,7 @@ done:
   return(status);
 }
 
-static PyObject *
-py_netsnmp_construct_varbind(void)
+static PyObject *py_netsnmp_construct_varbind(void)
 {
   PyObject *module;
   PyObject *dict;
@@ -968,9 +972,8 @@ py_netsnmp_construct_varbind(void)
   return PyObject_CallFunction(callable, "");
 }
 
-static int
-py_netsnmp_attr_string(PyObject *obj, char * attr_name, char **val,
-    Py_ssize_t *len)
+static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
+                                  Py_ssize_t *len)
 {
   *val = NULL;
   if (obj && attr_name && PyObject_HasAttrString(obj, attr_name)) {
@@ -986,8 +989,7 @@ py_netsnmp_attr_string(PyObject *obj, char * attr_name, char **val,
   return -1;
 }
 
-static long long
-py_netsnmp_attr_long(PyObject *obj, char * attr_name)
+static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
 {
   long long val = -1;
 
@@ -1002,8 +1004,7 @@ py_netsnmp_attr_long(PyObject *obj, char * attr_name)
   return val;
 }
 
-static void *
-py_netsnmp_attr_void_ptr(PyObject *obj, char * attr_name)
+static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
 {
   void *val = NULL;
 
@@ -1018,8 +1019,7 @@ py_netsnmp_attr_void_ptr(PyObject *obj, char * attr_name)
   return val;
 }
 
-static int
-py_netsnmp_verbose(void)
+static int py_netsnmp_verbose(void)
 {
   int verbose = 0;
   PyObject *pkg = PyImport_ImportModule("pynetsnmp");
@@ -1031,9 +1031,8 @@ py_netsnmp_verbose(void)
   return verbose;
 }
 
-static int
-py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
-                           char *val, size_t len)
+static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
+                                      char *val, size_t len)
 {
   int ret = -1;
   if (obj && attr_name) {
@@ -1069,9 +1068,8 @@ py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
  * @param[in|out] err_num The system errno currently stored by our session
  * @param[in|out] err_ind The snmp errno currently stored by our session
  */
-static void
-__py_netsnmp_update_session_errors(PyObject *session, char *err_str,
-                                    int err_num, int err_ind)
+static void __py_netsnmp_update_session_errors(PyObject *session, char *err_str,
+                                               int err_num, int err_ind)
 {
   PyObject *tmp_for_conversion;
 
@@ -1086,8 +1084,7 @@ __py_netsnmp_update_session_errors(PyObject *session, char *err_str,
   Py_DECREF(tmp_for_conversion);
 }
 
-static PyObject *
-netsnmp_create_session(PyObject *self, PyObject *args)
+static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 {
   int version;
   char *community;
@@ -1146,8 +1143,7 @@ end:
   return PyLong_FromVoidPtr((void *)ss);
 }
 
-static PyObject *
-netsnmp_create_session_v3(PyObject *self, PyObject *args)
+static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 {
   int version;
   char *peer;
@@ -1301,8 +1297,7 @@ end:
   return PyLong_FromVoidPtr((void *)ss);
 }
 
-static PyObject *
-netsnmp_create_session_tunneled(PyObject *self, PyObject *args)
+static PyObject *netsnmp_create_session_tunneled(PyObject *self, PyObject *args)
 {
   int version;
   char *peer;
@@ -1393,8 +1388,7 @@ netsnmp_create_session_tunneled(PyObject *self, PyObject *args)
   return Py_BuildValue("i", (int)(uintptr_t)ss);
 }
 
-static PyObject *
-netsnmp_delete_session(PyObject *self, PyObject *args)
+static PyObject *netsnmp_delete_session(PyObject *self, PyObject *args)
 {
   PyObject *session;
   SnmpSession *ss = NULL;
@@ -1409,8 +1403,7 @@ netsnmp_delete_session(PyObject *self, PyObject *args)
   return (Py_BuildValue(""));
 }
 
-static PyObject *
-netsnmp_get(PyObject *self, PyObject *args)
+static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 {
   PyObject *session;
   PyObject *varlist;
@@ -1632,8 +1625,7 @@ done:
   return (val_tuple ? val_tuple : Py_BuildValue(""));
 }
 
-static PyObject *
-netsnmp_getnext(PyObject *self, PyObject *args)
+static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 {
   PyObject *session;
   PyObject *varlist;
@@ -1856,8 +1848,7 @@ done:
   return (val_tuple ? val_tuple : Py_BuildValue(""));
 }
 
-static PyObject *
-netsnmp_walk(PyObject *self, PyObject *args)
+static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 {
   PyObject *session;
   PyObject *varlist;
@@ -2216,8 +2207,7 @@ done:
 }
 
 
-static PyObject *
-netsnmp_getbulk(PyObject *self, PyObject *args)
+static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 {
   int nonrepeaters;
   int maxrepetitions;
@@ -2466,8 +2456,7 @@ done:
   return (val_tuple ? val_tuple : Py_BuildValue(""));
 }
 
-static PyObject *
-netsnmp_set(PyObject *self, PyObject *args)
+static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 {
   PyObject *session;
   PyObject *varlist;
@@ -2632,8 +2621,7 @@ static PyMethodDef ClientMethods[] = {
   {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-PyMODINIT_FUNC
-initclient_intf(void)
+PyMODINIT_FUNC initclient_intf(void)
 {
   (void) Py_InitModule("client_intf", ClientMethods);
 }
