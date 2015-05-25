@@ -25,6 +25,8 @@ typedef int Py_ssize_t;
 #include <regex.h>
 #endif
 
+#define STRLEN(x) ((x) ? strlen((x)) : 0)
+
 #define SUCCESS (1)
 #define FAILURE (0)
 
@@ -39,57 +41,6 @@ typedef int Py_ssize_t;
 #define ENG_ID_BUF_SIZE   (32)
 
 #define NO_RETRY_NOSUCH (0)
-
-#define STRLEN(x) ((x) ? strlen((x)) : 0)
-
-/* from perl/SNMP/perlsnmp.h: */
-#ifndef timeradd
-#define timeradd(a, b, result)                                                \
-    do                                                                        \
-    {                                                                         \
-        (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;                         \
-        (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;                      \
-        if ((result)->tv_usec >= 1000000)                                     \
-        {                                                                     \
-            ++(result)->tv_sec;                                               \
-            (result)->tv_usec -= 1000000;                                     \
-        }                                                                     \
-    } while (0)
-#endif
-
-#ifndef timersub
-#define timersub(a, b, result)                                                \
-    do                                                                        \
-    {                                                                         \
-        (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                         \
-        (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                      \
-        if ((result)->tv_usec < 0)                                            \
-        {                                                                     \
-            --((result)->tv_sec);                                             \
-            (result)->tv_usec += 1000000;                                     \
-        }                                                                     \
-    } while (0)
-#endif
-
-typedef netsnmp_session SnmpSession;
-typedef struct tree SnmpMibNode;
-static int __is_numeric_oid(char *oidstr);
-static int __is_leaf(struct tree *tp);
-static int __translate_appl_type(char *typestr);
-static int __translate_asn_type(int type);
-static int __snprint_value(char *buf, size_t buf_len,
-                           netsnmp_variable_list *var,
-                           struct tree *tp, int type, int flag);
-static int __sprint_num_objid(char *buf, oid *objid, int len);
-static int __scan_num_objid(char *buf, oid *objid, size_t *len);
-static int __get_type_str(int type, char *str);
-static int __get_label_iid(char *name, char **last_label, char **iid,
-                           int flag);
-static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
-                              int *oid_arr_len, int *type, int best_guess);
-static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
-static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
-                             char *val, int len, int type);
 
 #define USE_NUMERIC_OIDS (0x08)
 #define NON_LEAF_NAME    (0x04)
@@ -122,6 +73,26 @@ static int _debug_level = 0;
         }                                                                     \
     }                                                                         \
     while (0)
+
+typedef netsnmp_session SnmpSession;
+typedef struct tree SnmpMibNode;
+static int __is_numeric_oid(char *oidstr);
+static int __is_leaf(struct tree *tp);
+static int __translate_appl_type(char *typestr);
+static int __translate_asn_type(int type);
+static int __snprint_value(char *buf, size_t buf_len,
+                           netsnmp_variable_list *var,
+                           struct tree *tp, int type, int flag);
+static int __sprint_num_objid(char *buf, oid *objid, int len);
+static int __scan_num_objid(char *buf, oid *objid, size_t *len);
+static int __get_type_str(int type, char *str);
+static int __get_label_iid(char *name, char **last_label, char **iid,
+                           int flag);
+static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
+                              int *oid_arr_len, int *type, int best_guess);
+static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
+static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
+                             char *val, int len, int type);
 
 enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
