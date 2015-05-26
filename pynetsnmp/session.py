@@ -1,6 +1,8 @@
 import re
 
 from . import interface
+from .data_types import SNMPOctetString, SNMPObjectIdentifier, SNMPTimeTicks
+from .variables import Varbind, VarList
 
 # Mapping between security level strings and their associated integer values.
 # Here we provide camelCase naming as per the original spec but also more
@@ -13,6 +15,57 @@ SECURITY_LEVEL_MAPPING = {
     'auth_without_privacy': 2,
     'auth_with_privacy': 3
 }
+
+
+def build_varlist(oids):
+    """Prepare the variable binding list which will be used by the
+    C interface"""
+    if isinstance(oids, list):
+        is_list = True
+    else:
+        is_list = False
+        oids = [oids]
+
+    varlist = VarList()
+    for oid in oids:
+        # OIDs specified as a tuple (e.g. ('sysContact', 0))
+        if isinstance(oid, tuple):
+            tag, iid = oid
+            varlist.append(Varbind(tag, iid))
+        # OIDs specefied as a string (e.g. 'sysContact.0')
+        else:
+            varlist.append(Varbind(oid))
+
+    return varlist, is_list
+
+
+def build_results(varlist):
+    """Converts variable bindings into SNMP data types"""
+    results = []
+
+    for varbind in varlist:
+        try:
+            varbind.iid = int(varbind.iid)
+        except ValueError:
+            varbind.iid = None
+
+        if varbind.type == 'OCTETSTR':
+            results.append(
+                SNMPOctetString(varbind.val, varbind.tag, varbind.iid)
+            )
+        elif varbind.type == 'OBJECTID':
+            results.append(
+                SNMPObjectIdentifier(varbind.val, varbind.tag, varbind.iid)
+            )
+        elif varbind.type == 'TICKS':
+            results.append(
+                SNMPTimeTicks(varbind.val, varbind.tag, varbind.iid)
+            )
+
+        else:
+            raise Exception('Unsupported SNMP type {}'.format(varbind.type))
+
+    return results
 
 
 class Session(object):
@@ -144,13 +197,28 @@ class Session(object):
                 self.timeout
             )
 
-    def get(self, var_list):
+    def get(self, oids):
         """Perform an SNMP GET operation using the prepared session to
         retrieve a particular piece of information
+
+        :param oids: you may pass in a list of OIDs or single item; eoch item
+                     may be a string representing the entire OID
+                     (e.g. 'sysDescr.0') or may be a tuple containing the
+                     name as its first item and index as its second
+                     (e.g. ('sysDescr', 0))
         """
 
-        result = interface.get(self, var_list)
-        return result
+        # Build our variable bindings for the C interface
+        varlist, is_list = build_varlist(oids)
+
+        # Perform the SNMP GET operation
+        interface.get(self, varlist)
+
+        # Convert the varbind results into SNMP data types
+        results = build_results(varlist)
+
+        # Return a list or single item depending on what was passed in
+        return list(results) if is_list else results[0]
 
     def set(self, var_list):
         """Perform an SNMP SET operation using the prepared session to
@@ -181,13 +249,22 @@ class Session(object):
         )
         return result
 
-    def walk(self, var_list):
+    def walk(self, oids):
         """Uses SNMP GETNEXT operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID
         """
 
-        result = interface.walk(self, var_list)
-        return result
+        # Build our variable bindings for the C interface
+        varlist, _ = build_varlist(oids)
+
+        # Perform the SNMP walk using GETNEXT operations
+        interface.walk(self, varlist)
+
+        # Convert the varbind results into SNMP data types
+        results = build_results(varlist)
+
+        # Return a list of results
+        return list(results)
 
     def __del__(self):
         """Deletes the session and frees up memory"""
