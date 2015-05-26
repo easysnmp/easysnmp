@@ -1422,7 +1422,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
                        (char **) &session.securityEngineID);
     session.contextEngineIDLen =
-        hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
+        hex_to_binary2((unsigned char *)context_eng_id, STRLEN(sec_eng_id),
                        (char **) &session.contextEngineID);
     session.engineBoots = eng_boots;
     session.engineTime = eng_time;
