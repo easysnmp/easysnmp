@@ -37,11 +37,11 @@ def test_pynetsnmp_v1_set():
     )
     assert res != 'my new location'
 
-    var = pynetsnmp.Varbind('sysLocation', '0', 'my new location')
-    res = pynetsnmp.snmp_set(
-        var, version=1, hostname='localhost', community='public'
+    success = pynetsnmp.snmp_set(
+        ('sysLocation', 0), 'my new location',
+        version=1, hostname='localhost', community='public'
     )
-    assert res == 1
+    assert success
 
     res = pynetsnmp.snmp_get(
         ('sysLocation', 0),
@@ -72,7 +72,7 @@ def test_pynetsnmp_v1_set():
 #     print "uptime = ", res[0]
 
 
-def test_pynetsnmp_v1_set_via_varbind():
+def test_pynetsnmp_v1_set_next():
     res = pynetsnmp.snmp_get_next(
         'nsCacheEntry', version=1, hostname='localhost', community='public'
     )
@@ -82,10 +82,9 @@ def test_pynetsnmp_v1_set_via_varbind():
     assert res > 0
     assert res.snmp_type == 'INTEGER'
 
-    var = pynetsnmp.Varbind('nsCacheEntry')
-    var.val = 65
     res = pynetsnmp.snmp_set(
-        var, version=1, hostname='localhost', community='public'
+        'nsCacheEntry', 65,
+        version=1, hostname='localhost', community='public'
     )
 
     res = pynetsnmp.snmp_get(
@@ -99,19 +98,12 @@ def test_pynetsnmp_v1_set_via_varbind():
 
 
 def test_pynetsnmp_v1_set_multiple(sess_v1):  # noqa
-    res = pynetsnmp.VarList([
-        pynetsnmp.Varbind(
-            '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116', '', '.1.3.6.1.6.1.1'
-        ),
-        pynetsnmp.Varbind(
-            '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116', '', '1234'
-        ),
-        pynetsnmp.Varbind(
-            '.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', '',  4
-        )
-    ])
-    res = sess_v1.set(res)
-    assert res == 1
+    success = sess_v1.set_multiple({
+        '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116': '.1.3.6.1.6.1.1',
+        '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116': '1234',
+        '.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116':  4
+    })
+    assert success
 
     res = sess_v1.get_next([
         'snmpTargetAddrTDomain', 'snmpTargetAddrTAddress',
@@ -137,10 +129,7 @@ def test_pynetsnmp_v1_set_multiple(sess_v1):  # noqa
 
 
 def test_pynetsnmp_v1_set_clear(sess_v1):  # noqa
-    res = pynetsnmp.VarList([
-        pynetsnmp.Varbind('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', '', 6)
-    ])
-    res = sess_v1.set(res)
+    res = sess_v1.set('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 6)
     assert res == 1
 
     res = sess_v1.get_next([
@@ -266,10 +255,7 @@ def test_pynetsnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
 
 
 def test_pynetsnmp_v1_session_set(sess_v1):  # noqa
-    res = pynetsnmp.VarList([
-        pynetsnmp.Varbind('sysLocation', '0', 'my newer location')
-    ])
-    res = sess_v1.set(res)
+    res = sess_v1.set(('sysLocation', 0), 'my newer location')
     assert res == 1
 
     res = pynetsnmp.snmp_get(

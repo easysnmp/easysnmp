@@ -75,11 +75,8 @@ def test_pynetsnmp_v2_session_get_bulk(sess_v2):  # noqa
 
 
 def test_pynetsnmp_v2_session_set(sess_v2):  # noqa
-    res = pynetsnmp.VarList([
-        pynetsnmp.Varbind('sysLocation', '0', 'my even newer location')
-    ])
-    res = sess_v2.set(res)
-    assert res == 1
+    success = sess_v2.set(('sysLocation', 0), 'my even newer location')
+    assert success
 
     res = pynetsnmp.snmp_get(
         ('sysLocation', 0), version=2, hostname='localhost', community='public'
