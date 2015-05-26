@@ -402,12 +402,15 @@ static int __snprint_value(char *buf, size_t buf_len,
 
             case SNMP_ENDOFMIBVIEW:
                 snprintf(buf, buf_len, "%s", "ENDOFMIBVIEW");
+                len = STRLEN(buf);
                 break;
             case SNMP_NOSUCHOBJECT:
                 snprintf(buf, buf_len, "%s", "NOSUCHOBJECT");
+                len = STRLEN(buf);
                 break;
             case SNMP_NOSUCHINSTANCE:
                 snprintf(buf, buf_len, "%s", "NOSUCHINSTANCE");
+                len = STRLEN(buf);
                 break;
 
             case ASN_COUNTER64:
