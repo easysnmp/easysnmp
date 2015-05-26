@@ -224,13 +224,43 @@ class Session(object):
         # Return a list or single item depending on what was passed in
         return list(results) if is_list else results[0]
 
-    def set(self, var_list):
-        """Perform an SNMP SET operation using the prepared session to
-        retrieve a particular piece of information
+    def set(self, oid, value):
+        """Perform an SNMP SET operation using the prepared session"""
+
+        varlist = VarList()
+        # OIDs specified as a tuple (e.g. ('sysContact', 0))
+        if isinstance(oid, tuple):
+            tag, iid = oid
+            varlist.append(Varbind(tag, iid, val=value))
+        # OIDs specefied as a string (e.g. 'sysContact.0')
+        else:
+            varlist.append(Varbind(oid, val=value))
+
+        # Perform the set operation and return whether or not it worked
+        success = interface.set(self, varlist)
+        return bool(success)
+
+    def set_multiple(self, oid_values):
+        """Perform an SNMP SET operation on multiple OIDs with multiple
+        values using the prepared session
+
+        :param oid_values: a dict containing OIDs as keys and their
+                           respective values to be set
         """
 
-        result = interface.set(self, var_list)
-        return result
+        varlist = VarList()
+        for oid, value in oid_values.iteritems():
+            # OIDs specified as a tuple (e.g. ('sysContact', 0))
+            if isinstance(oid, tuple):
+                tag, iid = oid
+                varlist.append(Varbind(tag, iid, val=value))
+            # OIDs specefied as a string (e.g. 'sysContact.0')
+            else:
+                varlist.append(Varbind(oid, val=value))
+
+        # Perform the set operation and return whether or not it worked
+        success = interface.set(self, varlist)
+        return bool(success)
 
     def get_next(self, oids):
         """Uses an SNMP GETNEXT operation using the prepared session to
