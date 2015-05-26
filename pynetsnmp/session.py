@@ -1,7 +1,8 @@
 import re
 
 from . import interface
-from .data_types import SNMPOctetString, SNMPObjectIdentifier, SNMPTimeTicks
+from .exceptions import PyNetSNMPError, PyNetSNMPNoSuchObjectError
+from .data_types import TYPE_MAPPING
 from .variables import Varbind, VarList
 
 # Mapping between security level strings and their associated integer values.
@@ -49,21 +50,24 @@ def build_results(varlist):
         except ValueError:
             varbind.iid = None
 
-        if varbind.type == 'OCTETSTR':
-            results.append(
-                SNMPOctetString(varbind.val, varbind.tag, varbind.iid)
+        # print 'Mapping type={}, tag={}, iid={}, val={}'.format(
+        #     varbind.type, varbind.tag, varbind.iid, varbind.val
+        # )
+        # print '--- {} ---'.format(varbind.val)
+        if varbind.type == 'NOSUCHOBJECT':
+            raise PyNetSNMPNoSuchObjectError('No such object could be found')
+        elif (
+            varbind.type not in TYPE_MAPPING or
+            not TYPE_MAPPING[varbind.type]
+        ):
+            print(
+                'Unsupported SNMP type {}: {}'.format(
+                    varbind.type, varbind.val
+                )
             )
-        elif varbind.type == 'OBJECTID':
-            results.append(
-                SNMPObjectIdentifier(varbind.val, varbind.tag, varbind.iid)
-            )
-        elif varbind.type == 'TICKS':
-            results.append(
-                SNMPTimeTicks(varbind.val, varbind.tag, varbind.iid)
-            )
-
         else:
-            raise Exception('Unsupported SNMP type {}'.format(varbind.type))
+            SNMPDataType = TYPE_MAPPING[varbind.type]
+            results.append(SNMPDataType(varbind.val, varbind.tag, varbind.iid))
 
     return results
 
@@ -228,28 +232,45 @@ class Session(object):
         result = interface.set(self, var_list)
         return result
 
-    def get_next(self, var_list):
+    def get_next(self, oids):
         """Uses an SNMP GETNEXT operation using the prepared session to
         retrieve the next variable after the chosen item
         """
 
-        result = interface.getnext(self, var_list)
-        return result
+        # Build our variable bindings for the C interface
+        varlist, is_list = build_varlist(oids)
 
-    def get_bulk(self, non_repeaters, max_repetitions, var_list):
+        # Perform the SNMP GET operation
+        interface.getnext(self, varlist)
+
+        # Convert the varbind results into SNMP data types
+        results = build_results(varlist)
+
+        # Return a list or single item depending on what was passed in
+        return list(results) if is_list else results[0]
+
+    def get_bulk(self, oids, non_repeaters, max_repetitions):
         """Performs a bulk SNMP GET operation using the prepared session to
         retrieve multiple pieces of information in a single packet
         """
 
         if self.version == 1:
-            return None
+            raise PyNetSNMPError(
+                'You cannot perform a bulk GET operation for SNMP version 1'
+            )
 
-        result = interface.getbulk(
-            self, non_repeaters, max_repetitions, var_list
-        )
-        return result
+        # Build our variable bindings for the C interface
+        varlist, _ = build_varlist(oids)
 
-    def walk(self, oids):
+        interface.getbulk(self, non_repeaters, max_repetitions, varlist)
+
+        # Convert the varbind results into SNMP data types
+        results = build_results(varlist)
+
+        # Return a list of results
+        return results
+
+    def walk(self, oids='.1.3.6.1.2.1'):
         """Uses SNMP GETNEXT operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID
         """
