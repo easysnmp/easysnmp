@@ -1,65 +1,55 @@
-		  The Python 'netsnmp' Extension Module
-		      for the Net-SNMP Library
+# PyNetSNMP #
 
-Contents:
-   Introduction:
-   Availability:
-   Contact:
-   Supported Platforms:
-   Release Notes:
-   Installation:
-   Operational Description:
-   Trouble Shooting:
-   Acknowledgments:
-   License/Copyright:
+This is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
+but attempts to bring a more Pythonic interface to the library.   Check out
+the [Net-SNMP website](http://www.net-snmp.org/) for more information about 
+SNMP.
 
-Introduction:
+This module provides a full featured, tri-lingual SNMP (SNMPv3, SNMPv2c,
+SNMPv1) client API.
 
-   This is the Python 'netsnmp' extension module. The 'netsnmp' module
-   provides a full featured, tri-lingual SNMP (SNMPv3, SNMPv2c,
-   SNMPv1) client API. The 'netsnmp' module internals rely on the
-   Net-SNMP toolkit library. For information on the Net-SNMP library
-   see the documentation provided with the Net-SNMP distribution or
-   the project web page available on 'Source Forge':
+## Quick Start ##
 
-   http://www.net-snmp.org/
+Install PyNetSNMP via pip as follows:
 
-Availability:
+```bash
+pip install PyNetSNMP
+```
 
-   The most recent release of the Python 'netsnmp' module can be found
-   bundled with the latest Net-SNMP distribution available from:
+There are primarily two ways you can use the PyNetSNMP library.  The first
+is with the use of a Session object which is most suitable when you are 
+planning on requesting multiple pieces of SNMP data from a source.
 
-     http://www.net-snmp.org/download.html
+```python
+from pynetsnmp import Session
 
-Contact:
+# Create an SNMP session to be used for all our requests
+session = Session(hostname='localhost', community='public', version=2)
 
-   The following mailing list should be consider the primary support
-   mechanism for this module:
+# You may retrieve an individual OID using an SNMP GET
+location = session.get('sysLocation.0')
 
-   net-snmp-users@lists.sourceforge.net mail list
+# You may also specify the OID as a tuple (name, index)
+contact = session.get(('sysContact', 0))
 
-   (see http://www.net-snmp.org/lists/users/ to subscribe)
+# Set a variable using an SNMP SET
+session.set('sysLocation.0', 'The SNMP Lab')
 
-Supported Platforms:
+# Perform an SNMP walk
+system_items = session.walk('system')
 
-   Linux 2.x
-   Other UNIX/POSIX variants (untested)
-   MS Windows (untested)
+# Each returned item can be used normally as its related type (str or int) but 
+# also has several extended attributes with SNMP-specific information
+for system_item in system_items:
+    print '{oid}.{oid_index} {type} = {value}'.format(
+        oid=system_item.snmp_oid, oid_index=system_item.snmp_oid_index,
+        type=system_item.snmp_type, value=system_item
+    )
+```
 
-   Let us know where it *doesn't* work, as it should on most systems
+## Installation ##
 
-Release Notes:
 
-   This initial alpha release of the Python 'netsnmp' extension module
-   has been developed against net-snmp 5.4.pre1.
-
-   Only syncronous, client-side functionality is implemented.
-
-   Access to the parsed MIB database is not yet implemented.
-
-KNOWN BUGS:
-
-   Too many to mention at this point
 
 Installation:
 
