@@ -1,4 +1,9 @@
-from setuptools import setup, Extension
+try:
+    from setuptools import setup, Extension, find_packages
+except:
+    from distutils.core import setup, Extension
+    find_packages = lambda: ['netsnmp']
+
 import os
 import re
 import sys
