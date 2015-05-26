@@ -6,140 +6,109 @@ from .fixtures import sess_v3  # noqa
 
 
 def test_pynetsnmp_v3_session_get(sess_v3):  # noqa
-    varlist = pynetsnmp.VarList(
-        pynetsnmp.Varbind('sysUpTime', 0),
-        pynetsnmp.Varbind('sysContact', 0),
-        pynetsnmp.Varbind('sysLocation', 0)
-    )
+    res = sess_v3.get([
+        ('sysUpTime', 0),
+        ('sysContact', 0),
+        ('sysLocation', 0)
+    ])
 
-    vals = sess_v3.get(varlist)
+    assert len(res) == 3
 
-    assert len(vals) == 3
-    assert len(varlist) == 3
+    assert res[0].snmp_oid == 'sysUpTimeInstance'
+    assert res[0].snmp_oid_index is None
+    assert res[0] > 0
+    assert res[0].snmp_type == 'TICKS'
 
-    assert varlist[0].tag == 'sysUpTimeInstance'
-    assert varlist[0].iid == ''
-    assert ':' in varlist[0].val
-    assert ':' in vals[0]
-    assert varlist[0].type == 'TICKS'
+    assert res[1].snmp_oid == 'sysContact'
+    assert res[1].snmp_oid_index == 0
+    assert res[1] == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[1].snmp_type == 'OCTETSTR'
 
-    assert varlist[1].tag == 'sysContact'
-    assert varlist[1].iid == '0'
-    assert varlist[1].val == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert vals[1] == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert varlist[1].type == 'OCTETSTR'
-
-    assert varlist[2].tag == 'sysLocation'
-    assert varlist[2].iid == '0'
-    assert varlist[2].val == 'my even newer location'
-    assert vals[2] == 'my even newer location'
-    assert varlist[2].type == 'OCTETSTR'
+    assert res[2].snmp_oid == 'sysLocation'
+    assert res[2].snmp_oid_index == 0
+    assert res[2] == 'my even newer location'
+    assert res[2].snmp_type == 'OCTETSTR'
 
 
 def test_pynetsnmp_v3_session_get_next(sess_v3):  # noqa
-    varlist = pynetsnmp.VarList(
-        pynetsnmp.Varbind('sysUpTime', 0),
-        pynetsnmp.Varbind('sysContact', 0),
-        pynetsnmp.Varbind('sysLocation', 0)
-    )
+    res = sess_v3.get_next([
+        ('sysUpTime', 0),
+        ('sysContact', 0),
+        ('sysLocation', 0)
+    ])
 
-    vals = sess_v3.get_next(varlist)
+    assert len(res) == 3
 
-    assert len(varlist) == 3
-    assert len(vals) == 3
+    assert res[0].snmp_oid == 'sysContact'
+    assert res[0].snmp_oid_index == 0
+    assert res[0] == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[0].snmp_type == 'OCTETSTR'
 
-    assert varlist[0].tag == 'sysContact'
-    assert varlist[0].iid == '0'
-    assert varlist[0].val == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert vals[0] == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert varlist[0].type == 'OCTETSTR'
+    assert res[1].snmp_oid == 'sysName'
+    assert res[1].snmp_oid_index == 0
+    assert res[1] == platform.node()
+    assert res[1].snmp_type == 'OCTETSTR'
 
-    assert varlist[1].tag == 'sysName'
-    assert varlist[1].iid == '0'
-    assert varlist[1].val == platform.node()
-    assert vals[1] == platform.node()
-    assert varlist[1].type == 'OCTETSTR'
-
-    assert varlist[2].tag == 'sysORLastChange'
-    assert varlist[2].iid == '0'
-    assert ':' in varlist[2].val
-    assert ':' in vals[2]
-    assert varlist[2].type == 'TICKS'
+    assert res[2].snmp_oid == 'sysORLastChange'
+    assert res[2].snmp_oid_index == 0
+    assert res[2] > 0
+    assert res[2].snmp_type == 'TICKS'
 
 
 def test_pynetsnmp_v3_session_get_bulk(sess_v3):  # noqa
-    varlist = pynetsnmp.VarList(
-        pynetsnmp.Varbind('sysUpTime'),
-        pynetsnmp.Varbind('sysORLastChange'),
-        pynetsnmp.Varbind('sysORID'),
-        pynetsnmp.Varbind('sysORDescr'),
-        pynetsnmp.Varbind('sysORUpTime')
+    res = sess_v3.get_bulk(
+        ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+         'sysORUpTime'], 2, 8
     )
 
-    vals = sess_v3.get_bulk(2, 8, varlist)
+    assert len(res) == 26
 
-    assert len(vals) == 26
-    assert len(varlist) == 26
+    assert res[0].snmp_oid == 'sysUpTimeInstance'
+    assert res[0].snmp_oid_index is None
+    assert res[0] > 0
+    assert res[0].snmp_type == 'TICKS'
 
-    assert varlist[0].tag == 'sysUpTimeInstance'
-    assert varlist[0].iid == ''
-    assert ':' in varlist[0].val
-    assert varlist[0].type == 'TICKS'
-
-    assert varlist[4].tag == 'sysORUpTime'
-    assert varlist[4].iid == '1'
-    assert ':' in varlist[4].val
-    assert varlist[4].type == 'TICKS'
+    assert res[4].snmp_oid == 'sysORUpTime'
+    assert res[4].snmp_oid_index == 1
+    assert res[4] > 0
+    assert res[4].snmp_type == 'TICKS'
 
 
 def test_pynetsnmp_v3_session_set(sess_v3):  # noqa
-    varlist = pynetsnmp.VarList(
+    res = pynetsnmp.VarList([
         pynetsnmp.Varbind('sysLocation', '0', 'my final destination')
-    )
-
-    res = sess_v3.set(varlist)
-
+    ])
+    res = sess_v3.set(res)
     assert res == 1
 
-    var = pynetsnmp.Varbind('sysLocation', '0')
     res = pynetsnmp.snmp_get(
-        var, version=3, hostname='localhost',
+        ('sysLocation', 0), version=3, hostname='localhost',
         security_level='authPriv', security_username='initial',
         privacy_password='priv_pass', auth_password='auth_pass'
     )
-
-    assert len(res) == 1
-    assert res[0] == 'my final destination'
+    assert res == 'my final destination'
 
 
 def test_pynetsnmp_v3_session_walk(sess_v3):  # noqa
-    varlist = pynetsnmp.VarList(pynetsnmp.Varbind('system'))
+    res = sess_v3.walk('system')
+    assert len(res) >= 7
 
-    vals = sess_v3.walk(varlist)
+    assert res[0].snmp_oid == 'sysDescr'
+    assert res[0].snmp_oid_index == 0
+    assert platform.version() in res[0]
+    assert res[0].snmp_type == 'OCTETSTR'
 
-    assert len(vals) >= 7
-    assert len(varlist) >= 7
+    assert res[3].snmp_oid == 'sysContact'
+    assert res[3].snmp_oid_index == 0
+    assert res[3] == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[3].snmp_type == 'OCTETSTR'
 
-    assert varlist[0].tag == 'sysDescr'
-    assert varlist[0].iid == '0'
-    assert platform.version() in varlist[0].val
-    assert platform.version() in vals[0]
-    assert varlist[0].type == 'OCTETSTR'
+    assert res[4].snmp_oid == 'sysName'
+    assert res[4].snmp_oid_index == 0
+    assert res[4] == platform.node()
+    assert res[4].snmp_type == 'OCTETSTR'
 
-    assert varlist[3].tag == 'sysContact'
-    assert varlist[3].iid == '0'
-    assert varlist[3].val == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert vals[3] == 'G. S. Marzot <gmarzot@marzot.net>'
-    assert varlist[3].type == 'OCTETSTR'
-
-    assert varlist[4].tag == 'sysName'
-    assert varlist[4].iid == '0'
-    assert varlist[4].val == platform.node()
-    assert vals[4] == platform.node()
-    assert varlist[4].type == 'OCTETSTR'
-
-    assert varlist[5].tag == 'sysLocation'
-    assert varlist[5].iid == '0'
-    assert varlist[5].val == 'my final destination'
-    assert vals[5] >= 'my final destination'
-    assert varlist[5].type == 'OCTETSTR'
+    assert res[5].snmp_oid == 'sysLocation'
+    assert res[5].snmp_oid_index == 0
+    assert res[5] >= 'my final destination'
+    assert res[5].snmp_type == 'OCTETSTR'
