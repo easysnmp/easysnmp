@@ -10,15 +10,10 @@ SNMPv1) client API.
 
 ## Quick Start ##
 
-Install PyNetSNMP via pip as follows:
+There are primarily two ways you can use the PyNetSNMP library.
 
-```bash
-pip install PyNetSNMP
-```
-
-There are primarily two ways you can use the PyNetSNMP library.  The first
-is with the use of a Session object which is most suitable when you are 
-planning on requesting multiple pieces of SNMP data from a source.
+The first is with the use of a Session object which is most suitable when you 
+are planning on requesting multiple pieces of SNMP data from a source.
 
 ```python
 from pynetsnmp import Session
@@ -40,15 +35,47 @@ system_items = session.walk('system')
 
 # Each returned item can be used normally as its related type (str or int) but 
 # also has several extended attributes with SNMP-specific information
-for system_item in system_items:
+for item in system_items:
     print '{oid}.{oid_index} {type} = {value}'.format(
-        oid=system_item.snmp_oid, oid_index=system_item.snmp_oid_index,
-        type=system_item.snmp_type, value=system_item
+        oid=item.snmp_oid,
+        oid_index=item.snmp_oid_index,
+        type=item.snmp_type,
+        value=item
     )
+```
+
+You may also use PyNetSNMP via its simple interface which is intended for
+one-off operations where you wish to specify all details in the request:
+
+```python
+from pynetsnmp import snmp_get, snmp_set, snmp_walk
+
+# Grab a single piece of information using an SNMP GET
+snmp_get('sysDescr.0', hostname='localhost', community='public', version=1)
+
+# Perform an SNMP SET to update data
+snmp_set(
+    'sysLocation.0', 'My Cool Place',
+    hostname='localhost', community='public', version=1
+)
+
+# Perform an SNMP walk
+snmp_walk('system', hostname='localhost', community='public', version=1)
 ```
 
 ## Installation ##
 
+PyNetSNMP has been tested and is supported on the following operating systems:
+
+* CentOS 6 and CentOS 7
+* Debian 7 (Wheezy) and 8 (Jessie)
+* Ubuntu Server 12.04 (Precise Pangolin) and 14.04 (Trusty Tahr)
+
+Install PyNetSNMP via pip as follows:
+
+```bash
+pip install PyNetSNMP
+```
 
 
 Installation:
