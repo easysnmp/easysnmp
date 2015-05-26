@@ -2,12 +2,13 @@
 
 #if PY_VERSION_HEX < 0x02050000
 typedef int Py_ssize_t;
-#define PY_SSIZE_T_MAX INT_MAX
-#define PY_SSIZE_T_MIN INT_MIN
+#define PY_SSIZE_T_MAX (INT_MAX)
+#define PY_SSIZE_T_MIN (INT_MIN)
 #endif
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/snmpv3_api.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <errno.h>
@@ -19,61 +20,44 @@ typedef int Py_ssize_t;
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #ifdef HAVE_REGEX_H
 #include <regex.h>
 #endif
 
-#define SUCCESS 1
-#define FAILURE 0
+#define STRLEN(x) ((x) ? strlen((x)) : 0)
 
-#define VARBIND_TAG_F 0
-#define VARBIND_IID_F 1
-#define VARBIND_VAL_F 2
-#define VARBIND_TYPE_F 3
+#define SUCCESS (1)
+#define FAILURE (0)
 
-#define TYPE_UNKNOWN 0
-#define MAX_TYPE_NAME_LEN 32
-#define STR_BUF_SIZE (MAX_TYPE_NAME_LEN * MAX_OID_LEN)
-#define ENG_ID_BUF_SIZE 32
+#define VARBIND_TAG_F  (0)
+#define VARBIND_IID_F  (1)
+#define VARBIND_VAL_F  (2)
+#define VARBIND_TYPE_F (3)
 
-#define NO_RETRY_NOSUCH 0
+#define TYPE_UNKNOWN      (0)
+#define MAX_TYPE_NAME_LEN (32)
+#define STR_BUF_SIZE      ((MAX_TYPE_NAME_LEN) * (MAX_OID_LEN))
+#define ENG_ID_BUF_SIZE   (32)
 
-/* these should be part of transform_oids.h ? */
-#define USM_AUTH_PROTO_MD5_LEN 10
-#define USM_AUTH_PROTO_SHA_LEN 10
-#define USM_PRIV_PROTO_DES_LEN 10
+#define NO_RETRY_NOSUCH (0)
 
-#define STRLEN(x) (x ? strlen(x) : 0)
+#define USE_NUMERIC_OIDS (0x08)
+#define NON_LEAF_NAME    (0x04)
+#define USE_LONG_NAMES   (0x02)
+#define FAIL_ON_NULL_IID (0x01)
+#define NO_FLAGS         (0x00)
 
-/* from perl/SNMP/perlsnmp.h: */
-#ifndef timeradd
-#define timeradd(a, b, result)                                                \
+#define SAFE_FREE(x)                                                          \
     do                                                                        \
     {                                                                         \
-        (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;                         \
-        (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;                      \
-        if ((result)->tv_usec >= 1000000)                                     \
+        if ((x) != NULL)                                                      \
         {                                                                     \
-            ++(result)->tv_sec;                                               \
-            (result)->tv_usec -= 1000000;                                     \
+            free((x));                                                        \
         }                                                                     \
-    } while (0)
-#endif
-
-#ifndef timersub
-#define timersub(a, b, result)                                                \
-    do                                                                        \
-    {                                                                         \
-        (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                         \
-        (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                      \
-        if ((result)->tv_usec < 0)                                            \
-        {                                                                     \
-            --(result)->tv_sec;                                               \
-            (result)->tv_usec += 1000000;                                     \
-        }                                                                     \
-    } while (0)
-#endif
+    }                                                                         \
+    while (0)
 
 typedef netsnmp_session SnmpSession;
 typedef struct tree SnmpMibNode;
@@ -95,39 +79,12 @@ static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
 static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
-#define USE_NUMERIC_OIDS 0x08
-#define NON_LEAF_NAME 0x04
-#define USE_LONG_NAMES 0x02
-#define FAIL_ON_NULL_IID 0x01
-#define NO_FLAGS 0x00
+static void py_log_msg(int log_level, char *printf_fmt, ...);
 
+enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
-/* Wrapper around fprintf(stderr, ...) for clean and easy debug output. */
-static int _debug_level = 0;
-#ifdef  DEBUGGING
-#define DBPRT(severity, otherargs)                                            \
-    do                                                                        \
-    {                                                                         \
-        if (_debug_level && severity <= _debug_level)                         \
-        {                                                                     \
-            (void)printf(otherargs);                                          \
-        }                                                                     \
-    } while (/*CONSTCOND*/0)
-#else   /* DEBUGGING */
-#define DBPRT(severity, otherargs)      /* Ignore */
-#endif  /* DEBUGGING */
-
-#define SAFE_FREE(x)                                                          \
-    do                                                                        \
-    {                                                                         \
-        if (x != NULL)                                                        \
-        {                                                                     \
-            free(x);                                                          \
-        }                                                                     \
-    }                                                                         \
-    while (/*CONSTCOND*/0)
-
-static PyObject *PyNetSNMPInterfaceError;
+static PyObject *PyLogger = NULL;
+static PyObject *PyNetSNMPInterfaceError = NULL;
 
 /*
  * Ripped wholesale from library/tools.h from Net-SNMP 5.7.3
@@ -318,15 +275,16 @@ static int __translate_asn_type(int type)
         case ASN_COUNTER64:
             return TYPE_COUNTER64;
         default:
-            fprintf(stderr, "translate_asn_type: unhandled asn type (%d)\n",
-                    type);
+            py_log_msg(ERROR, "translate_asn_type: unhandled asn type (%d)",
+                       type);
+
             return TYPE_OTHER;
     }
 }
 
-#define USE_BASIC 0
-#define USE_ENUMS 1
-#define USE_SPRINT_VALUE 2
+#define USE_BASIC        (0)
+#define USE_ENUMS        (1)
+#define USE_SPRINT_VALUE (2)
 static int __snprint_value(char *buf, size_t buf_len,
                            netsnmp_variable_list *var,
                            struct tree *tp, int type, int flag)
@@ -448,8 +406,8 @@ static int __snprint_value(char *buf, size_t buf_len,
 
             case ASN_NSAP:
             default:
-                fprintf(stderr, "snprint_value: asn type not handled %d\n",
-                        var->type);
+                py_log_msg(ERROR, "snprint_value: asn type not handled %d",
+                           var->type);
         }
     }
     return len;
@@ -568,11 +526,9 @@ static int __get_type_str(int type, char *str)
         case TYPE_NSAPADDRESS:
         default: /* unsupported types for now */
             strcpy(str, "");
-            if (_debug_level)
-            {
-                printf("DEBUG (get_type_str): failure (%d)\n", type);
-            }
-            return FAILURE ;
+            py_log_msg(ERROR, "(get_type_str): failure (%d)", type);
+
+            return FAILURE;
     }
     return SUCCESS;
 }
@@ -581,7 +537,7 @@ static int __get_type_str(int type, char *str)
    <labeln> and <iid> in seperate strings (note: will destructively
    alter input string, 'name') */
 static int __get_label_iid(char *name, char **last_label, char **iid,
-                                                     int flag)
+                           int flag)
 {
     char *lcp;
     char *icp;
@@ -1153,10 +1109,9 @@ done:
     {
         free(tmp_err_str);
     }
-    if (_debug_level && *err_num)
-    {
-        printf("DEBUG (sync PDU): %s\n", err_str);
-    }
+
+    py_log_msg(DEBUG, "sync PDU: %s", err_str);
+
     return status;
 }
 
@@ -1606,7 +1561,8 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
             netsnmp_container_find("transport_configuration:fifo");
         if (!session.transport_configuration)
         {
-            fprintf(stderr, "failed to initialize the transport configuration container\n");
+            py_log_msg(ERROR, "failed to initialize the transport "
+                              "configuration container");
             return NULL;
         }
 
@@ -1852,11 +1808,9 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                                                        &out_len, 0, &buf_over,
                                                        vars->name,
                                                        vars->name_length);
-                if (_debug_level)
-                {
-                    printf("DEBUG (netsnmp_get): str_bufp: %s:%d:%d\n",
-                           str_bufp, (int)str_buf_len, (int)out_len);
-                }
+
+                py_log_msg(DEBUG, "netsnmp_get: str_bufp: %s:%d:%d",
+                           str_bufp, (int) str_buf_len, (int) out_len);
 
                 str_buf[sizeof(str_buf) - 1] = '\0';
 
@@ -1864,26 +1818,16 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                 {
                     type = (tp->type ? tp->type : tp->parent->type);
                     getlabel_flag &= ~NON_LEAF_NAME;
-                    if (_debug_level)
-                    {
-                        printf("DEBUG (netsnmp_get): is_leaf: %d\n", type);
-                    }
+                    py_log_msg(DEBUG, "netsnmp_get: is_leaf: %d", type);
                 }
                 else
                 {
                     getlabel_flag |= NON_LEAF_NAME;
                     type = __translate_asn_type(vars->type);
-                    if (_debug_level)
-                    {
-                        printf("DEBUG (netsnmp_get): !is_leaf: %d\n",
-                               tp->type);
-                    }
+                    py_log_msg(DEBUG, "netsnmp_get: !is_leaf: %d", tp->type);
                 }
 
-                if (_debug_level)
-                {
-                    printf("DEBUG (netsnmp_get): str_buf: %s\n", str_buf);
-                }
+                py_log_msg(DEBUG, "netsnmp_get: str_buf: %s", str_buf);
 
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
@@ -1918,7 +1862,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             }
             else
             {
-                printf("DEBUG (netsnmp_get): bad varbind (%d)\n", varlist_ind);
+                py_log_msg(DEBUG, "netsnmp_get: bad varbind (%d)",
+                           varlist_ind);
                 Py_XDECREF(varbind);
             }
         }
@@ -2038,11 +1983,9 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                    best_guess);
                 }
 
-                if (_debug_level)
-                {
-                    printf("DEBUG (netsnmp_getnext): filling request: %s:%s:%d:%d\n",
+                py_log_msg(DEBUG,
+                           "netsnmp_getnext: filling request: %s:%s:%d:%d",
                            tag, iid, oid_arr_len, best_guess);
-                }
 
                 if (oid_arr_len)
                 {
@@ -2152,11 +2095,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
-                if (_debug_level)
-                {
-                    printf("DEBUG (netsnmp_getnext): filling response: %s:%s\n",
+                py_log_msg(DEBUG, "netsnmp_getnext: filling response: %s:%s",
                            tag, iid);
-                }
 
                 py_netsnmp_attr_set_string(varbind, "tag", tag, STRLEN(tag));
                 py_netsnmp_attr_set_string(varbind, "iid", iid, STRLEN(iid));
@@ -2190,8 +2130,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
             }
             else
             {
-                printf("DEBUG (netsnmp_getnext): bad varbind (%d)\n",
-                       varlist_ind);
+                py_log_msg(DEBUG, "netsnmp_getnext: bad varbind (%d)",
+                           varlist_ind);
                 Py_XDECREF(varbind);
             }
         }
@@ -2351,11 +2291,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                NULL, best_guess);
             }
 
-            if (_debug_level)
-            {
-                printf("DEBUG (netsnmp_walk): filling request: %s:%s:%d:%d\n",
-                       tag, iid, oid_arr_len[varlist_ind], best_guess);
-            }
+            printf("netsnmp_walk: filling request: %s:%s:%d:%d",
+                   tag, iid, oid_arr_len[varlist_ind], best_guess);
 
             if (oid_arr_len[varlist_ind])
             {
@@ -2555,11 +2492,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
 
-                        if (_debug_level)
-                        {
-                            printf("DEBUG (netsnmp_walk): filling response: %s:%s\n",
-                                   tag, iid);
-                        }
+                        printf("netsnmp_walk: filling response: %s:%s",
+                               tag, iid);
 
                         py_netsnmp_attr_set_string(varbind, "tag", tag,
                                                    STRLEN(tag));
@@ -2594,8 +2528,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         _PyTuple_Resize(&val_tuple, result_count + 1);
                         PyTuple_SetItem(val_tuple, result_count++,
                                         Py_BuildValue(""));
-                        printf("DEBUG (netsnmp_walk): bad varbind (%d)\n",
-                               varlist_ind);
+                        py_log_msg(DEBUG, "netsnmp_walk: bad varbind (%d)",
+                                   varlist_ind);
                     }
                     Py_XDECREF(varbind);
 
@@ -3081,7 +3015,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (status == FAILURE)
                 {
-                    printf("ERROR (set): adding variable/value to PDU");
+                    py_log_msg(ERROR, "set: adding variable/value to PDU");
                 }
 
                 /* release reference when done */
@@ -3134,42 +3068,193 @@ done:
 }
 
 
-static PyMethodDef ClientMethods[] = {
-    {"session", netsnmp_create_session, METH_VARARGS,
-     "create a netsnmp session."},
-    {"session_v3", netsnmp_create_session_v3, METH_VARARGS,
-     "create a netsnmp session."},
-    {"session_tunneled", netsnmp_create_session_tunneled, METH_VARARGS,
-     "create a tunneled netsnmp session over tls, dtls or ssh."},
-    {"delete_session", netsnmp_delete_session, METH_VARARGS,
-     "create a netsnmp session."},
-    {"get", netsnmp_get, METH_VARARGS,
-     "perform an SNMP GET operation."},
-    {"getnext", netsnmp_getnext, METH_VARARGS,
-     "perform an SNMP GETNEXT operation."},
-    {"getbulk", netsnmp_getbulk, METH_VARARGS,
-     "perform an SNMP GETBULK operation."},
-    {"set", netsnmp_set, METH_VARARGS,
-     "perform an SNMP SET operation."},
-    {"walk", netsnmp_walk, METH_VARARGS,
-     "perform an SNMP WALK operation."},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
-};
 
-PyMODINIT_FUNC initinterface(void)
+/**
+ * Get a logger object from the logging module.
+ */
+static PyObject *py_get_logger(char *logger_name)
 {
-    // Initialise the module
-    PyObject *module;
-    module = Py_InitModule("interface", ClientMethods);
-    if (module == NULL)
+    PyObject *logging;
+    PyObject *logger;
+
+    logging = PyImport_ImportModuleNoBlock("logging");
+
+    if (logging == NULL)
     {
+        PyErr_SetString(PyExc_ImportError,
+                        "Could not import module 'logging'");
+        return NULL;
+    }
+
+    logger = PyObject_CallMethod(logging, "getLogger", "s", logger_name);
+
+    return logger;
+}
+
+static void py_log_msg(int log_level, char *printf_fmt, ...)
+{
+    PyObject *log_msg = NULL;
+    va_list fmt_args;
+
+    va_start(fmt_args, printf_fmt);
+    log_msg = PyString_FromFormatV(printf_fmt, fmt_args);
+    va_end (fmt_args);
+
+
+    if (log_msg == NULL)
+    {
+        /* fail silently. */
         return;
     }
 
-    // Initialise our exception
-    PyNetSNMPInterfaceError = PyErr_NewException("interface.PyNetSNMPInterfaceError",
-                                                 NULL, NULL);
-    Py_INCREF(PyNetSNMPInterfaceError);
-    PyModule_AddObject(module, "PyNetSNMPInterfaceError",
-                       PyNetSNMPInterfaceError);
+    /* call function depending on loglevel */
+    switch (log_level)
+    {
+        case INFO:
+            PyObject_CallMethod(PyLogger, "info", "O", log_msg);
+            break;
+
+        case WARNING:
+            PyObject_CallMethod(PyLogger, "warn", "O", log_msg);
+            break;
+
+        case ERROR:
+            PyObject_CallMethod(PyLogger, "error", "O", log_msg);
+            break;
+
+        case DEBUG:
+            PyObject_CallMethod(PyLogger, "debug", "O", log_msg);
+            break;
+
+        case EXCEPTION:
+            PyObject_CallMethod(PyLogger, "exception", "O", log_msg);
+            break;
+
+        default:
+            break;
+    }
+
+    Py_DECREF(log_msg);
+}
+
+/*
+ * Array of defined methods when initialising the module,
+ * each entry must contain the following:
+ *
+ *     (char *)      ml_name:   name of method
+ *     (PyCFunction) ml_meth:   pointer to the C implementation
+ *     (int)         ml_flags:  flag bit indicating how call should be
+ *     (char *)      ml_doc:    points to contents of method docstring
+ *
+ * See: https://docs.python.org/2/c-api/structures.html for more info.
+ *
+ */
+static PyMethodDef ClientMethods[] =
+    {
+        {
+            "session",
+            netsnmp_create_session,
+            METH_VARARGS,
+            "create a netsnmp session."
+        },
+        {
+            "session_v3",
+            netsnmp_create_session_v3,
+            METH_VARARGS,
+            "create a netsnmp session."
+        },
+        {
+            "session_tunneled",
+            netsnmp_create_session_tunneled,
+            METH_VARARGS,
+            "create a tunneled netsnmp session over tls, dtls or ssh."
+        },
+        {
+            "delete_session",
+            netsnmp_delete_session,
+            METH_VARARGS,
+            "create a netsnmp session."
+        },
+        {
+            "get",
+            netsnmp_get,
+            METH_VARARGS,
+            "perform an SNMP GET operation."
+        },
+        {
+            "getnext",
+            netsnmp_getnext,
+            METH_VARARGS,
+            "perform an SNMP GETNEXT operation."
+        },
+        {
+            "getbulk",
+            netsnmp_getbulk,
+            METH_VARARGS,
+            "perform an SNMP GETBULK operation."
+        },
+        {
+            "set",
+            netsnmp_set,
+            METH_VARARGS,
+            "perform an SNMP SET operation."
+        },
+        {
+            "walk",
+            netsnmp_walk,
+            METH_VARARGS,
+            "perform an SNMP WALK operation."
+        },
+        {
+            NULL,
+            NULL,
+            0,
+            NULL
+        } /* Sentinel */
+    };
+
+/* entry point when importing the module */
+PyMODINIT_FUNC initinterface(void)
+{
+    int ret;
+
+    PyObject *module;
+
+    /* Initialise the module */
+    module = Py_InitModule("interface", ClientMethods);
+    if (module == NULL)
+    {
+        goto bail;
+    }
+
+    /* Initialise our exception */
+    PyNetSNMPInterfaceError =
+        PyErr_NewException("interface.PyNetSNMPInterfaceError", NULL, NULL);
+
+    ret = PyModule_AddObject(module, "PyNetSNMPInterfaceError",
+                             PyNetSNMPInterfaceError);
+
+    if (ret != 0)
+    {
+        goto bail;
+    }
+
+    /* initialise logging (note: automatically has refcount 1) */
+    PyLogger = py_get_logger("pynetsnmp.interface");
+
+    if (PyLogger == NULL)
+    {
+        goto bail;
+    }
+
+    py_log_msg(DEBUG, "initialised netsnmp_interface");
+
+    return;
+
+bail:
+
+    Py_XDECREF(PyLogger);
+    Py_XDECREF(PyNetSNMPInterfaceError);
+
+    return;
 }
