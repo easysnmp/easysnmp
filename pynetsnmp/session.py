@@ -76,10 +76,10 @@ class Session(object):
     """A Net-SNMP session which may be setup once and then used to query
     and manipulate SNMP data.
 
-    :param version: the SNMP version to use; 1, 2 (equivalent to 2c) or 3
     :param hostname: hostname or IP address of SNMP agent
+    :param version: the SNMP version to use; 1, 2 (equivalent to 2c) or 3
     :param community: SNMP community string (used for both R/W) (v1 & v2)
-    :param timeout: micro-seconds before retry
+    :param timeout: seconds before retry
     :param retries: retries before failure
     :param remote_port: allow remote UDP port to be overridden
     :param local_port: TODO
@@ -114,8 +114,8 @@ class Session(object):
     """
 
     def __init__(
-        self, version=3, hostname='localhost', community='public',
-        timeout=1000000, retries=3, remote_port=161, local_port=0,
+        self, hostname='localhost', version=3, community='public',
+        timeout=1, retries=3, remote_port=161, local_port=0,
         security_level='no_auth_or_privacy', security_username='initial',
         privacy_protocol='DEFAULT', privacy_password='',
         auth_protocol='DEFAULT', auth_password='', context_engine_id='',
@@ -123,14 +123,14 @@ class Session(object):
         our_identity='', their_identity='', their_hostname='',
         trust_cert=''
     ):
-        self.version = version
         self.hostname = hostname
+        self.version = version
         self.community = community
         self.timeout = timeout
         self.retries = retries
+        self.local_port = local_port
         # TODO: Implement the ability to set the remote port explicitly
         self.remote_port = remote_port
-        self.local_port = local_port
         self.security_level = security_level
         self.security_username = security_username
         self.privacy_protocol = privacy_protocol
@@ -201,6 +201,9 @@ class Session(object):
         # Check for transports that may be tunneled
         tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
 
+        # Calculate our timeout in microseconds
+        timeout_microseconds = self.timeout * 1000000
+
         # Tunneled
         if tunneled:
             self.sess_ptr = interface.session_tunneled(
@@ -208,7 +211,7 @@ class Session(object):
                 self.hostname,
                 self.local_port,
                 self.retries,
-                self.timeout,
+                timeout_microseconds,
                 self.security_username,
                 SECURITY_LEVEL_MAPPING[self.security_level],
                 self.context_engine_id,
@@ -226,7 +229,7 @@ class Session(object):
                 self.hostname,
                 self.local_port,
                 self.retries,
-                self.timeout,
+                timeout_microseconds,
                 self.security_username,
                 SECURITY_LEVEL_MAPPING[self.security_level],
                 self.security_engine_id,
@@ -248,7 +251,7 @@ class Session(object):
                 self.hostname,
                 self.local_port,
                 self.retries,
-                self.timeout
+                timeout_microseconds
             )
 
     def get(self, oids):
@@ -275,7 +278,14 @@ class Session(object):
         return list(results) if is_list else results[0]
 
     def set(self, oid, value):
-        """Perform an SNMP SET operation using the prepared session"""
+        """Perform an SNMP SET operation using the prepared session
+
+        :param oids: you may pass in a list of OIDs or single item; eoch item
+                     may be a string representing the entire OID
+                     (e.g. 'sysDescr.0') or may be a tuple containing the
+                     name as its first item and index as its second
+                     (e.g. ('sysDescr', 0))
+        """
 
         varlist = VarList()
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
@@ -315,6 +325,12 @@ class Session(object):
     def get_next(self, oids):
         """Uses an SNMP GETNEXT operation using the prepared session to
         retrieve the next variable after the chosen item
+
+        :param oids: you may pass in a list of OIDs or single item; eoch item
+                     may be a string representing the entire OID
+                     (e.g. 'sysDescr.0') or may be a tuple containing the
+                     name as its first item and index as its second
+                     (e.g. ('sysDescr', 0))
         """
 
         # Build our variable bindings for the C interface
@@ -332,6 +348,12 @@ class Session(object):
     def get_bulk(self, oids, non_repeaters, max_repetitions):
         """Performs a bulk SNMP GET operation using the prepared session to
         retrieve multiple pieces of information in a single packet
+
+        :param oids: you may pass in a list of OIDs or single item; eoch item
+                     may be a string representing the entire OID
+                     (e.g. 'sysDescr.0') or may be a tuple containing the
+                     name as its first item and index as its second
+                     (e.g. ('sysDescr', 0))
         """
 
         if self.version == 1:
@@ -353,6 +375,12 @@ class Session(object):
     def walk(self, oids='.1.3.6.1.2.1'):
         """Uses SNMP GETNEXT operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID
+
+        :param oids: you may pass in a single item (multiple values currently
+                     experimental) which may be a string representing the
+                     entire OID (e.g. 'sysDescr.0') or may be a tuple
+                     containing the name as its first item and index as its
+                     second (e.g. ('sysDescr', 0))
         """
 
         # Build our variable bindings for the C interface
