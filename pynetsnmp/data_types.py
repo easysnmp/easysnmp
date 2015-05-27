@@ -1,3 +1,6 @@
+from curses.ascii import isprint
+
+
 class SNMPBaseIntegerType(int):
     """The base type for all SNMP integer data types"""
     snmp_type = None
@@ -34,9 +37,16 @@ class SNMPBaseStringType(str):
         return obj
 
     def __repr__(self):
+        # Filter all non-printable characters
+        printable = filter(isprint, self)
+        if printable != self:
+            if printable:
+                printable += ' '
+            printable += '(contains binary)'
+
         return (
             "<{} value='{}' (snmp_oid='{}', snmp_oid_index={})>".format(
-                self.__class__.__name__, self, self.snmp_oid,
+                self.__class__.__name__, printable, self.snmp_oid,
                 self.snmp_oid_index
             )
         )
