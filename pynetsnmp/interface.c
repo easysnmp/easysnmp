@@ -360,12 +360,15 @@ static int __snprint_value(char *buf, size_t buf_len,
 
             case SNMP_ENDOFMIBVIEW:
                 snprintf(buf, buf_len, "%s", "ENDOFMIBVIEW");
+                len = STRLEN(buf);
                 break;
             case SNMP_NOSUCHOBJECT:
                 snprintf(buf, buf_len, "%s", "NOSUCHOBJECT");
+                len = STRLEN(buf);
                 break;
             case SNMP_NOSUCHINSTANCE:
                 snprintf(buf, buf_len, "%s", "NOSUCHINSTANCE");
+                len = STRLEN(buf);
                 break;
 
             case ASN_COUNTER64:
@@ -1377,7 +1380,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
                        (char **) &session.securityEngineID);
     session.contextEngineIDLen =
-        hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
+        hex_to_binary2((unsigned char *)context_eng_id, STRLEN(sec_eng_id),
                        (char **) &session.contextEngineID);
     session.engineBoots = eng_boots;
     session.engineTime = eng_time;
