@@ -1,4 +1,8 @@
-from setuptools import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
+
 import os
 import re
 import sys
