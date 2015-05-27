@@ -1,7 +1,7 @@
 import re
 
 from . import interface
-from .exceptions import PyNetSNMPError, PyNetSNMPNoSuchObjectError
+from .exceptions import EasySNMPError, EasySNMPNoSuchObjectError
 from .data_types import TYPE_MAPPING
 from .variables import Varbind, VarList
 
@@ -55,12 +55,12 @@ def build_results(varlist):
         # )
         # print '--- {} ---'.format(varbind.val)
         if varbind.type == 'NOSUCHOBJECT':
-            raise PyNetSNMPNoSuchObjectError('No such object could be found')
+            raise EasySNMPNoSuchObjectError('No such object could be found')
         elif (
             varbind.type not in TYPE_MAPPING or
             not TYPE_MAPPING[varbind.type]
         ):
-            raise PyNetSNMPError(
+            raise EasySNMPError(
                 'Unsupported SNMP type {} for {}.{}: {}'.format(
                     varbind.type, varbind.tag, varbind.iid, varbind.val
                 )
@@ -357,7 +357,7 @@ class Session(object):
         """
 
         if self.version == 1:
-            raise PyNetSNMPError(
+            raise EasySNMPError(
                 'You cannot perform a bulk GET operation for SNMP version 1'
             )
 

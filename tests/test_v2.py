@@ -1,11 +1,11 @@
 import platform
 
-import pynetsnmp
+import easysnmp
 
 from .fixtures import sess_v2  # noqa
 
 
-def test_pynetsnmp_v2_session_get(sess_v2):  # noqa
+def test_easysnmp_v2_session_get(sess_v2):  # noqa
     res = sess_v2.get([
         ('sysUpTime', 0),
         ('sysContact', 0),
@@ -30,7 +30,7 @@ def test_pynetsnmp_v2_session_get(sess_v2):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_pynetsnmp_v2_session_get_next(sess_v2):  # noqa
+def test_easysnmp_v2_session_get_next(sess_v2):  # noqa
     res = sess_v2.get_next([
         ('sysUpTime', 0),
         ('sysContact', 0),
@@ -55,7 +55,7 @@ def test_pynetsnmp_v2_session_get_next(sess_v2):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_pynetsnmp_v2_session_get_bulk(sess_v2):  # noqa
+def test_easysnmp_v2_session_get_bulk(sess_v2):  # noqa
     res = sess_v2.get_bulk([
         'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
         'sysORUpTime'], 2, 8
@@ -74,17 +74,17 @@ def test_pynetsnmp_v2_session_get_bulk(sess_v2):  # noqa
     assert res[4].snmp_type == 'TICKS'
 
 
-def test_pynetsnmp_v2_session_set(sess_v2):  # noqa
+def test_easysnmp_v2_session_set(sess_v2):  # noqa
     success = sess_v2.set(('sysLocation', 0), 'my even newer location')
     assert success
 
-    res = pynetsnmp.snmp_get(
+    res = easysnmp.snmp_get(
         ('sysLocation', 0), version=2, hostname='localhost', community='public'
     )
     assert res == 'my even newer location'
 
 
-def test_pynetsnmp_v2_session_walk(sess_v2):  # noqa
+def test_easysnmp_v2_session_walk(sess_v2):  # noqa
     res = sess_v2.walk('system')
 
     assert len(res) >= 7

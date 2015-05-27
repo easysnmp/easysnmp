@@ -38,21 +38,21 @@ else:
 
 
 setup(
-    name="PyNetSNMP",
+    name="easysnmp",
     version="1.0",
     description='A more Pythonic Net-SNMP Python Interface',
     author='Fotis Gimian',
     author_email='fgimiansoftware@gmail.com',
-    url='https://github.com/fgimian/PyNetSNMP',
+    url='https://github.com/fgimian/easysnmp',
     license="BSD",
-    packages=['pynetsnmp'],
+    packages=['easysnmp'],
 
     # TODO: Update this to use py.test and our new test suite
     # test_suite="netsnmp.tests.test",
 
     ext_modules=[
         Extension(
-            "pynetsnmp.interface", ["pynetsnmp/interface.c"],
+            "easysnmp.interface", ["easysnmp/interface.c"],
             library_dirs=libdirs, include_dirs=incdirs, libraries=libs
         )
     ]

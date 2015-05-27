@@ -1,13 +1,13 @@
 import platform
 
 import pytest
-import pynetsnmp
+import easysnmp
 
 from .fixtures import sess_v1  # noqa
 
 
-def test_pynetsnmp_v1_get():
-    res = pynetsnmp.snmp_get(
+def test_easysnmp_v1_get():
+    res = easysnmp.snmp_get(
         ('.1.3.6.1.2.1.1.1', 0),
         version=1, hostname='localhost', community='public'
     )
@@ -18,8 +18,8 @@ def test_pynetsnmp_v1_get():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_pynetsnmp_v1_get_next():
-    res = pynetsnmp.snmp_get_next(
+def test_easysnmp_v1_get_next():
+    res = easysnmp.snmp_get_next(
         ('.1.3.6.1.2.1.1.1', 0),
         version=1, hostname='localhost', community='public'
     )
@@ -30,20 +30,20 @@ def test_pynetsnmp_v1_get_next():
     assert res.snmp_type == 'OBJECTID'
 
 
-def test_pynetsnmp_v1_set():
-    res = pynetsnmp.snmp_get(
+def test_easysnmp_v1_set():
+    res = easysnmp.snmp_get(
         ('sysLocation', 0),
         version=1, hostname='localhost', community='public'
     )
     assert res != 'my new location'
 
-    success = pynetsnmp.snmp_set(
+    success = easysnmp.snmp_set(
         ('sysLocation', 0), 'my new location',
         version=1, hostname='localhost', community='public'
     )
     assert success
 
-    res = pynetsnmp.snmp_get(
+    res = easysnmp.snmp_get(
         ('sysLocation', 0),
         version=1, hostname='localhost', community='public'
     )
@@ -51,29 +51,29 @@ def test_pynetsnmp_v1_set():
 
 
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
-# def test_pynetsnmp_v1_set_restart_agent():
-#     var = pynetsnmp.Varbind('sysUpTime', '0')
-#     res = pynetsnmp.snmp_get(
+# def test_easysnmp_v1_set_restart_agent():
+#     var = easysnmp.Varbind('sysUpTime', '0')
+#     res = easysnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
 #     print "uptime = ", res[0]
 
-#     var = pynetsnmp.Varbind('versionRestartAgent','0', 1)
-#     res = pynetsnmp.snmp_set(
+#     var = easysnmp.Varbind('versionRestartAgent','0', 1)
+#     res = easysnmp.snmp_set(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
-#     var = pynetsnmp.Varbind('sysUpTime','0')
-#     res = pynetsnmp.snmp_get(
+#     var = easysnmp.Varbind('sysUpTime','0')
+#     res = easysnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
 #     print "uptime = ", res[0]
 
 
-def test_pynetsnmp_v1_set_next():
-    res = pynetsnmp.snmp_get_next(
+def test_easysnmp_v1_set_next():
+    res = easysnmp.snmp_get_next(
         'nsCacheEntry', version=1, hostname='localhost', community='public'
     )
 
@@ -82,12 +82,12 @@ def test_pynetsnmp_v1_set_next():
     assert res > 0
     assert res.snmp_type == 'INTEGER'
 
-    res = pynetsnmp.snmp_set(
+    res = easysnmp.snmp_set(
         'nsCacheEntry', 65,
         version=1, hostname='localhost', community='public'
     )
 
-    res = pynetsnmp.snmp_get(
+    res = easysnmp.snmp_get(
         'nsCacheEntry', version=1, hostname='localhost', community='public'
     )
 
@@ -97,7 +97,7 @@ def test_pynetsnmp_v1_set_next():
     assert res.snmp_type == 'INTEGER'
 
 
-def test_pynetsnmp_v1_set_multiple(sess_v1):  # noqa
+def test_easysnmp_v1_set_multiple(sess_v1):  # noqa
     success = sess_v1.set_multiple({
         '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116': '.1.3.6.1.6.1.1',
         '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116': '1234',
@@ -128,7 +128,7 @@ def test_pynetsnmp_v1_set_multiple(sess_v1):  # noqa
     assert res[2].snmp_type == 'INTEGER'
 
 
-def test_pynetsnmp_v1_set_clear(sess_v1):  # noqa
+def test_easysnmp_v1_set_clear(sess_v1):  # noqa
     res = sess_v1.set('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 6)
     assert res == 1
 
@@ -155,8 +155,8 @@ def test_pynetsnmp_v1_set_clear(sess_v1):  # noqa
     assert res[2].snmp_type == 'COUNTER'
 
 
-def test_pynetsnmp_v1_walk():
-    res = pynetsnmp.snmp_walk(
+def test_easysnmp_v1_walk():
+    res = easysnmp.snmp_walk(
         'system', version=1, hostname='localhost', community='public'
     )
     assert len(res) >= 7
@@ -167,8 +167,8 @@ def test_pynetsnmp_v1_walk():
     assert res[5] == 'my new location'
 
 
-def test_pynetsnmp_v1_walk_res():
-    res = pynetsnmp.snmp_walk(
+def test_easysnmp_v1_walk_res():
+    res = easysnmp.snmp_walk(
         'system', version=1, hostname='localhost', community='public'
     )
 
@@ -195,7 +195,7 @@ def test_pynetsnmp_v1_walk_res():
     assert res[5].snmp_type == 'OCTETSTR'
 
 
-def test_pynetsnmp_v1_session_get(sess_v1):  # noqa
+def test_easysnmp_v1_session_get(sess_v1):  # noqa
     res = sess_v1.get([
         ('sysUpTime', 0),
         ('sysContact', 0),
@@ -220,7 +220,7 @@ def test_pynetsnmp_v1_session_get(sess_v1):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_pynetsnmp_v1_session_get_next(sess_v1):  # noqa
+def test_easysnmp_v1_session_get_next(sess_v1):  # noqa
     res = sess_v1.get_next([
         ('sysUpTime', 0),
         ('sysContact', 0),
@@ -245,8 +245,8 @@ def test_pynetsnmp_v1_session_get_next(sess_v1):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_pynetsnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
-    with pytest.raises(pynetsnmp.PyNetSNMPError):
+def test_easysnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
+    with pytest.raises(easysnmp.EasySNMPError):
         sess_v1.get_bulk(
             ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
              'sysORUpTime'],
@@ -254,17 +254,17 @@ def test_pynetsnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
         )
 
 
-def test_pynetsnmp_v1_session_set(sess_v1):  # noqa
+def test_easysnmp_v1_session_set(sess_v1):  # noqa
     res = sess_v1.set(('sysLocation', 0), 'my newer location')
     assert res == 1
 
-    res = pynetsnmp.snmp_get(
+    res = easysnmp.snmp_get(
         'sysLocation.0', version=1, hostname='localhost', community='public'
     )
     assert res == 'my newer location'
 
 
-def test_pynetsnmp_v1_session_walk(sess_v1):  # noqa
+def test_easysnmp_v1_session_walk(sess_v1):  # noqa
     res = sess_v1.walk('system')
 
     assert len(res) >= 7

@@ -1,4 +1,4 @@
-# PyNetSNMP #
+# Easy SNMP #
 
 This is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
 but attempts to bring a more Pythonic interface to the library.   Check out
@@ -10,13 +10,13 @@ of the SNMP protocol.
 
 ## Quick Start ##
 
-There are primarily two ways you can use the PyNetSNMP library.
+There are primarily two ways you can use the Easy SNMP library.
 
 The first is with the use of a Session object which is most suitable when you 
 are planning on requesting multiple pieces of SNMP data from a source.
 
 ```python
-from pynetsnmp import Session
+from easysnmp import Session
 
 # Create an SNMP session to be used for all our requests
 session = Session(hostname='localhost', community='public', version=2)
@@ -47,11 +47,11 @@ for item in system_items:
     )
 ```
 
-You may also use PyNetSNMP via its simple interface which is intended for
+You may also use Easy SNMP via its simple interface which is intended for
 one-off operations where you wish to specify all details in the request:
 
 ```python
-from pynetsnmp import snmp_get, snmp_set, snmp_walk
+from easysnmp import snmp_get, snmp_set, snmp_walk
 
 # Grab a single piece of information using an SNMP GET
 snmp_get('sysDescr.0', hostname='localhost', community='public', version=1)
@@ -68,16 +68,16 @@ snmp_walk('system', hostname='localhost', community='public', version=1)
 
 ## Installation ##
 
-PyNetSNMP has been tested and is supported on the following operating systems:
+Easy SNMP has been tested and is supported on the following operating systems:
 
 * CentOS 6 and CentOS 7
 * Debian 7 (Wheezy) and 8 (Jessie)
 * Ubuntu Server 12.04 (Precise Pangolin) and 14.04 (Trusty Tahr)
 
-Install PyNetSNMP via pip as follows:
+Install Easy SNMP via pip as follows:
 
 ```bash
-pip install PyNetSNMP
+pip install easysnmp
 ```
 
 ## Documentation ##
@@ -107,7 +107,7 @@ with existing snmp libs).
 Also check that the header files are correct and up to date.
 
 If you cannot resolve the problem you can
-[post an issue](https://github.com/fgimian/PyNetSNMP/issues).
+[post an issue](https://github.com/fgimian/easysnmp/issues).
 
 Please provide sufficient information to analyze the problem (OS type, 
 versions for OS, Python, Net-SNMP, compiler, complete error output, etc.).
@@ -123,8 +123,8 @@ possible:
 
 ## License ##
 
-PyNetSNMP is released under the BSD license. Please see the
-[LICENSE](https://github.com/fgimian/PyNetSNMP/blob/master/LICENSE) file
+Easy SNMP is released under the BSD license. Please see the
+[LICENSE](https://github.com/fgimian/easysnmp/blob/master/LICENSE) file
 for more details.
 
 ## Copyright ##
