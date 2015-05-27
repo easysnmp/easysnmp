@@ -49,6 +49,9 @@ before_install:
   - sudo /usr/local/sbin/snmpd -c /usr/local/etc/snmpd.conf
 
 install:
+  # Install the Coveralls library
+  - pip install coveralls
+
   # Install all test requirements
   - pip install -r requirements.txt
 
@@ -57,4 +60,13 @@ install:
   - cp build/lib.*/pynetsnmp/*.so pynetsnmp/
 
 script:
+  # Run the unit tests using py.test
   - py.test
+
+after_success:
+  # Send coverage statistics to Coveralls
+  coveralls
+
+notifications:
+  # Disable email notifications if something fails
+  email: false
