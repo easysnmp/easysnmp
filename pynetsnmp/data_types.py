@@ -1,4 +1,4 @@
-from curses.ascii import isprint
+import string
 
 
 class SNMPBaseIntegerType(int):
@@ -38,7 +38,7 @@ class SNMPBaseStringType(str):
 
     def __repr__(self):
         # Filter all non-printable characters
-        printable = filter(isprint, self)
+        printable = filter(lambda c: c in string.printable, self)
         if printable != self:
             if printable:
                 printable += ' '
