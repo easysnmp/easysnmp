@@ -60,9 +60,9 @@ def build_results(varlist):
             varbind.type not in TYPE_MAPPING or
             not TYPE_MAPPING[varbind.type]
         ):
-            print(
-                'Unsupported SNMP type {}: {}'.format(
-                    varbind.type, varbind.val
+            raise PyNetSNMPError(
+                'Unsupported SNMP type {} for {}.{}: {}'.format(
+                    varbind.type, varbind.tag, varbind.iid, varbind.val
                 )
             )
         else:
