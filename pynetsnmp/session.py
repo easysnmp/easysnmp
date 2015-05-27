@@ -76,29 +76,41 @@ class Session(object):
     """A Net-SNMP session which may be setup once and then used to query
     and manipulate SNMP data.
 
-    :param version: the SNMP version to use (1, 2 or 3)
-    :param hostname: hostname of the device to communicate with
-    :param community: community string to use when communicating
-                      (SNMP v1 and v2 only)
-    :param timeout:
-    :param retries:
-    :param remote_port:
-    :param local_port:
-    :param security_level:
-    :param security_username:
-    :param privacy_protocol:
-    :param privacy_password:
-    :param auth_protocol:
-    :param auth_password:
-    :param context_engine_id:
-    :param security_engine_id:
-    :param context:
-    :param engine_boots:
-    :param engine_time:
-    :param our_identity:
-    :param their_identity:
-    :param their_hostname:
-    :param trust_cert:
+    :param version: the SNMP version to use; 1, 2 (equivalent to 2c) or 3
+    :param hostname: hostname or IP address of SNMP agent
+    :param community: SNMP community string (used for both R/W) (v1 & v2)
+    :param timeout: micro-seconds before retry
+    :param retries: retries before failure
+    :param remote_port: allow remote UDP port to be overridden
+    :param local_port: TODO
+    :param security_level: security level (no_auth_or_privacy,
+                           auth_without_privacy or auth_with_privacy) (v3)
+    :param security_username: security name (v3)
+    :param privacy_protocol: privacy protocol (v3)
+    :param privacy_password: privacy passphrase (v3)
+    :param auth_protocol: authentication protocol (MD5 or SHA) (v3)
+    :param auth_password: authentication passphrase (v3)
+    :param context_engine_id: context engine ID, will be probed if not
+                              supplied (v3)
+    :param security_engine_id: security engine ID, will be probed if not
+                               supplied (v3)
+    :param context: context name (v3)
+    :param engine_boots: TODO (v3)
+    :param engine_time: TODO (v3)
+    :param our_identity: the fingerprint or file name for the local X.509
+                         certificate to use for our identity (run
+                         net-snmp-cert to create and manage certificates)
+                         (v3 TLS / DTLS)
+    :param their_identity: the fingerprint or file name for the local X.509
+                           certificate to use for their identity
+                           (v3 TLS / DTLS)
+    :param their_hostname: their hostname to expect; either their_hostname
+                           or a trusted certificate plus a hostname is needed
+                           to validate the server is the proper server
+                           (v3 TLS / DTLS)
+    :param trust_cert: a trusted certificate to use for validating
+                       certificates; typically this would be a CA
+                       certificate (v3 TLS / DTLS)
     """
 
     def __init__(
@@ -137,15 +149,53 @@ class Session(object):
 
         # The following variables are required for internal use as they are
         # passed to the C interface.
+
+        #: internal field used to cache a created session structure
         self.sess_ptr = None
+
+        #: set to non-zero to have <tags> for 'getnext' methods generated
+        #: preferring longer Mib name convention (e.g., system.sysDescr vs
+        #: just sysDescr)
         self.use_long_names = 0
+
+        #: set to non-zero to have <tags> returned by the 'get'
+        #: methods untranslated (i.e. dotted-decimal). Setting the
+        #: use_long_names value for the session is highly recommended.
         self.use_numeric = 0
+
+        #: set to non-zero to have return values for 'get' and 'getnext'
+        #: methods formatted with the libraries sprint_value function. This
+        #: will result in certain data types being returned in non-canonical
+        #: format Note: values returned with this option set may not be
+        #: appropriate for 'set' operations (see discussion of value formats
+        #: in <vars> description section)
         self.use_sprint_value = 0
+
+        #: set to non-zero to have integer return values converted to
+        #: enumeration identifiers if possible, these values will also be
+        #: acceptable when supplied to 'set' operations
         self.use_enums = 0
+
+        #: this setting controls how <tags> are parsed.  setting to 0 causes
+        #: a regular lookup.  setting to 1 causes a regular expression match
+        #: (defined as -Ib in snmpcmd). setting to 2 causes a random access
+        #: lookup (defined as -IR in snmpcmd).
         self.best_guess = 0
+
+        #: default '0', if enabled NOSUCH errors in 'get' pdus will be
+        #: repaired, removing the varbind in error, and resent - undef will
+        #: be returned for all NOSUCH varbinds, when set to '0' this feature
+        #: is disabled and the entire get request will fail on any NOSUCH
+        #: error (applies to v1 only)
         self.retry_no_such = 0
+
+        #: read-only, holds the error message assoc. w/ last request
         self.error_str = ''
+
+        #: read-only, holds the snmp_err or status of last request
         self.error_num = 0
+
+        #: read-only, holds the snmp_err_index when appropriate
         self.error_ind = 0
 
         # Check for transports that may be tunneled
