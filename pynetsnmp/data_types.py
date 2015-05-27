@@ -52,6 +52,11 @@ class SNMPBaseStringType(str):
         )
 
 
+class SNMPBits(SNMPBaseStringType):
+    """The SNMP data type used to specifies a collection of labelled bits"""
+    snmp_type = 'BITS'
+
+
 class SNMPObjectIdentifier(SNMPBaseStringType):
     """The SNMP data type used to identify a type that has an assigned object
     identifier value"""
@@ -98,6 +103,11 @@ class SNMPTimeTicks(SNMPBaseIntegerType):
     snmp_type = 'TICKS'
 
 
+class SNMPOpaque(SNMPBaseStringType):
+    """The SNMP data type used sometimes to wrap objects of other types"""
+    snmp_type = 'OPAQUE'
+
+
 class SNMPCounter64(SNMPBaseIntegerType):
     """The SNMP data type similar to counter but of 64-bit precision"""
     snmp_type = 'COUNTER64'
@@ -115,7 +125,7 @@ class SNMPInteger32(SNMPBaseIntegerType):
 
 # Below we define a type mapping dictionary from type to its related class
 TYPE_MAPPING = {
-    'OTHER': None,
+    'BITS': SNMPBits,
     'OBJECTID': SNMPObjectIdentifier,
     'OCTETSTR': SNMPOctetString,
     'INTEGER': SNMPInteger,
@@ -124,12 +134,8 @@ TYPE_MAPPING = {
     'COUNTER': SNMPCounter,
     'GAUGE': SNMPGauge,
     'TICKS': SNMPTimeTicks,
-    'OPAQUE': None,
-    'NULL': None,
+    'OPAQUE': SNMPOpaque,
     'COUNTER64': SNMPCounter64,
-    'BITSTRING': None,
-    'NSAPADDRESS': None,
-    'UINTEGER': None,
     'UNSIGNED32': SNMPUnsigned32,
     'INTEGER32': SNMPInteger32,
 }

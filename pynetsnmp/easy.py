@@ -41,7 +41,7 @@ def snmp_get_bulk(oids, non_repeaters, max_repetitions, *args, **kargs):
     return session.get_bulk(oids, non_repeaters, max_repetitions)
 
 
-def snmp_walk(oids, *args, **kargs):
+def snmp_walk(oids='.1.3.6.1.2.1', *args, **kargs):
     """Uses SNMP GETNEXT operation to automatically retrieve multiple
     pieces of information in an OID for you
     """
