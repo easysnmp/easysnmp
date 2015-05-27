@@ -1,4 +1,10 @@
 # Easy SNMP #
+*A blazingly fast and Pythonic SNMP library based on the official
+Net-SNMP bindings*
+
+[![Build Status](https://travis-ci.org/fgimian/easysnmp.svg?branch=master)](https://travis-ci.org/fgimian/easysnmp)
+[![Coverage Status](https://coveralls.io/repos/fgimian/easysnmp/badge.svg)](https://coveralls.io/r/fgimian/painter)
+[![License](https://img.shields.io/badge/license-BSD-brightgreen.svg)](https://github.com/fgimian/easysnmp/blob/master/LICENSE)
 
 This is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
 but attempts to bring a more Pythonic interface to the library.   Check out
