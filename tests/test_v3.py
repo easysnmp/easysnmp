@@ -51,7 +51,7 @@ def test_pynetsnmp_v3_session_get_next(sess_v3):  # noqa
 
     assert res[2].snmp_oid == 'sysORLastChange'
     assert res[2].snmp_oid_index == 0
-    assert res[2] => 0
+    assert res[2] >> 0
     assert res[2].snmp_type == 'TICKS'
 
 
