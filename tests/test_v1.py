@@ -14,7 +14,7 @@ def test_easysnmp_v1_get():
 
     assert platform.version() in res
     assert res.snmp_oid == 'sysDescr'
-    assert res.snmp_oid_index == 0
+    assert res.snmp_oid_index == '0'
     assert res.snmp_type == 'OCTETSTR'
 
 
@@ -25,7 +25,7 @@ def test_easysnmp_v1_get_next():
     )
 
     assert res.snmp_oid == 'sysObjectID'
-    assert res.snmp_oid_index == 0
+    assert res.snmp_oid_index == '0'
     assert res == '.1.3.6.1.4.1.8072.3.2.10'
     assert res.snmp_type == 'OBJECTID'
 
@@ -140,17 +140,17 @@ def test_easysnmp_v1_set_clear(sess_v1):  # noqa
     assert len(res) == 3
 
     assert res[0].snmp_oid == 'snmpUnavailableContexts'
-    assert res[0].snmp_oid_index == 0
+    assert res[0].snmp_oid_index == '0'
     assert res[0] == 0
     assert res[0].snmp_type == 'COUNTER'
 
     assert res[1].snmp_oid == 'snmpUnavailableContexts'
-    assert res[1].snmp_oid_index == 0
+    assert res[1].snmp_oid_index == '0'
     assert res[1] == 0
     assert res[1].snmp_type == 'COUNTER'
 
     assert res[2].snmp_oid == 'snmpUnavailableContexts'
-    assert res[2].snmp_oid_index == 0
+    assert res[2].snmp_oid_index == '0'
     assert res[2] == 0
     assert res[2].snmp_type == 'COUNTER'
 
@@ -175,22 +175,22 @@ def test_easysnmp_v1_walk_res():
     assert len(res) >= 7
 
     assert res[0].snmp_oid == 'sysDescr'
-    assert res[0].snmp_oid_index == 0
+    assert res[0].snmp_oid_index == '0'
     assert platform.version() in res[0]
     assert res[0].snmp_type == 'OCTETSTR'
 
     assert res[3].snmp_oid == 'sysContact'
-    assert res[3].snmp_oid_index == 0
+    assert res[3].snmp_oid_index == '0'
     assert res[3] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert res[3].snmp_type == 'OCTETSTR'
 
     assert res[4].snmp_oid == 'sysName'
-    assert res[4].snmp_oid_index == 0
+    assert res[4].snmp_oid_index == '0'
     assert res[4] == platform.node()
     assert res[4].snmp_type == 'OCTETSTR'
 
     assert res[5].snmp_oid == 'sysLocation'
-    assert res[5].snmp_oid_index == 0
+    assert res[5].snmp_oid_index == '0'
     assert res[5] == 'my new location'
     assert res[5].snmp_type == 'OCTETSTR'
 
@@ -205,17 +205,17 @@ def test_easysnmp_v1_session_get(sess_v1):  # noqa
     assert len(res) == 3
 
     assert res[0].snmp_oid == 'sysUpTimeInstance'
-    assert res[0].snmp_oid_index is None
+    assert res[0].snmp_oid_index is ''
     assert res[0] > 0
     assert res[0].snmp_type == 'TICKS'
 
     assert res[1].snmp_oid == 'sysContact'
-    assert res[1].snmp_oid_index == 0
+    assert res[1].snmp_oid_index == '0'
     assert res[1] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert res[1].snmp_type == 'OCTETSTR'
 
     assert res[2].snmp_oid == 'sysLocation'
-    assert res[2].snmp_oid_index == 0
+    assert res[2].snmp_oid_index == '0'
     assert res[2] == 'my new location'
     assert res[2].snmp_type == 'OCTETSTR'
 
@@ -230,17 +230,17 @@ def test_easysnmp_v1_session_get_next(sess_v1):  # noqa
     assert len(res) == 3
 
     assert res[0].snmp_oid == 'sysContact'
-    assert res[0].snmp_oid_index == 0
+    assert res[0].snmp_oid_index == '0'
     assert res[0] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert res[0].snmp_type == 'OCTETSTR'
 
     assert res[1].snmp_oid == 'sysName'
-    assert res[1].snmp_oid_index == 0
+    assert res[1].snmp_oid_index == '0'
     assert res[1] == platform.node()
     assert res[1].snmp_type == 'OCTETSTR'
 
     assert res[2].snmp_oid == 'sysORLastChange'
-    assert res[2].snmp_oid_index == 0
+    assert res[2].snmp_oid_index == '0'
     assert int(res[2]) >= 0
     assert res[2].snmp_type == 'TICKS'
 
@@ -270,21 +270,21 @@ def test_easysnmp_v1_session_walk(sess_v1):  # noqa
     assert len(res) >= 7
 
     assert res[0].snmp_oid == 'sysDescr'
-    assert res[0].snmp_oid_index == 0
+    assert res[0].snmp_oid_index == '0'
     assert platform.version() in res[0]
     assert res[0].snmp_type == 'OCTETSTR'
 
     assert res[3].snmp_oid == 'sysContact'
-    assert res[3].snmp_oid_index == 0
+    assert res[3].snmp_oid_index == '0'
     assert res[3] == 'G. S. Marzot <gmarzot@marzot.net>'
     assert res[3].snmp_type == 'OCTETSTR'
 
     assert res[4].snmp_oid == 'sysName'
-    assert res[4].snmp_oid_index == 0
+    assert res[4].snmp_oid_index == '0'
     assert res[4] == platform.node()
     assert res[4].snmp_type == 'OCTETSTR'
 
     assert res[5].snmp_oid == 'sysLocation'
-    assert res[5].snmp_oid_index == 0
+    assert res[5].snmp_oid_index == '0'
     assert res[5] == 'my newer location'
     assert res[5].snmp_type == 'OCTETSTR'

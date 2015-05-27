@@ -8,10 +8,7 @@ class SNMPBaseIntegerType(int):
     def __new__(cls, value, snmp_oid=None, snmp_oid_index=None):
         obj = int.__new__(cls, value)
         obj.snmp_oid = snmp_oid
-        if snmp_oid_index is None:
-            obj.snmp_oid_index = None
-        else:
-            obj.snmp_oid_index = int(snmp_oid_index)
+        obj.snmp_oid_index = snmp_oid_index
         return obj
 
     def __repr__(self):
@@ -30,10 +27,7 @@ class SNMPBaseStringType(str):
     def __new__(cls, value, snmp_oid=None, snmp_oid_index=None):
         obj = str.__new__(cls, value)
         obj.snmp_oid = snmp_oid
-        if snmp_oid_index is None:
-            obj.snmp_oid_index = None
-        else:
-            obj.snmp_oid_index = int(snmp_oid_index)
+        obj.snmp_oid_index = snmp_oid_index
         return obj
 
     def __repr__(self):
