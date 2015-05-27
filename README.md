@@ -5,8 +5,8 @@ but attempts to bring a more Pythonic interface to the library.   Check out
 the [Net-SNMP website](http://www.net-snmp.org/) for more information about 
 SNMP.
 
-This module provides a full featured, tri-lingual SNMP (SNMPv3, SNMPv2c,
-SNMPv1) client API.
+This module provides a full featured SNMP client API supporting all dialects
+of the SNMP protocol.
 
 ## Quick Start ##
 
