@@ -27,6 +27,9 @@ location = session.get('sysLocation.0')
 # You may also specify the OID as a tuple (name, index)
 contact = session.get(('sysContact', 0))
 
+# And of course, you may use the numeric OID too
+description = session.get('.1.3.6.1.2.1.1.1.0')
+
 # Set a variable using an SNMP SET
 session.set('sysLocation.0', 'The SNMP Lab')
 
