@@ -79,7 +79,8 @@ def test_easysnmp_v2_session_set(sess_v2):  # noqa
     assert success
 
     res = easysnmp.snmp_get(
-        ('sysLocation', '0'), version=2, hostname='localhost', community='public'
+        ('sysLocation', '0'),
+        version=2, hostname='localhost', community='public'
     )
     assert res.value == 'my even newer location'
 

@@ -29,8 +29,8 @@ def test_easysnmp_variable_doesnt_extract_iid():
     var = easysnmp.Varbind(
         '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0'
     )
-    assert var.tag == '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0'
-    assert var.iid is None
+    assert var.tag == '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr'
+    assert var.iid is '0'
     assert var.val is None
     assert var.type is None
 

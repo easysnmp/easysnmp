@@ -8,6 +8,54 @@ from .fixtures import sess_v1  # noqa
 
 def test_easysnmp_v1_get():
     res = easysnmp.snmp_get(
+        'sysDescr.0',
+        version=1, hostname='localhost', community='public'
+    )
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+def test_easysnmp_v1_get_tuple():
+    res = easysnmp.snmp_get(
+        ('sysDescr', '0'),
+        version=1, hostname='localhost', community='public'
+    )
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+def test_easysnmp_v1_get_fully_qualified():
+    res = easysnmp.snmp_get(
+        '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0',
+        version=1, hostname='localhost', community='public'
+    )
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+def test_easysnmp_v1_get_fully_qualified_tuple():
+    res = easysnmp.snmp_get(
+        ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'),
+        version=1, hostname='localhost', community='public'
+    )
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+def test_easysnmp_v1_get_numeric():
+    res = easysnmp.snmp_get(
         ('.1.3.6.1.2.1.1.1', '0'),
         version=1, hostname='localhost', community='public'
     )
@@ -19,6 +67,17 @@ def test_easysnmp_v1_get():
 
 
 def test_easysnmp_v1_get_next():
+    res = easysnmp.snmp_get_next(
+        'nsCacheEntry', version=1, hostname='localhost', community='public'
+    )
+
+    assert res.oid == 'nsCacheTimeout'
+    assert res.oid_index == '1.3.6.1.2.1.2.2'
+    assert res.value >= 0
+    assert res.snmp_type == 'INTEGER'
+
+
+def test_easysnmp_v1_get_next_numeric():
     res = easysnmp.snmp_get_next(
         ('.1.3.6.1.2.1.1.1', '0'),
         version=1, hostname='localhost', community='public'
@@ -93,17 +152,6 @@ def test_easysnmp_v1_set_integer():
 #     )
 
 #     print "uptime = ", res[0]
-
-
-def test_easysnmp_v1_get_next():
-    res = easysnmp.snmp_get_next(
-        'nsCacheEntry', version=1, hostname='localhost', community='public'
-    )
-
-    assert res.oid == 'nsCacheTimeout'
-    assert res.oid_index == '1.3.6.1.2.1.2.2'
-    assert res.value >= 0
-    assert res.snmp_type == 'INTEGER'
 
 
 def test_easysnmp_v1_set_multiple(sess_v1):  # noqa
