@@ -1411,7 +1411,8 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     else
     {
         char buffer[500];
-        sprintf(buffer, "unsupported authentication protocol(%s)", auth_proto);
+        sprintf(buffer, "unsupported authentication protocol (%s)",
+                auth_proto);
         PyErr_SetString(EasySNMPInterfaceError, buffer);
         error = 1;
 
@@ -1461,7 +1462,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     else
     {
         char buffer[500];
-        sprintf(buffer, "unsupported privacy protocol(%s)", priv_proto);
+        sprintf(buffer, "unsupported privacy protocol (%s)", priv_proto);
         PyErr_SetString(EasySNMPInterfaceError, buffer);
         error = 1;
 

@@ -1,9 +1,4 @@
-from easysnmp.data_types import (
-    SNMPBaseIntegerType, SNMPBaseStringType,
-    SNMPBits, SNMPObjectIdentifier, SNMPOctetString, SNMPInteger,
-    SNMPNetworkAddress, SNMPIPAddress, SNMPCounter, SNMPGauge, SNMPTimeTicks,
-    SNMPOpaque, SNMPCounter64, SNMPUnsigned32, SNMPInteger32
-)
+from easysnmp.data_types import SNMPBaseIntegerType, SNMPBaseStringType
 
 
 def test_easysnmp_base_integer_type():
@@ -19,13 +14,6 @@ def test_easysnmp_base_integer_type_repr():
         "<SNMPBaseIntegerType value=12345 "
         "(oid='nsCacheTimeout', oid_index='0')>"
     )
-
-
-def test_easysnmp_base_integer_type():
-    var = SNMPBaseIntegerType('12345', 'nsCacheTimeout', '0')
-    assert var.value == 12345
-    assert var.oid == 'nsCacheTimeout'
-    assert var.oid_index == '0'
 
 
 def test_easysnmp_base_string_type():
