@@ -47,8 +47,6 @@ def build_results(varlist):
     for varbind in varlist:
         if varbind.type == 'NOSUCHOBJECT':
             raise EasySNMPNoSuchObjectError('No such object could be found')
-        elif varbind.type == 'NULL':
-            results.append(None)
         elif (
             varbind.type not in TYPE_MAPPING or
             not TYPE_MAPPING[varbind.type]

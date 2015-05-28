@@ -5,6 +5,26 @@ import easysnmp
 from .fixtures import sess_v2  # noqa
 
 
+def test_easysnmp_v2_get_bulk():
+    res = easysnmp.snmp_get_bulk([
+        'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+        'sysORUpTime'], 2, 8,
+        version=2, hostname='localhost', community='public'
+    )
+
+    assert len(res) == 26
+
+    assert res[0].oid == 'sysUpTimeInstance'
+    assert res[0].oid_index is ''
+    assert res[0].value > 0
+    assert res[0].snmp_type == 'TICKS'
+
+    assert res[4].oid == 'sysORUpTime'
+    assert res[4].oid_index == '1'
+    assert res[4].value >= 0
+    assert res[4].snmp_type == 'TICKS'
+
+
 def test_easysnmp_v2_session_get(sess_v2):  # noqa
     res = sess_v2.get([
         ('sysUpTime', '0'),
