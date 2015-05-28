@@ -12,7 +12,7 @@ class SNMPBaseIntegerType(object):
 
     def __repr__(self):
         return (
-            "<{} value={} (oid='{}', oid_index='{}')>".format(
+            "<{0} value={1} (oid='{2}', oid_index='{3}')>".format(
                 self.__class__.__name__, self.value, self.oid, self.oid_index
             )
         )
@@ -36,7 +36,7 @@ class SNMPBaseStringType(object):
             printable += '(contains binary)'
 
         return (
-            "<{} value='{}' (oid='{}', oid_index='{}')>".format(
+            "<{0} value='{1}' (oid='{2}', oid_index='{3}')>".format(
                 self.__class__.__name__, printable, self.oid, self.oid_index
             )
         )
