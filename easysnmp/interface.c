@@ -529,7 +529,7 @@ static int __get_type_str(int type, char *str)
         case TYPE_NSAPADDRESS:
         default: /* unsupported types for now */
             strcpy(str, "");
-            py_log_msg(ERROR, "(get_type_str): failure (%d)", type);
+            py_log_msg(ERROR, "unspported type found: %d", type);
 
             return FAILURE;
     }
@@ -2295,8 +2295,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                NULL, best_guess);
             }
 
-            printf("netsnmp_walk: filling request: %s:%s:%d:%d",
-                   tag, iid, oid_arr_len[varlist_ind], best_guess);
+            py_log_msg(DEBUG, "netsnmp_walk: filling request: %s:%s:%d:%d",
+                       tag, iid, oid_arr_len[varlist_ind], best_guess);
 
             if (oid_arr_len[varlist_ind])
             {
@@ -2496,8 +2496,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
 
-                        printf("netsnmp_walk: filling response: %s:%s",
-                               tag, iid);
+                        py_log_msg(DEBUG, "netsnmp_walk: filling response: %s:%s",
+                                   tag, iid);
 
                         py_netsnmp_attr_set_string(varbind, "tag", tag,
                                                    STRLEN(tag));
@@ -3090,6 +3090,7 @@ static PyObject *py_get_logger(char *logger_name)
         return NULL;
     }
 
+    PyObject_CallMethod(logging, "basicConfig", "");
     logger = PyObject_CallMethod(logging, "getLogger", "s", logger_name);
 
     return logger;
@@ -3102,8 +3103,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
 
     va_start(fmt_args, printf_fmt);
     log_msg = PyString_FromFormatV(printf_fmt, fmt_args);
-    va_end (fmt_args);
-
+    va_end(fmt_args);
 
     if (log_msg == NULL)
     {
