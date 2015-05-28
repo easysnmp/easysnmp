@@ -1,8 +1,25 @@
 import platform
 
+import pytest
 import easysnmp
 
 from .fixtures import sess_v2  # noqa
+
+
+def test_easysnmp_v2_get_invalid_instance():
+    with pytest.raises(easysnmp.EasySNMPNoSuchInstanceError):
+        easysnmp.snmp_get(
+            'sysContact.1',
+            version=2, hostname='localhost', community='public'
+        )
+
+
+def test_easysnmp_v2_get_invalid_object():
+    with pytest.raises(easysnmp.EasySNMPNoSuchObjectError):
+        easysnmp.snmp_get(
+            'iso',
+            version=2, hostname='localhost', community='public'
+        )
 
 
 def test_easysnmp_v2_get_bulk():
@@ -46,7 +63,7 @@ def test_easysnmp_v2_session_get(sess_v2):  # noqa
 
     assert res[2].oid == 'sysLocation'
     assert res[2].oid_index == '0'
-    assert res[2].value == 'my newer location'
+    assert res[2].value == 'my slightly newer location'
     assert res[2].snmp_type == 'OCTETSTR'
 
 

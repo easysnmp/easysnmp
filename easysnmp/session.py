@@ -1,7 +1,9 @@
 import re
 
 from . import interface
-from .exceptions import EasySNMPError, EasySNMPNoSuchObjectError
+from .exceptions import (
+    EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
+)
 from .data_types import TYPE_MAPPING
 from .variables import Varbind, VarList
 
@@ -47,6 +49,10 @@ def build_results(varlist):
     for varbind in varlist:
         if varbind.type == 'NOSUCHOBJECT':
             raise EasySNMPNoSuchObjectError('No such object could be found')
+        if varbind.val == 'NOSUCHINSTANCE':
+            raise EasySNMPNoSuchInstanceError(
+                'No such instance could be found'
+            )
         elif (
             varbind.type not in TYPE_MAPPING or
             not TYPE_MAPPING[varbind.type]
@@ -193,7 +199,7 @@ class Session(object):
         tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
 
         # Calculate our timeout in microseconds
-        timeout_microseconds = self.timeout * 1000000
+        timeout_microseconds = int(self.timeout * 1000000)
 
         # Tunneled
         if tunneled:
