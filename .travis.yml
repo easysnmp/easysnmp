@@ -55,9 +55,9 @@ install:
   # Install all test requirements
   - pip install -r requirements.txt
 
-  # Build the PyNetSNMP C library and copy it to our library for testing
+  # Build the Easy SNMP C library and copy it to our library for testing
   - python setup.py build
-  - cp build/lib.*/pynetsnmp/*.so pynetsnmp/
+  - cp build/lib.*/easysnmp/*.so easysnmp/
 
 script:
   # Run the unit tests using py.test
