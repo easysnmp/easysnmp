@@ -58,7 +58,7 @@ def build_results(varlist):
             not TYPE_MAPPING[varbind.type]
         ):
             raise EasySNMPError(
-                'Unsupported SNMP type {} for {}.{}: {}'.format(
+                'Unsupported SNMP type {0} for {1}.{2}: {3}'.format(
                     varbind.type, varbind.tag, varbind.iid, varbind.val
                 )
             )
