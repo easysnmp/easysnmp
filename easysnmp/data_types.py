@@ -1,34 +1,31 @@
 import string
 
 
-class SNMPBaseIntegerType(int):
+class SNMPBaseIntegerType(object):
     """The base type for all SNMP integer data types"""
     snmp_type = None
 
-    def __new__(cls, value, snmp_oid=None, snmp_oid_index=None):
-        obj = int.__new__(cls, value)
-        obj.snmp_oid = snmp_oid
-        obj.snmp_oid_index = snmp_oid_index
-        return obj
+    def __init__(self, value, oid=None, oid_index=None):
+        self.value = int(value)
+        self.oid = oid
+        self.oid_index = oid_index
 
     def __repr__(self):
         return (
-            "<{} value={} (snmp_oid='{}', snmp_oid_index={})>".format(
-                self.__class__.__name__, self, self.snmp_oid,
-                self.snmp_oid_index
+            "<{} value={} (oid='{}', oid_index={})>".format(
+                self.__class__.__name__, self.value, self.oid, self.oid_index
             )
         )
 
 
-class SNMPBaseStringType(str):
+class SNMPBaseStringType(object):
     """The base type for all SNMP string data types"""
     snmp_type = None
 
-    def __new__(cls, value, snmp_oid=None, snmp_oid_index=None):
-        obj = str.__new__(cls, value)
-        obj.snmp_oid = snmp_oid
-        obj.snmp_oid_index = snmp_oid_index
-        return obj
+    def __init__(self, value, oid=None, oid_index=None):
+        self.value = value
+        self.oid = oid
+        self.oid_index = oid_index
 
     def __repr__(self):
         # Filter all non-printable characters
@@ -39,9 +36,8 @@ class SNMPBaseStringType(str):
             printable += '(contains binary)'
 
         return (
-            "<{} value='{}' (snmp_oid='{}', snmp_oid_index={})>".format(
-                self.__class__.__name__, printable, self.snmp_oid,
-                self.snmp_oid_index
+            "<{} value='{}' (oid='{}', oid_index={})>".format(
+                self.__class__.__name__, printable, self.oid, self.oid_index
             )
         )
 
