@@ -112,6 +112,35 @@ class Session(object):
     :param trust_cert: a trusted certificate to use for validating
                        certificates; typically this would be a CA
                        certificate (v3 TLS / DTLS)
+    :param use_long_names: set to non-zero to have <tags> for getnext methods
+                           generated preferring longer Mib name convention
+                           (e.g., system.sysDescr vs just sysDescr)
+    :param use_numeric: set to non-zero to have <tags> returned by the get
+                        methods untranslated (i.e. dotted-decimal). Setting
+                        the use_long_names value for the session is highly
+                        recommended.
+    :param use_sprint_value: set to non-zero to have return values for get
+                             and getnext methods formatted with the libraries
+                             sprint_value function. This will result in
+                             certain data types being returned in
+                             non-canonical format Note: values returned with
+                             this option set may not be appropriate for set
+                             operations (see discussion of value formats
+                                in <vars> description section)
+    :param use_enums: set to non-zero to have integer return values converted
+                      to enumeration identifiers if possible, these values
+                      will also be acceptable when supplied to set operations
+    :param best_guess: this setting controls how <tags> are parsed.  setting
+                       to 0 causes a regular lookup.  setting to 1 causes a
+                       regular expression match (defined as -Ib in snmpcmd);
+                       setting to 2 causes a random access lookup (defined
+                       as -IR in snmpcmd).
+    :param retry_no_such: if enabled NOSUCH errors in get pdus will be
+                          repaired, removing the varbind in error, and
+                          resent; undef will be returned for all NOSUCH
+                          varbinds, when set to 0 this feature is disabled
+                          and the entire get request will fail on any NOSUCH
+                          error (applies to v1 only)
     """
 
     def __init__(
@@ -122,7 +151,8 @@ class Session(object):
         auth_protocol='DEFAULT', auth_password='', context_engine_id='',
         security_engine_id='', context='', engine_boots=0, engine_time=0,
         our_identity='', their_identity='', their_hostname='',
-        trust_cert=''
+        trust_cert='', use_long_names=0, use_numeric=0, use_sprint_value=0,
+        use_enums=0, best_guess=0, retry_no_such=0
     ):
         # Validate and extract the remote port
         if ':' in hostname:
@@ -157,48 +187,18 @@ class Session(object):
         self.their_identity = their_identity
         self.their_hostname = their_hostname
         self.trust_cert = trust_cert
+        self.use_long_names = use_long_names
+        self.use_numeric = use_numeric
+        self.use_sprint_value = use_sprint_value
+        self.use_enums = use_enums
+        self.best_guess = best_guess
+        self.retry_no_such = retry_no_such
 
         # The following variables are required for internal use as they are
         # passed to the C interface.
 
         #: internal field used to cache a created session structure
         self.sess_ptr = None
-
-        #: set to non-zero to have <tags> for 'getnext' methods generated
-        #: preferring longer Mib name convention (e.g., system.sysDescr vs
-        #: just sysDescr)
-        self.use_long_names = 0
-
-        #: set to non-zero to have <tags> returned by the 'get'
-        #: methods untranslated (i.e. dotted-decimal). Setting the
-        #: use_long_names value for the session is highly recommended.
-        self.use_numeric = 0
-
-        #: set to non-zero to have return values for 'get' and 'getnext'
-        #: methods formatted with the libraries sprint_value function. This
-        #: will result in certain data types being returned in non-canonical
-        #: format Note: values returned with this option set may not be
-        #: appropriate for 'set' operations (see discussion of value formats
-        #: in <vars> description section)
-        self.use_sprint_value = 0
-
-        #: set to non-zero to have integer return values converted to
-        #: enumeration identifiers if possible, these values will also be
-        #: acceptable when supplied to 'set' operations
-        self.use_enums = 0
-
-        #: this setting controls how <tags> are parsed.  setting to 0 causes
-        #: a regular lookup.  setting to 1 causes a regular expression match
-        #: (defined as -Ib in snmpcmd). setting to 2 causes a random access
-        #: lookup (defined as -IR in snmpcmd).
-        self.best_guess = 0
-
-        #: default '0', if enabled NOSUCH errors in 'get' pdus will be
-        #: repaired, removing the varbind in error, and resent - undef will
-        #: be returned for all NOSUCH varbinds, when set to '0' this feature
-        #: is disabled and the entire get request will fail on any NOSUCH
-        #: error (applies to v1 only)
-        self.retry_no_such = 0
 
         #: read-only, holds the error message assoc. w/ last request
         self.error_str = ''
