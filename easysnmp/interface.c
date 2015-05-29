@@ -1127,7 +1127,7 @@ static PyObject *py_netsnmp_construct_varbind(void)
     module = PyImport_ImportModule("easysnmp");
     dict = PyModule_GetDict(module);
 
-    callable = PyDict_GetItemString(dict, "Varbind");
+    callable = PyDict_GetItemString(dict, "SNMPVariable");
 
     return PyObject_CallFunction(callable, "");
 }

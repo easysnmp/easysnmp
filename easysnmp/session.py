@@ -5,7 +5,7 @@ from .exceptions import (
     EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
 from .data_types import TYPE_MAPPING
-from .variables import Varbind, VarList
+from .variables import SNMPVariable, SNMPVariableList
 
 # Mapping between security level strings and their associated integer values.
 # Here we provide camelCase naming as per the original spec but also more
@@ -29,15 +29,15 @@ def build_varlist(oids):
         is_list = False
         oids = [oids]
 
-    varlist = VarList()
+    varlist = SNMPVariableList()
     for oid in oids:
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
         if isinstance(oid, tuple):
             tag, iid = oid
-            varlist.append(Varbind(tag, iid))
+            varlist.append(SNMPVariable(tag, iid))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
-            varlist.append(Varbind(oid))
+            varlist.append(SNMPVariable(oid))
 
     return varlist, is_list
 
@@ -284,14 +284,14 @@ class Session(object):
                      (e.g. ('sysDescr', 0))
         """
 
-        varlist = VarList()
+        varlist = SNMPVariableList()
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
         if isinstance(oid, tuple):
             tag, iid = oid
-            varlist.append(Varbind(tag, iid, val=value))
+            varlist.append(SNMPVariable(tag, iid, val=value))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
-            varlist.append(Varbind(oid, val=value))
+            varlist.append(SNMPVariable(oid, val=value))
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)
@@ -305,15 +305,15 @@ class Session(object):
                            respective values to be set
         """
 
-        varlist = VarList()
+        varlist = SNMPVariableList()
         for oid, value in oid_values.iteritems():
             # OIDs specified as a tuple (e.g. ('sysContact', 0))
             if isinstance(oid, tuple):
                 tag, iid = oid
-                varlist.append(Varbind(tag, iid, val=value))
+                varlist.append(SNMPVariable(tag, iid, val=value))
             # OIDs specefied as a string (e.g. 'sysContact.0')
             else:
-                varlist.append(Varbind(oid, val=value))
+                varlist.append(SNMPVariable(oid, val=value))
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)

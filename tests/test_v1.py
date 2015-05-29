@@ -157,19 +157,19 @@ def test_easysnmp_v1_set_multiple():
 
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
 # def test_easysnmp_v1_set_restart_agent():
-#     var = easysnmp.Varbind('sysUpTime', '0')
+#     var = easysnmp.SNMPVariable('sysUpTime', '0')
 #     res = easysnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
 #     print "uptime = ", res[0]
 
-#     var = easysnmp.Varbind('versionRestartAgent','0', 1)
+#     var = easysnmp.SNMPVariable('versionRestartAgent','0', 1)
 #     res = easysnmp.snmp_set(
 #         var, version=1, hostname='localhost', community='public'
 #     )
 
-#     var = easysnmp.Varbind('sysUpTime','0')
+#     var = easysnmp.SNMPVariable('sysUpTime','0')
 #     res = easysnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
 #     )
