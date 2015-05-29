@@ -34,10 +34,9 @@ def normalize_oid(tag, iid):
     return tag, iid
 
 
-class Varbind(object):
-    """A lower-level variable binding required to be used with the C
-    interface.  The names of variables in this class must remain unaltered
-    as they are modified by the C interface.
+class SNMPVariable(object):
+    """An SNMP variable binding which is used to represent a piece of
+    information being retreived via SNMP.
 
     :param tag: the OID being manipulated
     :param iid: the index of the OID
@@ -56,7 +55,7 @@ class Varbind(object):
         self.__dict__[name] = tostr(value)
 
 
-class VarList(list):
+class SNMPVariableList(list):
     """An slight variation of a list which is used internally by the
     Net-SNMP C interface."""
     @property

@@ -12,4 +12,4 @@ from .exceptions import (  # noqa
     EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
 from .session import Session  # noqa
-from .variables import Varbind, VarList  # noqa
+from .variables import SNMPVariable, SNMPVariableList  # noqa
