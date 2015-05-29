@@ -86,8 +86,11 @@ def snmp_get_bulk(oids, non_repeaters, max_repetitions, **session_kargs):
                  (e.g. 'sysDescr.0') or may be a tuple containing the
                  name as its first item and index as its second
                  (e.g. ('sysDescr', 0))
-    :param non_repeaters: TODO
-    :param max_repetitions: TODO
+    :param non_repeaters: the number of objects that are only expected to
+                          return a single GETNEXT instance, not multiple
+                          instances
+    :param max_repetitions: the number of objects that should be returned
+                            for all the repeating OIDs
     :param session_kargs: keyword arguments which will be sent used when
                           constructing the session for this operation;
                           all parameters in the Session class are supported
