@@ -1,22 +1,20 @@
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
-
 import os
 import re
 import sys
 
+from setuptools import setup, Extension
+from setuptools.command.test import test as TestCommand
+
 # Determine if a base directory has been provided with the --basedir option
-intree = False
+in_tree = False
 for arg in sys.argv:
     if arg.startswith('--basedir='):
         basedir = arg.split('=')[1]
         sys.argv.remove(arg)
-        intree = True
+        in_tree = True
 
 # If a base directory has been provided, we use it
-if intree:
+if in_tree:
     netsnmp_libs = os.popen(basedir + '/net-snmp-config --libs').read()
 
     libdir = os.popen(
@@ -37,6 +35,25 @@ else:
     incdirs = []
 
 
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # Import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
+
 setup(
     name="easysnmp",
     version="1.0",
@@ -46,10 +63,8 @@ setup(
     url='https://github.com/fgimian/easysnmp',
     license="BSD",
     packages=['easysnmp'],
-
-    # TODO: Update this to use py.test and our new test suite
-    # test_suite="netsnmp.tests.test",
-
+    tests_require=['pytest'],
+    cmdclass={'test': PyTest},
     ext_modules=[
         Extension(
             "easysnmp.interface", ["easysnmp/interface.c"],
