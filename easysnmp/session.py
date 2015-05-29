@@ -101,7 +101,7 @@ class Session(object):
 
     def __init__(
         self, hostname='localhost', version=3, community='public',
-        timeout=1, retries=3, remote_port=161, local_port=0,
+        timeout=1, retries=3, remote_port=0, local_port=0,
         security_level='no_auth_or_privacy', security_username='initial',
         privacy_protocol='DEFAULT', privacy_password='',
         auth_protocol='DEFAULT', auth_password='', context_engine_id='',
@@ -109,13 +109,23 @@ class Session(object):
         our_identity='', their_identity='', their_hostname='',
         trust_cert=''
     ):
+        # Validate and extract the remote port
+        if ':' in hostname:
+            if remote_port:
+                raise ValueError(
+                    'A remote port was specified yet the hostname appears '
+                    'to have a port defined too'
+                )
+            else:
+                hostname, remote_port = hostname.split(':')
+                remote_port = int(remote_port)
+
         self.hostname = hostname
         self.version = version
         self.community = community
         self.timeout = timeout
         self.retries = retries
         self.local_port = local_port
-        # TODO: Implement the ability to set the remote port explicitly
         self.remote_port = remote_port
         self.security_level = security_level
         self.security_username = security_username
@@ -192,9 +202,10 @@ class Session(object):
 
         # Tunneled
         if tunneled:
+            # TODO: Determine the best way to test this
             self.sess_ptr = interface.session_tunneled(
                 self.version,
-                self.hostname,
+                self.connect_hostname,
                 self.local_port,
                 self.retries,
                 timeout_microseconds,
@@ -212,7 +223,7 @@ class Session(object):
         elif self.version == 3:
             self.sess_ptr = interface.session_v3(
                 self.version,
-                self.hostname,
+                self.connect_hostname,
                 self.local_port,
                 self.retries,
                 timeout_microseconds,
@@ -234,11 +245,18 @@ class Session(object):
             self.sess_ptr = interface.session(
                 self.version,
                 self.community,
-                self.hostname,
+                self.connect_hostname,
                 self.local_port,
                 self.retries,
                 timeout_microseconds
             )
+
+    @property
+    def connect_hostname(self):
+        if self.remote_port:
+            return '{0}:{1}'.format(self.hostname, self.remote_port)
+        else:
+            return self.hostname
 
     def get(self, oids):
         """Perform an SNMP GET operation using the prepared session to

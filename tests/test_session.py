@@ -1,4 +1,5 @@
-from easysnmp.session import build_varlist, build_results
+import pytest
+from easysnmp.session import build_varlist, build_results, Session
 
 
 def test_build_varlist():
@@ -23,3 +24,14 @@ def test_build_varlist_list():
     assert varlist[1].value is None
     assert varlist[1].snmp_type is None
     assert is_list
+
+
+def test_session_invalid_hostname_and_remote_port():
+    with pytest.raises(ValueError):
+        Session(hostname='localhost:162', remote_port=163)
+
+
+def test_session_hostname_and_remote_port_split():
+    session = Session(hostname='localhost:162')
+    assert session.hostname == 'localhost'
+    assert session.remote_port == 162
