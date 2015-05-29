@@ -1,3 +1,4 @@
+import string
 import re
 
 # This regular expression is used to extract the index from an OID
@@ -50,6 +51,24 @@ class SNMPVariable(object):
         self.oid, self.oid_index = normalize_oid(oid, oid_index)
         self.value = value
         self.snmp_type = snmp_type
+
+    def __repr__(self):
+        # Filter all non-printable characters
+        printable_value = filter(
+            lambda c: c in string.printable, self.value
+        )
+        if printable_value != self.value:
+            if printable_value:
+                printable_value += ' '
+            printable_value += '(contains binary)'
+
+        return (
+            "<{0} value='{1}' (oid='{2}', oid_index='{3}', "
+            "snmp_type='{4}')>".format(
+                self.__class__.__name__, printable_value, self.oid,
+                self.oid_index, self.snmp_type
+            )
+        )
 
     def __setattr__(self, name, value):
         self.__dict__[name] = tostr(value)

@@ -1,6 +1,11 @@
-import easysnmp
+import logging
 
 import pytest
+import easysnmp
+
+# Disable logging for the C interface
+snmp_logger = logging.getLogger('easysnmp.interface')
+snmp_logger.disabled = True
 
 
 @pytest.fixture
