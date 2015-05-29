@@ -33,8 +33,8 @@ def build_varlist(oids):
     for oid in oids:
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
         if isinstance(oid, tuple):
-            tag, iid = oid
-            varlist.append(SNMPVariable(tag, iid))
+            oid, oid_index = oid
+            varlist.append(SNMPVariable(oid, oid_index))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
             varlist.append(SNMPVariable(oid))
@@ -47,24 +47,27 @@ def build_results(varlist):
     results = []
 
     for varbind in varlist:
-        if varbind.type == 'NOSUCHOBJECT':
+        if varbind.snmp_type == 'NOSUCHOBJECT':
             raise EasySNMPNoSuchObjectError('No such object could be found')
-        if varbind.val == 'NOSUCHINSTANCE':
+        if varbind.value == 'NOSUCHINSTANCE':
             raise EasySNMPNoSuchInstanceError(
                 'No such instance could be found'
             )
         elif (
-            varbind.type not in TYPE_MAPPING or
-            not TYPE_MAPPING[varbind.type]
+            varbind.snmp_type not in TYPE_MAPPING or
+            not TYPE_MAPPING[varbind.snmp_type]
         ):
             raise EasySNMPError(
                 'Unsupported SNMP type {0} for {1}.{2}: {3}'.format(
-                    varbind.type, varbind.tag, varbind.iid, varbind.val
+                    varbind.snmp_type, varbind.oid, varbind.oid_index,
+                    varbind.value
                 )
             )
         else:
-            SNMPDataType = TYPE_MAPPING[varbind.type]
-            results.append(SNMPDataType(varbind.val, varbind.tag, varbind.iid))
+            SNMPDataType = TYPE_MAPPING[varbind.snmp_type]
+            results.append(
+                SNMPDataType(varbind.value, varbind.oid, varbind.oid_index)
+            )
 
     return results
 
@@ -287,11 +290,11 @@ class Session(object):
         varlist = SNMPVariableList()
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
         if isinstance(oid, tuple):
-            tag, iid = oid
-            varlist.append(SNMPVariable(tag, iid, val=value))
+            oid, oid_index = oid
+            varlist.append(SNMPVariable(oid, oid_index, value=value))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
-            varlist.append(SNMPVariable(oid, val=value))
+            varlist.append(SNMPVariable(oid, value=value))
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)
@@ -309,11 +312,11 @@ class Session(object):
         for oid, value in oid_values.iteritems():
             # OIDs specified as a tuple (e.g. ('sysContact', 0))
             if isinstance(oid, tuple):
-                tag, iid = oid
-                varlist.append(SNMPVariable(tag, iid, val=value))
+                oid, oid_index = oid
+                varlist.append(SNMPVariable(oid, oid_index, value=value))
             # OIDs specefied as a string (e.g. 'sysContact.0')
             else:
-                varlist.append(SNMPVariable(oid, val=value))
+                varlist.append(SNMPVariable(oid, value=value))
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)

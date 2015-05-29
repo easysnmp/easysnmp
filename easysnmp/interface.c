@@ -1709,8 +1709,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
             while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
             {
-                if (py_netsnmp_attr_string(varbind, "tag", &tag, NULL) < 0 ||
-                    py_netsnmp_attr_string(varbind, "iid", &iid, NULL) < 0)
+                if (py_netsnmp_attr_string(varbind, "oid", &tag, NULL) < 0 ||
+                    py_netsnmp_attr_string(varbind, "oid_index", &iid, NULL) < 0)
                 {
                     oid_arr_len = 0;
                 }
@@ -1803,7 +1803,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
             varbind = PySequence_GetItem(varlist, varlist_ind);
 
-            if (PyObject_HasAttrString(varbind, "tag"))
+            if (PyObject_HasAttrString(varbind, "oid"))
             {
                 *str_buf = '.';
                 *(str_buf + 1) = '\0';
@@ -1835,18 +1835,18 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
-                py_netsnmp_attr_set_string(varbind, "tag", tag, STRLEN(tag));
-                py_netsnmp_attr_set_string(varbind, "iid", iid, STRLEN(iid));
+                py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
+                py_netsnmp_attr_set_string(varbind, "oid_index", iid, STRLEN(iid));
 
                 __get_type_str(type, type_str);
 
-                py_netsnmp_attr_set_string(varbind, "type", type_str,
+                py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                            strlen(type_str));
 
                 len = __snprint_value((char *) str_buf, sizeof(str_buf),
                                       vars, tp, type, sprintval_flag);
                 str_buf[len] = '\0';
-                py_netsnmp_attr_set_string(varbind, "val",
+                py_netsnmp_attr_set_string(varbind, "value",
                                            (char *) str_buf, len);
 
                 /* save in return tuple as well */
@@ -1976,8 +1976,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
             while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
             {
-                if (py_netsnmp_attr_string(varbind, "tag", &tag, NULL) < 0 ||
-                    py_netsnmp_attr_string(varbind, "iid", &iid, NULL) < 0)
+                if (py_netsnmp_attr_string(varbind, "oid", &tag, NULL) < 0 ||
+                    py_netsnmp_attr_string(varbind, "oid_index", &iid, NULL) < 0)
                 {
                     oid_arr_len = 0;
                 }
@@ -2075,7 +2075,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
         {
             varbind = PySequence_GetItem(varlist, varlist_ind);
 
-            if (PyObject_HasAttrString(varbind, "tag"))
+            if (PyObject_HasAttrString(varbind, "oid"))
             {
                 *str_buf = '.';
                 *(str_buf + 1) = '\0';
@@ -2102,19 +2102,19 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 py_log_msg(DEBUG, "netsnmp_getnext: filling response: %s:%s",
                            tag, iid);
 
-                py_netsnmp_attr_set_string(varbind, "tag", tag, STRLEN(tag));
-                py_netsnmp_attr_set_string(varbind, "iid", iid, STRLEN(iid));
+                py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
+                py_netsnmp_attr_set_string(varbind, "oid_index", iid, STRLEN(iid));
 
                 __get_type_str(type, type_str);
 
-                py_netsnmp_attr_set_string(varbind, "type", type_str,
+                py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                            strlen(type_str));
 
                 len = __snprint_value((char *) str_buf, sizeof(str_buf),
                                       vars, tp, type, sprintval_flag);
                 str_buf[len] = '\0';
 
-                py_netsnmp_attr_set_string(varbind, "val", (char *) str_buf,
+                py_netsnmp_attr_set_string(varbind, "value", (char *) str_buf,
                                            len);
 
                 /* save in return tuple as well */
@@ -2283,8 +2283,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         varlist_ind = 0;
         while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
         {
-            if (py_netsnmp_attr_string(varbind, "tag", &tag, NULL) < 0 ||
-                py_netsnmp_attr_string(varbind, "iid", &iid, NULL) < 0)
+            if (py_netsnmp_attr_string(varbind, "oid", &tag, NULL) < 0 ||
+                py_netsnmp_attr_string(varbind, "oid_index", &iid, NULL) < 0)
             {
                 oid_arr_len[varlist_ind] = 0;
             }
@@ -2469,7 +2469,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
                     varbind = py_netsnmp_construct_varbind();
 
-                    if (PyObject_HasAttrString(varbind, "tag"))
+                    if (PyObject_HasAttrString(varbind, "oid"))
                     {
                         str_buf[0] = '.';
                         str_buf[1] = '\0';
@@ -2499,14 +2499,14 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         py_log_msg(DEBUG, "netsnmp_walk: filling response: %s:%s",
                                    tag, iid);
 
-                        py_netsnmp_attr_set_string(varbind, "tag", tag,
+                        py_netsnmp_attr_set_string(varbind, "oid", tag,
                                                    STRLEN(tag));
-                        py_netsnmp_attr_set_string(varbind, "iid", iid,
+                        py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                                    STRLEN(iid));
 
                         __get_type_str(type, type_str);
 
-                        py_netsnmp_attr_set_string(varbind, "type", type_str,
+                        py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                                    strlen(type_str));
 
                         len = __snprint_value((char *) str_buf,
@@ -2514,7 +2514,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                               type, sprintval_flag);
                         str_buf[len] = '\0';
 
-                        py_netsnmp_attr_set_string(varbind, "val",
+                        py_netsnmp_attr_set_string(varbind, "value",
                                                    (char *) str_buf, len);
 
                         /* push the varbind onto the return varbinds */
@@ -2677,8 +2677,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             while (varbinds_iter && (varbind = PyIter_Next(varbinds_iter)))
             {
-                if (py_netsnmp_attr_string(varbind, "tag", &tag, NULL) < 0 ||
-                    py_netsnmp_attr_string(varbind, "iid", &iid, NULL) < 0)
+                if (py_netsnmp_attr_string(varbind, "oid", &tag, NULL) < 0 ||
+                    py_netsnmp_attr_string(varbind, "oid_index", &iid, NULL) < 0)
                 {
                     oid_arr_len = 0;
                 }
@@ -2783,7 +2783,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
                     varbind = py_netsnmp_construct_varbind();
 
-                    if (PyObject_HasAttrString(varbind, "tag"))
+                    if (PyObject_HasAttrString(varbind, "oid"))
                     {
                         *str_buf = '.';
                         *(str_buf + 1) = '\0';
@@ -2811,14 +2811,14 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
 
-                        py_netsnmp_attr_set_string(varbind, "tag", tag,
+                        py_netsnmp_attr_set_string(varbind, "oid", tag,
                                                    STRLEN(tag));
-                        py_netsnmp_attr_set_string(varbind, "iid", iid,
+                        py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                                    STRLEN(iid));
 
                         __get_type_str(type, type_str);
 
-                        py_netsnmp_attr_set_string(varbind, "type", type_str,
+                        py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                                    strlen(type_str));
 
                         len = __snprint_value((char *) str_buf,
@@ -2826,7 +2826,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                               sprintval_flag);
                         str_buf[len] = '\0';
 
-                        py_netsnmp_attr_set_string(varbind, "val",
+                        py_netsnmp_attr_set_string(varbind, "value",
                                                    (char *) str_buf, len);
 
                         /* push varbind onto varbinds */
@@ -2948,8 +2948,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
             while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
             {
-                if (py_netsnmp_attr_string(varbind, "tag", &tag, NULL) < 0 ||
-                    py_netsnmp_attr_string(varbind, "iid", &iid, NULL) < 0)
+                if (py_netsnmp_attr_string(varbind, "oid", &tag, NULL) < 0 ||
+                    py_netsnmp_attr_string(varbind, "oid_index", &iid, NULL) < 0)
                 {
                     oid_arr_len = 0;
                 }
@@ -2973,7 +2973,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (type == TYPE_UNKNOWN)
                 {
-                    if (py_netsnmp_attr_string(varbind, "type", &type_str, NULL) < 0)
+                    if (py_netsnmp_attr_string(varbind, "snmp_type", &type_str, NULL) < 0)
                     {
                         snmp_free_pdu(pdu);
                         goto done;
@@ -2990,7 +2990,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                     }
                 }
 
-                if (py_netsnmp_attr_string(varbind, "val", &val, &tmplen) < 0)
+                if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
                     snmp_free_pdu(pdu);
                     goto done;
