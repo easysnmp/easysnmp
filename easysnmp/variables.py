@@ -20,36 +20,36 @@ def tostr(s):
     return None if s is None else str(s)
 
 
-def normalize_oid(tag, iid):
+def normalize_oid(oid, oid_index):
     """Ensures that the index is set correctly given an OID definition"""
 
-    # Determine the OID ID from the tag if not specified
-    if iid is None and tag is not None:
+    # Determine the OID index from the OID if not specified
+    if oid_index is None and oid is not None:
         # We attempt to extract the index from an OID (e.g. sysDescr.0
         # or .iso.org.dod.internet.mgmt.mib-2.system.sysContact.0)
-        match = OID_INDEX_RE.match(tag)
+        match = OID_INDEX_RE.match(oid)
         if match:
-            tag, iid = match.group(1, 2)
+            oid, oid_index = match.group(1, 2)
 
-    return tag, iid
+    return oid, oid_index
 
 
 class SNMPVariable(object):
     """An SNMP variable binding which is used to represent a piece of
     information being retreived via SNMP.
 
-    :param tag: the OID being manipulated
-    :param iid: the index of the OID
-    :param val: the OID value
-    :param type: the type of data contained in val (please see
-                 http://www.net-snmp.org/wiki/index.php/TUT:snmpset#Data_Types
-                 for further information)
+    :param oid: the OID being manipulated
+    :param oid_index: the index of the OID
+    :param value: the OID value
+    :param snmp_type: the snmp_type of data contained in val (please see
+                      http://www.net-snmp.org/wiki/index.php/TUT:snmpset#Data_Types
+                      for further information)
     """
 
-    def __init__(self, tag=None, iid=None, val=None, type=None):
-        self.tag, self.iid = normalize_oid(tag, iid)
-        self.val = val
-        self.type = type
+    def __init__(self, oid=None, oid_index=None, value=None, snmp_type=None):
+        self.oid, self.oid_index = normalize_oid(oid, oid_index)
+        self.value = value
+        self.snmp_type = snmp_type
 
     def __setattr__(self, name, value):
         self.__dict__[name] = tostr(value)
