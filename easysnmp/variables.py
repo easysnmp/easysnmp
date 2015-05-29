@@ -16,13 +16,24 @@ OID_INDEX_RE = re.compile(
 )
 
 
-def tostr(s):
-    """Converts any variable to a string"""
-    return None if s is None else str(s)
+def tostr(value):
+    """
+    Converts any variable to a string or returns None if the variable
+    contained None to begin with
+
+    :param value: the value you wish to convert to a string
+    """
+
+    return None if value is None else str(value)
 
 
 def normalize_oid(oid, oid_index):
-    """Ensures that the index is set correctly given an OID definition"""
+    """
+    Ensures that the index is set correctly given an OID definition
+
+    :param oid: the OID to normalize
+    :param oid_index: the OID index to normalize
+    """
 
     # Determine the OID index from the OID if not specified
     if oid_index is None and oid is not None:
@@ -36,7 +47,8 @@ def normalize_oid(oid, oid_index):
 
 
 class SNMPVariable(object):
-    """An SNMP variable binding which is used to represent a piece of
+    """
+    An SNMP variable binding which is used to represent a piece of
     information being retreived via SNMP.
 
     :param oid: the OID being manipulated
@@ -75,8 +87,11 @@ class SNMPVariable(object):
 
 
 class SNMPVariableList(list):
-    """An slight variation of a list which is used internally by the
-    Net-SNMP C interface."""
+    """
+    An slight variation of a list which is used internally by the
+    Net-SNMP C interface.
+    """
+
     @property
     def varbinds(self):
         return self

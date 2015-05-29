@@ -9,6 +9,8 @@ class EasySNMPNoSuchObjectError(EasySNMPError):
 
 
 class EasySNMPNoSuchInstanceError(EasySNMPError):
-    """The error raised when a NOSUCHINSTANCE value is returned from
-    Net-SNMP when a particular OID index doesn't exist"""
+    """
+    The error raised when a NOSUCHINSTANCE value is returned from Net-SNMP
+    when a particular OID index doesn't exist
+    """
     pass
