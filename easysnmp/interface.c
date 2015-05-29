@@ -1209,14 +1209,15 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
  *
  * Currently there are 3 attributes we care about
  *
- * error_num - Copy of the value of netsnmp_session.s_errno. This is the system
- * errno that was generated during our last call into the net-snmp library.
+ * error_number - Copy of the value of netsnmp_session.s_errno. This is the
+ * system errno that was generated during our last call into the net-snmp
+ * library.
  *
- * error_ind - Copy of the value of netsmp_session.s_snmp_errno. These error
+ * error_index - Copy of the value of netsmp_session.s_snmp_errno. These error
  * numbers are separate from the system errno's and describe SNMP errors.
  *
- * error_str - A string describing the error_ind that was returned during our
- * last operation.
+ * error_string - A string describing the error_index that was returned during
+ * our last operation.
  *
  * @param[in] session The python object that represents our current Session
  * @param[in|out] err_str A string describing err_ind
@@ -1229,14 +1230,15 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
 {
     PyObject *tmp_for_conversion;
 
-    py_netsnmp_attr_set_string(session, "error_str", err_str, STRLEN(err_str));
+    py_netsnmp_attr_set_string(session, "error_string", err_str,
+                               STRLEN(err_str));
 
     tmp_for_conversion = PyInt_FromLong(err_num);
-    PyObject_SetAttrString(session, "error_num", tmp_for_conversion);
+    PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
 
     tmp_for_conversion = PyInt_FromLong(err_ind);
-    PyObject_SetAttrString(session, "error_ind", tmp_for_conversion);
+    PyObject_SetAttrString(session, "error_index", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
 }
 
@@ -1677,7 +1679,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
         ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-        if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0)
+        if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
             goto done;
         }
@@ -1776,9 +1778,10 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                                NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                                NETSNMP_OID_OUTPUT_FULL);
         }
-        /* Setting use_numeric forces use_long_names on so check for use_numeric
-             after use_long_names (above) to make sure the final outcome of
-             NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is NETSNMP_OID_OUTPUT_NUMERIC */
+        /* Setting use_numeric forces use_long_names on so check for
+          use_numeric after use_long_names (above) to make sure the final
+          outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
+          NETSNMP_OID_OUTPUT_NUMERIC */
         if (py_netsnmp_attr_long(session, "use_numeric"))
         {
             getlabel_flag |= USE_LONG_NAMES;
@@ -1836,7 +1839,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
                 py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
-                py_netsnmp_attr_set_string(varbind, "oid_index", iid, STRLEN(iid));
+                py_netsnmp_attr_set_string(varbind, "oid_index", iid,
+                                           STRLEN(iid));
 
                 __get_type_str(type, type_str);
 
@@ -1941,13 +1945,13 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
         ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-        if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0)
+        if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
             goto done;
         }
         memcpy(&err_str, tmpstr, tmplen);
-        err_num = py_netsnmp_attr_long(session, "error_num");
-        err_ind = py_netsnmp_attr_long(session, "error_ind");
+        err_num = py_netsnmp_attr_long(session, "error_number");
+        err_ind = py_netsnmp_attr_long(session, "error_index");
 
         if (py_netsnmp_attr_long(session, "use_long_names"))
         {
@@ -2103,7 +2107,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                            tag, iid);
 
                 py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
-                py_netsnmp_attr_set_string(varbind, "oid_index", iid, STRLEN(iid));
+                py_netsnmp_attr_set_string(varbind, "oid_index", iid,
+                                           STRLEN(iid));
 
                 __get_type_str(type, type_str);
 
@@ -2224,13 +2229,13 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
         ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-        if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0)
+        if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
             goto done;
         }
         memcpy(&err_str, tmpstr, tmplen);
-        err_num = py_netsnmp_attr_long(session, "error_num");
-        err_ind = py_netsnmp_attr_long(session, "error_ind");
+        err_num = py_netsnmp_attr_long(session, "error_number");
+        err_ind = py_netsnmp_attr_long(session, "error_index");
 
         if (py_netsnmp_attr_long(session, "use_long_names"))
         {
@@ -2641,13 +2646,13 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
         {
             ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-            if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0)
+            if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
             {
                 goto done;
             }
             memcpy(&err_str, tmpstr, tmplen);
-            err_num = py_netsnmp_attr_long(session, "error_num");
-            err_ind = py_netsnmp_attr_long(session, "error_ind");
+            err_num = py_netsnmp_attr_long(session, "error_number");
+            err_ind = py_netsnmp_attr_long(session, "error_index");
 
             if (py_netsnmp_attr_long(session, "use_long_names"))
             {
@@ -2931,7 +2936,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
         ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
         /* PyObject_SetAttrString(); */
-        if (py_netsnmp_attr_string(session, "error_str", &tmpstr, &tmplen) < 0)
+        if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
             goto done;
         }

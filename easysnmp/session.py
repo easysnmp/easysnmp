@@ -201,13 +201,13 @@ class Session(object):
         self.sess_ptr = None
 
         #: read-only, holds the error message assoc. w/ last request
-        self.error_str = ''
+        self.error_string = ''
 
         #: read-only, holds the snmp_err or status of last request
-        self.error_num = 0
+        self.error_number = 0
 
         #: read-only, holds the snmp_err_index when appropriate
-        self.error_ind = 0
+        self.error_index = 0
 
         # Check for transports that may be tunneled
         tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
