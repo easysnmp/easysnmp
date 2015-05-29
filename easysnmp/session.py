@@ -20,8 +20,14 @@ SECURITY_LEVEL_MAPPING = {
 
 
 def build_varlist(oids):
-    """Prepare the variable binding list which will be used by the
-    C interface"""
+    """
+    Prepare the variable binding list which will be used by the
+    C interface
+
+    :param oids: an individual or list of strings or tuples representing
+                 one or more OIDs
+    """
+
     if isinstance(oids, list):
         is_list = True
     else:
@@ -42,7 +48,12 @@ def build_varlist(oids):
 
 
 def build_results(varlist):
-    """Converts variable bindings into SNMP data types"""
+    """
+    Converts variable bindings into SNMP data types
+
+    :param varlist: a variable list containing varbinds to be processed
+    """
+
     results = []
 
     for varbind in varlist:
@@ -59,8 +70,9 @@ def build_results(varlist):
 
 
 class Session(object):
-    """A Net-SNMP session which may be setup once and then used to query
-    and manipulate SNMP data.
+    """
+    A Net-SNMP session which may be setup once and then used to query and
+    manipulate SNMP data.
 
     :param hostname: hostname or IP address of SNMP agent
     :param version: the SNMP version to use; 1, 2 (equivalent to 2c) or 3
@@ -259,7 +271,8 @@ class Session(object):
             return self.hostname
 
     def get(self, oids):
-        """Perform an SNMP GET operation using the prepared session to
+        """
+        Perform an SNMP GET operation using the prepared session to
         retrieve a particular piece of information
 
         :param oids: you may pass in a list of OIDs or single item; eoch item
@@ -282,7 +295,8 @@ class Session(object):
         return list(results) if is_list else results[0]
 
     def set(self, oid, value, snmp_type=None):
-        """Perform an SNMP SET operation using the prepared session
+        """
+        Perform an SNMP SET operation using the prepared session
 
         :param oid: the OID that you wish to set which may be a string
                     representing the entire OID (e.g. 'sysDescr.0') or may
@@ -307,7 +321,8 @@ class Session(object):
         return bool(success)
 
     def set_multiple(self, oid_values):
-        """Perform an SNMP SET operation on multiple OIDs with multiple
+        """
+        Perform an SNMP SET operation on multiple OIDs with multiple
         values using the prepared session
 
         :param oid_values: a dict containing OIDs as keys and their
@@ -329,7 +344,8 @@ class Session(object):
         return bool(success)
 
     def get_next(self, oids):
-        """Uses an SNMP GETNEXT operation using the prepared session to
+        """
+        Uses an SNMP GETNEXT operation using the prepared session to
         retrieve the next variable after the chosen item
 
         :param oids: you may pass in a list of OIDs or single item; eoch item
@@ -352,7 +368,8 @@ class Session(object):
         return list(results) if is_list else results[0]
 
     def get_bulk(self, oids, non_repeaters, max_repetitions):
-        """Performs a bulk SNMP GET operation using the prepared session to
+        """
+        Performs a bulk SNMP GET operation using the prepared session to
         retrieve multiple pieces of information in a single packet
 
         :param oids: you may pass in a list of OIDs or single item; eoch item
@@ -360,6 +377,8 @@ class Session(object):
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
                      (e.g. ('sysDescr', 0))
+        :param non_repeaters: TODO
+        :param max_repetitions: TODO
         """
 
         if self.version == 1:
@@ -379,7 +398,8 @@ class Session(object):
         return results
 
     def walk(self, oids='.1.3.6.1.2.1'):
-        """Uses SNMP GETNEXT operation using the prepared session to
+        """
+        Uses SNMP GETNEXT operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID
 
         :param oids: you may pass in a single item (multiple values currently
