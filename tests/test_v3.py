@@ -5,7 +5,7 @@ import easysnmp
 from .fixtures import sess_v3  # noqa
 
 
-def test_easysnmp_v3_session_get(sess_v3):  # noqa
+def test_v3_session_get(sess_v3):  # noqa
     res = sess_v3.get([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -30,7 +30,7 @@ def test_easysnmp_v3_session_get(sess_v3):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v3_session_get_next(sess_v3):  # noqa
+def test_v3_session_get_next(sess_v3):  # noqa
     res = sess_v3.get_next([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -55,7 +55,7 @@ def test_easysnmp_v3_session_get_next(sess_v3):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v3_session_get_bulk(sess_v3):  # noqa
+def test_v3_session_get_bulk(sess_v3):  # noqa
     res = sess_v3.get_bulk(
         ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
          'sysORUpTime'], 2, 8
@@ -74,7 +74,7 @@ def test_easysnmp_v3_session_get_bulk(sess_v3):  # noqa
     assert res[4].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v3_session_set(sess_v3):  # noqa
+def test_v3_session_set(sess_v3):  # noqa
     success = sess_v3.set(('sysLocation', '0'), 'my final destination')
     assert success
 
@@ -86,7 +86,7 @@ def test_easysnmp_v3_session_set(sess_v3):  # noqa
     assert res.value == 'my final destination'
 
 
-def test_easysnmp_v3_session_walk(sess_v3):  # noqa
+def test_v3_session_walk(sess_v3):  # noqa
     res = sess_v3.walk('system')
     assert len(res) >= 7
 

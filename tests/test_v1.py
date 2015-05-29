@@ -6,7 +6,7 @@ import easysnmp
 from .fixtures import sess_v1  # noqa
 
 
-def test_easysnmp_v1_get():
+def test_v1_get():
     res = easysnmp.snmp_get(
         'sysDescr.0',
         version=1, hostname='localhost', community='public'
@@ -18,7 +18,7 @@ def test_easysnmp_v1_get():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_get_tuple():
+def test_v1_get_tuple():
     res = easysnmp.snmp_get(
         ('sysDescr', '0'),
         version=1, hostname='localhost', community='public'
@@ -30,7 +30,7 @@ def test_easysnmp_v1_get_tuple():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_get_fully_qualified():
+def test_v1_get_fully_qualified():
     res = easysnmp.snmp_get(
         '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0',
         version=1, hostname='localhost', community='public'
@@ -42,7 +42,7 @@ def test_easysnmp_v1_get_fully_qualified():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_get_fully_qualified_tuple():
+def test_v1_get_fully_qualified_tuple():
     res = easysnmp.snmp_get(
         ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'),
         version=1, hostname='localhost', community='public'
@@ -54,7 +54,7 @@ def test_easysnmp_v1_get_fully_qualified_tuple():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_get_numeric():
+def test_v1_get_numeric():
     res = easysnmp.snmp_get(
         ('.1.3.6.1.2.1.1.1', '0'),
         version=1, hostname='localhost', community='public'
@@ -66,7 +66,7 @@ def test_easysnmp_v1_get_numeric():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_get_unknown():
+def test_v1_get_unknown():
     with pytest.raises(easysnmp.EasySNMPInterfaceError):
         easysnmp.snmp_get(
             'sysDescripto.0',
@@ -74,7 +74,7 @@ def test_easysnmp_v1_get_unknown():
         )
 
 
-def test_easysnmp_v1_get_next():
+def test_v1_get_next():
     res = easysnmp.snmp_get_next(
         'nsCacheEntry', version=1, hostname='localhost', community='public'
     )
@@ -85,7 +85,7 @@ def test_easysnmp_v1_get_next():
     assert res.snmp_type == 'INTEGER'
 
 
-def test_easysnmp_v1_get_next_numeric():
+def test_v1_get_next_numeric():
     res = easysnmp.snmp_get_next(
         ('.1.3.6.1.2.1.1.1', '0'),
         version=1, hostname='localhost', community='public'
@@ -97,7 +97,7 @@ def test_easysnmp_v1_get_next_numeric():
     assert res.snmp_type == 'OBJECTID'
 
 
-def test_easysnmp_v1_set_string():
+def test_v1_set_string():
     res = easysnmp.snmp_get(
         ('sysLocation', '0'),
         version=1, hostname='localhost', community='public'
@@ -123,7 +123,7 @@ def test_easysnmp_v1_set_string():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_set_integer():
+def test_v1_set_integer():
     success = easysnmp.snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65,
         version=1, hostname='localhost', community='public'
@@ -140,7 +140,7 @@ def test_easysnmp_v1_set_integer():
     assert res.snmp_type == 'INTEGER'
 
 
-def test_easysnmp_v1_set_multiple():
+def test_v1_set_multiple():
     success = easysnmp.snmp_set_multiple({
         'sysLocation.0': 'my marginally newer location',
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): 162
@@ -156,7 +156,7 @@ def test_easysnmp_v1_set_multiple():
 
 
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
-# def test_easysnmp_v1_set_restart_agent():
+# def test_v1_set_restart_agent():
 #     var = easysnmp.SNMPVariable('sysUpTime', '0')
 #     res = easysnmp.snmp_get(
 #         var, version=1, hostname='localhost', community='public'
@@ -177,7 +177,7 @@ def test_easysnmp_v1_set_multiple():
 #     print "uptime = ", res[0]
 
 
-def test_easysnmp_v1_session_set_multiple_next(sess_v1):  # noqa
+def test_v1_session_set_multiple_next(sess_v1):  # noqa
     success = sess_v1.set_multiple({
         '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116': '.1.3.6.1.6.1.1',
         '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116': '1234',
@@ -208,7 +208,7 @@ def test_easysnmp_v1_session_set_multiple_next(sess_v1):  # noqa
     assert res[2].snmp_type == 'INTEGER'
 
 
-def test_easysnmp_v1_session_set_clear(sess_v1):  # noqa
+def test_v1_session_set_clear(sess_v1):  # noqa
     res = sess_v1.set('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 6)
     assert res == 1
 
@@ -235,7 +235,7 @@ def test_easysnmp_v1_session_set_clear(sess_v1):  # noqa
     assert res[2].snmp_type == 'COUNTER'
 
 
-def test_easysnmp_v1_walk():
+def test_v1_walk():
     res = easysnmp.snmp_walk(
         'system', version=1, hostname='localhost', community='public'
     )
@@ -247,7 +247,7 @@ def test_easysnmp_v1_walk():
     assert res[5].value == 'my marginally newer location'
 
 
-def test_easysnmp_v1_walk_res():
+def test_v1_walk_res():
     res = easysnmp.snmp_walk(
         'system', version=1, hostname='localhost', community='public'
     )
@@ -275,7 +275,7 @@ def test_easysnmp_v1_walk_res():
     assert res[5].snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_session_get(sess_v1):  # noqa
+def test_v1_session_get(sess_v1):  # noqa
     res = sess_v1.get([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -300,7 +300,7 @@ def test_easysnmp_v1_session_get(sess_v1):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v1_session_get_next(sess_v1):  # noqa
+def test_v1_session_get_next(sess_v1):  # noqa
     res = sess_v1.get_next([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -325,7 +325,7 @@ def test_easysnmp_v1_session_get_next(sess_v1):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
+def test_v1_session_get_bulk_unspported(sess_v1):  # noqa
     with pytest.raises(easysnmp.EasySNMPError):
         sess_v1.get_bulk(
             ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
@@ -334,7 +334,7 @@ def test_easysnmp_v1_session_get_bulk_unspported(sess_v1):  # noqa
         )
 
 
-def test_easysnmp_v1_session_set(sess_v1):  # noqa
+def test_v1_session_set(sess_v1):  # noqa
     success = sess_v1.set(('sysLocation', '0'), 'my newer location')
     assert success
 
@@ -344,7 +344,7 @@ def test_easysnmp_v1_session_set(sess_v1):  # noqa
     assert res.value == 'my newer location'
 
 
-def test_easysnmp_v1_session_set_multiple(sess_v1):  # noqa
+def test_v1_session_set_multiple(sess_v1):  # noqa
     success = sess_v1.set_multiple({
         'sysLocation.0': 'my slightly newer location',
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): '160'
@@ -359,7 +359,7 @@ def test_easysnmp_v1_session_set_multiple(sess_v1):  # noqa
     assert res[1].value == '160'
 
 
-def test_easysnmp_v1_session_walk(sess_v1):  # noqa
+def test_v1_session_walk(sess_v1):  # noqa
     res = sess_v1.walk('system')
 
     assert len(res) >= 7

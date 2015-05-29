@@ -6,7 +6,7 @@ import easysnmp
 from .fixtures import sess_v2  # noqa
 
 
-def test_easysnmp_v2_get_invalid_instance():
+def test_v2_get_invalid_instance():
     with pytest.raises(easysnmp.EasySNMPNoSuchInstanceError):
         easysnmp.snmp_get(
             'sysContact.1',
@@ -14,7 +14,7 @@ def test_easysnmp_v2_get_invalid_instance():
         )
 
 
-def test_easysnmp_v2_get_invalid_object():
+def test_v2_get_invalid_object():
     with pytest.raises(easysnmp.EasySNMPNoSuchObjectError):
         easysnmp.snmp_get(
             'iso',
@@ -22,7 +22,7 @@ def test_easysnmp_v2_get_invalid_object():
         )
 
 
-def test_easysnmp_v2_get_bulk():
+def test_v2_get_bulk():
     res = easysnmp.snmp_get_bulk([
         'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
         'sysORUpTime'], 2, 8,
@@ -42,7 +42,7 @@ def test_easysnmp_v2_get_bulk():
     assert res[4].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v2_session_get(sess_v2):  # noqa
+def test_v2_session_get(sess_v2):  # noqa
     res = sess_v2.get([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -67,7 +67,7 @@ def test_easysnmp_v2_session_get(sess_v2):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_easysnmp_v2_session_get_next(sess_v2):  # noqa
+def test_v2_session_get_next(sess_v2):  # noqa
     res = sess_v2.get_next([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
@@ -92,7 +92,7 @@ def test_easysnmp_v2_session_get_next(sess_v2):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v2_session_get_bulk(sess_v2):  # noqa
+def test_v2_session_get_bulk(sess_v2):  # noqa
     res = sess_v2.get_bulk([
         'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
         'sysORUpTime'], 2, 8
@@ -111,7 +111,7 @@ def test_easysnmp_v2_session_get_bulk(sess_v2):  # noqa
     assert res[4].snmp_type == 'TICKS'
 
 
-def test_easysnmp_v2_session_set(sess_v2):  # noqa
+def test_v2_session_set(sess_v2):  # noqa
     success = sess_v2.set(('sysLocation', '0'), 'my even newer location')
     assert success
 
@@ -122,7 +122,7 @@ def test_easysnmp_v2_session_set(sess_v2):  # noqa
     assert res.value == 'my even newer location'
 
 
-def test_easysnmp_v2_session_walk(sess_v2):  # noqa
+def test_v2_session_walk(sess_v2):  # noqa
     res = sess_v2.walk('system')
 
     assert len(res) >= 7
