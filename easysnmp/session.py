@@ -281,24 +281,26 @@ class Session(object):
         # Return a list or single item depending on what was passed in
         return list(results) if is_list else results[0]
 
-    def set(self, oid, value):
+    def set(self, oid, value, snmp_type=None):
         """Perform an SNMP SET operation using the prepared session
 
-        :param oids: you may pass in a list of OIDs or single item; eoch item
-                     may be a string representing the entire OID
-                     (e.g. 'sysDescr.0') or may be a tuple containing the
-                     name as its first item and index as its second
-                     (e.g. ('sysDescr', 0))
+        :param oid: the OID that you wish to set which may be a string
+                    representing the entire OID (e.g. 'sysDescr.0') or may
+                    be a tuple containing the name as its first item and
+                    index as its second (e.g. ('sysDescr', 0))
+        :param value: the value to set the OID to
+        :param snmp_type: if a numeric OID is used and the object is not in
+                          the parsed MIB, a type must be explicitly supplied
         """
 
         varlist = SNMPVariableList()
         # OIDs specified as a tuple (e.g. ('sysContact', 0))
         if isinstance(oid, tuple):
             oid, oid_index = oid
-            varlist.append(SNMPVariable(oid, oid_index, value=value))
+            varlist.append(SNMPVariable(oid, oid_index, value, snmp_type))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
-            varlist.append(SNMPVariable(oid, value=value))
+            varlist.append(SNMPVariable(oid, value=value, snmp_type=snmp_type))
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)
