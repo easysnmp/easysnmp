@@ -4,7 +4,6 @@ from . import interface
 from .exceptions import (
     EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
-from .data_types import TYPE_MAPPING
 from .variables import SNMPVariable, SNMPVariableList
 
 # Mapping between security level strings and their associated integer values.
@@ -53,21 +52,8 @@ def build_results(varlist):
             raise EasySNMPNoSuchInstanceError(
                 'No such instance could be found'
             )
-        elif (
-            varbind.snmp_type not in TYPE_MAPPING or
-            not TYPE_MAPPING[varbind.snmp_type]
-        ):
-            raise EasySNMPError(
-                'Unsupported SNMP type {0} for {1}.{2}: {3}'.format(
-                    varbind.snmp_type, varbind.oid, varbind.oid_index,
-                    varbind.value
-                )
-            )
         else:
-            SNMPDataType = TYPE_MAPPING[varbind.snmp_type]
-            results.append(
-                SNMPDataType(varbind.value, varbind.oid, varbind.oid_index)
-            )
+            results.append(varbind)
 
     return results
 

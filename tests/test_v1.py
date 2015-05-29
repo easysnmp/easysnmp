@@ -136,7 +136,7 @@ def test_easysnmp_v1_set_integer():
     )
     assert res.oid == 'nsCacheTimeout'
     assert res.oid_index == '1.3.6.1.2.1.2.2'
-    assert res.value == 65
+    assert res.value == '65'
     assert res.snmp_type == 'INTEGER'
 
 
@@ -152,7 +152,7 @@ def test_easysnmp_v1_set_multiple():
         version=1, hostname='localhost', community='public'
     )
     assert res[0].value == 'my marginally newer location'
-    assert res[1].value == 162
+    assert res[1].value == '162'
 
 
 # TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
@@ -204,7 +204,7 @@ def test_easysnmp_v1_session_set_multiple_next(sess_v1):  # noqa
 
     assert res[2].oid == 'snmpTargetAddrRowStatus'
     assert res[2].oid_index == '116.101.115.116'
-    assert res[2].value == 3
+    assert res[2].value == '3'
     assert res[2].snmp_type == 'INTEGER'
 
 
@@ -221,17 +221,17 @@ def test_easysnmp_v1_session_set_clear(sess_v1):  # noqa
 
     assert res[0].oid == 'snmpUnavailableContexts'
     assert res[0].oid_index == '0'
-    assert res[0].value == 0
+    assert res[0].value == '0'
     assert res[0].snmp_type == 'COUNTER'
 
     assert res[1].oid == 'snmpUnavailableContexts'
     assert res[1].oid_index == '0'
-    assert res[1].value == 0
+    assert res[1].value == '0'
     assert res[1].snmp_type == 'COUNTER'
 
     assert res[2].oid == 'snmpUnavailableContexts'
     assert res[2].oid_index == '0'
-    assert res[2].value == 0
+    assert res[2].value == '0'
     assert res[2].snmp_type == 'COUNTER'
 
 
@@ -347,7 +347,7 @@ def test_easysnmp_v1_session_set(sess_v1):  # noqa
 def test_easysnmp_v1_session_set_multiple(sess_v1):  # noqa
     success = sess_v1.set_multiple({
         'sysLocation.0': 'my slightly newer location',
-        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): 160
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): '160'
     })
     assert success
 
@@ -356,7 +356,7 @@ def test_easysnmp_v1_session_set_multiple(sess_v1):  # noqa
         version=1, hostname='localhost', community='public'
     )
     assert res[0].value == 'my slightly newer location'
-    assert res[1].value == 160
+    assert res[1].value == '160'
 
 
 def test_easysnmp_v1_session_walk(sess_v1):  # noqa
