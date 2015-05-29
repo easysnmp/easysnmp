@@ -93,8 +93,11 @@ class Session(object):
     :param security_engine_id: security engine ID, will be probed if not
                                supplied (v3)
     :param context: context name (v3)
-    :param engine_boots: TODO (v3)
-    :param engine_time: TODO (v3)
+    :param engine_boots: the number of times the SNMP engine has
+                         re-booted/re-initialized since SNMP engine ID was
+                         last configured (v3)
+    :param engine_time: the number of seconds since the engine_boots counter
+                        was last incremented (v3)
     :param our_identity: the fingerprint or file name for the local X.509
                          certificate to use for our identity (run
                          net-snmp-cert to create and manage certificates)
@@ -377,8 +380,11 @@ class Session(object):
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
                      (e.g. ('sysDescr', 0))
-        :param non_repeaters: TODO
-        :param max_repetitions: TODO
+        :param non_repeaters: the number of objects that are only expected to
+                              return a single GETNEXT instance, not multiple
+                              instances
+        :param max_repetitions: the number of objects that should be returned
+                                for all the repeating OIDs
         """
 
         if self.version == 1:

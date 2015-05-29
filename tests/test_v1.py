@@ -155,28 +155,6 @@ def test_v1_set_multiple():
     assert res[1].value == '162'
 
 
-# TODO: This test needs completion but it seems to break SNMPD in Ubuntu 14.04
-# def test_v1_set_restart_agent():
-#     var = easysnmp.SNMPVariable('sysUpTime', '0')
-#     res = easysnmp.snmp_get(
-#         var, version=1, hostname='localhost', community='public'
-#     )
-
-#     print "uptime = ", res[0]
-
-#     var = easysnmp.SNMPVariable('versionRestartAgent','0', 1)
-#     res = easysnmp.snmp_set(
-#         var, version=1, hostname='localhost', community='public'
-#     )
-
-#     var = easysnmp.SNMPVariable('sysUpTime','0')
-#     res = easysnmp.snmp_get(
-#         var, version=1, hostname='localhost', community='public'
-#     )
-
-#     print "uptime = ", res[0]
-
-
 def test_v1_session_set_multiple_next(sess_v1):  # noqa
     success = sess_v1.set_multiple({
         '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116': '.1.3.6.1.6.1.1',
