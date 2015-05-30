@@ -3,13 +3,42 @@ import platform
 import pytest
 import easysnmp
 
-from .fixtures import sess_v1  # noqa
+from .fixtures import (
+    sess_v1_args, sess_v2_args, sess_v3_args,
+    sess_v1, sess_v2, sess_v3
+)
 
 
-def test_v1_get():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get(sess_args):
+    res = easysnmp.snmp_get('sysDescr.0', **sess_args)
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_tuple(sess_args):
+    res = easysnmp.snmp_get(('sysDescr', '0'), **sess_args)
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_fully_qualified(sess_args):
     res = easysnmp.snmp_get(
-        'sysDescr.0',
-        version=1, hostname='localhost', community='public'
+        '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0', **sess_args
     )
 
     assert platform.version() in res.value
@@ -18,10 +47,12 @@ def test_v1_get():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_v1_get_tuple():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_fully_qualified_tuple(sess_args):
     res = easysnmp.snmp_get(
-        ('sysDescr', '0'),
-        version=1, hostname='localhost', community='public'
+        ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'), **sess_args
     )
 
     assert platform.version() in res.value
@@ -30,11 +61,11 @@ def test_v1_get_tuple():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_v1_get_fully_qualified():
-    res = easysnmp.snmp_get(
-        '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0',
-        version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_numeric(sess_args):
+    res = easysnmp.snmp_get(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
     assert platform.version() in res.value
     assert res.oid == 'sysDescr'
@@ -42,42 +73,35 @@ def test_v1_get_fully_qualified():
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_v1_get_fully_qualified_tuple():
-    res = easysnmp.snmp_get(
-        ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'),
-        version=1, hostname='localhost', community='public'
-    )
-
-    assert platform.version() in res.value
-    assert res.oid == 'sysDescr'
-    assert res.oid_index == '0'
-    assert res.snmp_type == 'OCTETSTR'
-
-
-def test_v1_get_numeric():
-    res = easysnmp.snmp_get(
-        ('.1.3.6.1.2.1.1.1', '0'),
-        version=1, hostname='localhost', community='public'
-    )
-
-    assert platform.version() in res.value
-    assert res.oid == 'sysDescr'
-    assert res.oid_index == '0'
-    assert res.snmp_type == 'OCTETSTR'
-
-
-def test_v1_get_unknown():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_unknown(sess_args):
     with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_get(
-            'sysDescripto.0',
-            version=1, hostname='localhost', community='public'
-        )
+        easysnmp.snmp_get('sysDescripto.0', **sess_args)
 
 
-def test_v1_get_next():
-    res = easysnmp.snmp_get_next(
-        'nsCacheEntry', version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_invalid_instance(sess_args):
+    with pytest.raises(easysnmp.EasySNMPNoSuchInstanceError):
+        easysnmp.snmp_get('sysContact.1', **sess_args)
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_invalid_object(sess_args):
+    with pytest.raises(easysnmp.EasySNMPNoSuchObjectError):
+        easysnmp.snmp_get('iso', **sess_args)
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_next(sess_args):
+    res = easysnmp.snmp_get_next('nsCacheEntry', **sess_args)
 
     assert res.oid == 'nsCacheTimeout'
     assert res.oid_index == '1.3.6.1.2.1.2.2'
@@ -85,11 +109,11 @@ def test_v1_get_next():
     assert res.snmp_type == 'INTEGER'
 
 
-def test_v1_get_next_numeric():
-    res = easysnmp.snmp_get_next(
-        ('.1.3.6.1.2.1.1.1', '0'),
-        version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_next_numeric(sess_args):
+    res = easysnmp.snmp_get_next(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
     assert res.oid == 'sysObjectID'
     assert res.oid_index == '0'
@@ -97,50 +121,47 @@ def test_v1_get_next_numeric():
     assert res.snmp_type == 'OBJECTID'
 
 
-def test_v1_get_next_unknown():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_next_unknown(sess_args):
     with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_get_next(
-            'sysDescripto.0',
-            version=1, hostname='localhost', community='public'
-        )
+        easysnmp.snmp_get_next('sysDescripto.0', **sess_args)
 
 
-def test_v1_set_string():
-    res = easysnmp.snmp_get(
-        ('sysLocation', '0'),
-        version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_string(sess_args):
+    res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
     assert res.value != 'my marginally newer location'
     assert res.snmp_type == 'OCTETSTR'
 
     success = easysnmp.snmp_set(
-        ('sysLocation', '0'), 'my marginally newer location',
-        version=1, hostname='localhost', community='public'
+        ('sysLocation', '0'), 'my marginally newer location', **sess_args
     )
     assert success
 
-    res = easysnmp.snmp_get(
-        ('sysLocation', '0'),
-        version=1, hostname='localhost', community='public'
-    )
+    res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
     assert res.value == 'my marginally newer location'
     assert res.snmp_type == 'OCTETSTR'
 
 
-def test_v1_set_integer():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_integer(sess_args):
     success = easysnmp.snmp_set(
-        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65,
-        version=1, hostname='localhost', community='public'
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, **sess_args
     )
     assert success
 
     res = easysnmp.snmp_get(
-        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'),
-        version=1, hostname='localhost', community='public'
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), **sess_args
     )
     assert res.oid == 'nsCacheTimeout'
     assert res.oid_index == '1.3.6.1.2.1.2.2'
@@ -148,38 +169,70 @@ def test_v1_set_integer():
     assert res.snmp_type == 'INTEGER'
 
 
-def test_v1_set_unknown():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_unknown(sess_args):
     with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_set(
-            'nsCacheTimeoooout', 1234,
-            version=1, hostname='localhost', community='public'
-        )
+        easysnmp.snmp_set('nsCacheTimeoooout', 1234, **sess_args)
 
 
-def test_v1_set_multiple():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_multiple(sess_args):
     success = easysnmp.snmp_set_multiple([
         ('sysLocation.0', 'my marginally newer location'),
         (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 162)
-    ], version=1, hostname='localhost', community='public')
+    ], **sess_args)
     assert success
 
     res = easysnmp.snmp_get(
-        ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'],
-        version=1, hostname='localhost', community='public'
+        ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
     )
     assert res[0].value == 'my marginally newer location'
     assert res[1].value == '162'
 
 
-def test_v1_session_set_multiple_next(sess_v1):  # noqa
-    success = sess_v1.set_multiple([
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_bulk(sess_args):
+    if sess_args['version'] == 1:
+        with pytest.raises(easysnmp.EasySNMPError):
+            easysnmp.snmp_get_bulk([
+                'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+                'sysORUpTime'], 2, 8, **sess_args
+            )
+    else:
+        res = easysnmp.snmp_get_bulk([
+            'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+            'sysORUpTime'], 2, 8, **sess_args
+        )
+
+        assert len(res) == 26
+
+        assert res[0].oid == 'sysUpTimeInstance'
+        assert res[0].oid_index is ''
+        assert res[0].value > 0
+        assert res[0].snmp_type == 'TICKS'
+
+        assert res[4].oid == 'sysORUpTime'
+        assert res[4].oid_index == '1'
+        assert res[4].value >= 0
+        assert res[4].snmp_type == 'TICKS'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_set_multiple_next(sess):
+    success = sess.set_multiple([
         ('.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116', '.1.3.6.1.6.1.1'),
         ('.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116', '1234'),
         ('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 4),
     ])
     assert success
 
-    res = sess_v1.get_next([
+    res = sess.get_next([
         'snmpTargetAddrTDomain', 'snmpTargetAddrTAddress',
         'snmpTargetAddrRowStatus'
     ])
@@ -202,11 +255,12 @@ def test_v1_session_set_multiple_next(sess_v1):  # noqa
     assert res[2].snmp_type == 'INTEGER'
 
 
-def test_v1_session_set_clear(sess_v1):  # noqa
-    res = sess_v1.set('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 6)
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_set_clear(sess):
+    res = sess.set('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 6)
     assert res == 1
 
-    res = sess_v1.get_next([
+    res = sess.get_next([
         'snmpTargetAddrTDomain', 'snmpTargetAddrTAddress',
         'snmpTargetAddrRowStatus'
     ])
@@ -229,10 +283,11 @@ def test_v1_session_set_clear(sess_v1):  # noqa
     assert res[2].snmp_type == 'COUNTER'
 
 
-def test_v1_walk():
-    res = easysnmp.snmp_walk(
-        'system', version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_walk(sess_args):
+    res = easysnmp.snmp_walk('system', **sess_args)
     assert len(res) >= 7
 
     assert platform.version() in res[0].value
@@ -241,10 +296,11 @@ def test_v1_walk():
     assert res[5].value == 'my marginally newer location'
 
 
-def test_v1_walk_res():
-    res = easysnmp.snmp_walk(
-        'system', version=1, hostname='localhost', community='public'
-    )
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_walk_res(sess_args):
+    res = easysnmp.snmp_walk('system', **sess_args)
 
     assert len(res) >= 7
 
@@ -269,16 +325,17 @@ def test_v1_walk_res():
     assert res[5].snmp_type == 'OCTETSTR'
 
 
-def test_v1_walk_unknown():
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_walk_unknown(sess_args):
     with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_walk(
-            'systemo',
-            version=1, hostname='localhost', community='public'
-        )
+        easysnmp.snmp_walk('systemo', **sess_args)
 
 
-def test_v1_session_get(sess_v1):  # noqa
-    res = sess_v1.get([
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_get(sess):
+    res = sess.get([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
         ('sysLocation', '0')
@@ -302,8 +359,9 @@ def test_v1_session_get(sess_v1):  # noqa
     assert res[2].snmp_type == 'OCTETSTR'
 
 
-def test_v1_session_get_next(sess_v1):  # noqa
-    res = sess_v1.get_next([
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_get_next(sess):
+    res = sess.get_next([
         ('sysUpTime', '0'),
         ('sysContact', '0'),
         ('sysLocation', '0')
@@ -327,42 +385,59 @@ def test_v1_session_get_next(sess_v1):  # noqa
     assert res[2].snmp_type == 'TICKS'
 
 
-def test_v1_session_get_bulk_unspported(sess_v1):  # noqa
-    with pytest.raises(easysnmp.EasySNMPError):
-        sess_v1.get_bulk(
-            ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
-             'sysORUpTime'],
-            2, 8
-        )
-
-
-def test_v1_session_set(sess_v1):  # noqa
-    success = sess_v1.set(('sysLocation', '0'), 'my newer location')
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_set(sess):
+    success = sess.set(('sysLocation', '0'), 'my newer location')
     assert success
 
-    res = easysnmp.snmp_get(
-        'sysLocation.0', version=1, hostname='localhost', community='public'
-    )
+    res = sess.get(('sysLocation', '0'))
     assert res.value == 'my newer location'
 
 
-def test_v1_session_set_multiple(sess_v1):  # noqa
-    success = sess_v1.set_multiple([
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_set_multiple(sess):
+    success = sess.set_multiple([
         ('sysLocation.0', 'my slightly newer location'),
         (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 160),
     ])
     assert success
 
-    res = easysnmp.snmp_get(
-        ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'],
-        version=1, hostname='localhost', community='public'
-    )
+    res = sess.get(['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'])
     assert res[0].value == 'my slightly newer location'
     assert res[1].value == '160'
 
 
-def test_v1_session_walk(sess_v1):  # noqa
-    res = sess_v1.walk('system')
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_get_bulk(sess):  # noqa
+    if sess.version == 1:
+        with pytest.raises(easysnmp.EasySNMPError):
+            sess.get_bulk(
+                ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+                 'sysORUpTime'],
+                2, 8
+            )
+    else:
+        res = sess.get_bulk(
+            ['sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
+             'sysORUpTime'], 2, 8
+        )
+
+        assert len(res) == 26
+
+        assert res[0].oid == 'sysUpTimeInstance'
+        assert res[0].oid_index is ''
+        assert res[0].value > 0
+        assert res[0].snmp_type == 'TICKS'
+
+        assert res[4].oid == 'sysORUpTime'
+        assert res[4].oid_index == '1'
+        assert res[4].value >= 0
+        assert res[4].snmp_type == 'TICKS'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_snmp_session_walk(sess):
+    res = sess.walk('system')
 
     assert len(res) >= 7
 
