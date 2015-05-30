@@ -15,6 +15,7 @@ coverage.xml
 # Distribution & packaging
 build/
 develop-eggs/
+.eggs/
 dist/
 *.egg-info/
 *.egg

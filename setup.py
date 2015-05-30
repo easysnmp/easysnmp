@@ -63,7 +63,7 @@ setup(
     url='https://github.com/fgimian/easysnmp',
     license="BSD",
     packages=['easysnmp'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov', 'pytest-flake8'],
     cmdclass={'test': PyTest},
     ext_modules=[
         Extension(

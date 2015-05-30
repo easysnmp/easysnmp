@@ -52,16 +52,9 @@ install:
   # Install the Coveralls library
   - pip install coveralls
 
-  # Install all test requirements
-  - pip install -r requirements.txt
-
-  # Build the Easy SNMP C library and copy it to our library for testing
-  - python setup.py build
-  - cp build/lib.*/easysnmp/*.so easysnmp/
-
 script:
   # Run the unit tests using py.test
-  - py.test
+  - python setup.py test
 
 after_success:
   # Send coverage statistics to Coveralls
