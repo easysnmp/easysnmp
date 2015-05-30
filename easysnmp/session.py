@@ -82,8 +82,9 @@ class Session(object):
     :param community: SNMP community string (used for both R/W) (v1 & v2)
     :param timeout: seconds before retry
     :param retries: retries before failure
-    :param remote_port: allow remote UDP port to be overridden
-    :param local_port: TODO
+    :param remote_port: allow remote UDP port to be overridden (this will
+                        communicate on port 161 at its default setting)
+    :param local_port: allow overriding of the local SNMP port
     :param security_level: security level (no_auth_or_privacy,
                            auth_without_privacy or auth_with_privacy) (v3)
     :param security_username: security name (v3)
