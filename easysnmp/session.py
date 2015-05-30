@@ -26,6 +26,9 @@ def build_varlist(oids):
 
     :param oids: an individual or list of strings or tuples representing
                  one or more OIDs
+    :return: a tuple containing where the first item is a list of SNMPVariable
+             objects or an individual SNMPVariable and a boolean indicating
+             whether or not the first tuple item is a list or single item
     """
 
     if isinstance(oids, list):
@@ -47,26 +50,22 @@ def build_varlist(oids):
     return varlist, is_list
 
 
-def build_results(varlist):
+def validate_results(varlist):
     """
-    Converts variable bindings into SNMP data types
+    Validates a list of SNMPVariable objects and raises any appropriate
+    exceptions where necessary
 
-    :param varlist: a variable list containing varbinds to be processed
+    :param varlist: a variable list containing SNMPVariable objects to be
+                    processed
     """
 
-    results = []
-
-    for varbind in varlist:
-        if varbind.snmp_type == 'NOSUCHOBJECT':
+    for variable in varlist:
+        if variable.snmp_type == 'NOSUCHOBJECT':
             raise EasySNMPNoSuchObjectError('No such object could be found')
-        if varbind.value == 'NOSUCHINSTANCE':
+        if variable.value == 'NOSUCHINSTANCE':
             raise EasySNMPNoSuchInstanceError(
                 'No such instance could be found'
             )
-        else:
-            results.append(varbind)
-
-    return results
 
 
 class Session(object):
@@ -136,11 +135,11 @@ class Session(object):
                        setting to 2 causes a random access lookup (defined
                        as -IR in snmpcmd).
     :param retry_no_such: if enabled NOSUCH errors in get pdus will be
-                          repaired, removing the varbind in error, and
+                          repaired, removing the SNMP variable in error, and
                           resent; undef will be returned for all NOSUCH
-                          varbinds, when set to 0 this feature is disabled
-                          and the entire get request will fail on any NOSUCH
-                          error (applies to v1 only)
+                          SNMP variables, when set to 0 this feature is
+                          disabled and the entire get request will fail on
+                          any NOSUCH error (applies to v1 only)
     """
 
     def __init__(
@@ -283,6 +282,9 @@ class Session(object):
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
                      (e.g. ('sysDescr', 0))
+        :return: an SNMPVariable object containing the value that was
+                 retrieved or a list of objects when you send in a list of
+                 OIDs
         """
 
         # Build our variable bindings for the C interface
@@ -291,11 +293,11 @@ class Session(object):
         # Perform the SNMP GET operation
         interface.get(self, varlist)
 
-        # Convert the varbind results into SNMP data types
-        results = build_results(varlist)
+        # Validate the variable list returned
+        validate_results(varlist)
 
         # Return a list or single item depending on what was passed in
-        return list(results) if is_list else results[0]
+        return list(varlist) if is_list else varlist[0]
 
     def set(self, oid, value, snmp_type=None):
         """
@@ -308,6 +310,7 @@ class Session(object):
         :param value: the value to set the OID to
         :param snmp_type: if a numeric OID is used and the object is not in
                           the parsed MIB, a type must be explicitly supplied
+        :return: a boolean indicating the success of the operation
         """
 
         varlist = SNMPVariableList()
@@ -330,6 +333,8 @@ class Session(object):
 
         :param oid_values: a dict containing OIDs as keys and their
                            respective values to be set
+        :return: a list of SNMPVariable objects containing the values that
+                 were retrieved via SNMP
         """
 
         varlist = SNMPVariableList()
@@ -356,6 +361,9 @@ class Session(object):
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
                      (e.g. ('sysDescr', 0))
+        :return: an SNMPVariable object containing the value that was
+                 retrieved or a list of objects when you send in a list of
+                 OIDs
         """
 
         # Build our variable bindings for the C interface
@@ -364,11 +372,11 @@ class Session(object):
         # Perform the SNMP GET operation
         interface.getnext(self, varlist)
 
-        # Convert the varbind results into SNMP data types
-        results = build_results(varlist)
+        # Validate the variable list returned
+        validate_results(varlist)
 
         # Return a list or single item depending on what was passed in
-        return list(results) if is_list else results[0]
+        return list(varlist) if is_list else varlist[0]
 
     def get_bulk(self, oids, non_repeaters, max_repetitions):
         """
@@ -385,6 +393,8 @@ class Session(object):
                               instances
         :param max_repetitions: the number of objects that should be returned
                                 for all the repeating OIDs
+        :return: a list of SNMPVariable objects containing the values that
+                 were retrieved via SNMP
         """
 
         if self.version == 1:
@@ -397,11 +407,11 @@ class Session(object):
 
         interface.getbulk(self, non_repeaters, max_repetitions, varlist)
 
-        # Convert the varbind results into SNMP data types
-        results = build_results(varlist)
+        # Validate the variable list returned
+        validate_results(varlist)
 
-        # Return a list of results
-        return results
+        # Return a list of variables
+        return varlist
 
     def walk(self, oids='.1.3.6.1.2.1'):
         """
@@ -413,6 +423,8 @@ class Session(object):
                      entire OID (e.g. 'sysDescr.0') or may be a tuple
                      containing the name as its first item and index as its
                      second (e.g. ('sysDescr', 0))
+        :return: a list of SNMPVariable objects containing the values that
+                 were retrieved via SNMP
         """
 
         # Build our variable bindings for the C interface
@@ -421,11 +433,11 @@ class Session(object):
         # Perform the SNMP walk using GETNEXT operations
         interface.walk(self, varlist)
 
-        # Convert the varbind results into SNMP data types
-        results = build_results(varlist)
+        # Validate the variable list returned
+        validate_results(varlist)
 
-        # Return a list of results
-        return list(results)
+        # Return a list of variables
+        return list(varlist)
 
     def __del__(self):
         """Deletes the session and frees up memory"""

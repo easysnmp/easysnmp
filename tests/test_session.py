@@ -1,5 +1,5 @@
 import pytest
-from easysnmp.session import build_varlist, build_results, Session
+from easysnmp.session import build_varlist, Session
 
 
 def test_build_varlist():
