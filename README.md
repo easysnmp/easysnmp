@@ -78,8 +78,7 @@ snmp_walk('system', hostname='localhost', community='public', version=1)
 
 Please check out the
 [Easy SNMP documentation at Read the Docs](http://easysnmp.readthedocs.org/).
-
-The documentation includes install instructions for various operating systems.
+This includes install instructions for various operating systems.
 
 You may generate the documentation as follows:
 
