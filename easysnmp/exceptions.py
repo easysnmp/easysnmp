@@ -2,8 +2,16 @@ class EasySNMPError(Exception):
     """The base Easy SNMP exception which covers all exceptions raised"""
 
 
-class EasySNMPTimeoutError(EasySNMPError):
+class EasySNMPConnectionError(EasySNMPError):
+    """Indicates a problem connecting to the remote host"""
+
+
+class EasySNMPTimeoutError(EasySNMPConnectionError):
     """The error raised when an SNMP request times out"""
+
+
+class EasySNMPUnknownObjectIDError(EasySNMPError):
+    """The error raised when an inexisted OID is requested"""
 
 
 class EasySNMPNoSuchObjectError(EasySNMPError):

@@ -67,7 +67,7 @@ def test_v1_get_numeric():
 
 
 def test_v1_get_unknown():
-    with pytest.raises(easysnmp.EasySNMPError):
+    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
         easysnmp.snmp_get(
             'sysDescripto.0',
             version=1, hostname='localhost', community='public'
@@ -95,6 +95,14 @@ def test_v1_get_next_numeric():
     assert res.oid_index == '0'
     assert res.value == '.1.3.6.1.4.1.8072.3.2.10'
     assert res.snmp_type == 'OBJECTID'
+
+
+def test_v1_get_next_unknown():
+    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
+        easysnmp.snmp_get_next(
+            'sysDescripto.0',
+            version=1, hostname='localhost', community='public'
+        )
 
 
 def test_v1_set_string():
@@ -138,6 +146,14 @@ def test_v1_set_integer():
     assert res.oid_index == '1.3.6.1.2.1.2.2'
     assert res.value == '65'
     assert res.snmp_type == 'INTEGER'
+
+
+def test_v1_set_unknown():
+    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
+        easysnmp.snmp_set(
+            'nsCacheTimeoooout', 1234,
+            version=1, hostname='localhost', community='public'
+        )
 
 
 def test_v1_set_multiple():
@@ -251,6 +267,14 @@ def test_v1_walk_res():
     assert res[5].oid_index == '0'
     assert res[5].value == 'my marginally newer location'
     assert res[5].snmp_type == 'OCTETSTR'
+
+
+def test_v1_walk_unknown():
+    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
+        easysnmp.snmp_walk(
+            'systemo',
+            version=1, hostname='localhost', community='public'
+        )
 
 
 def test_v1_session_get(sess_v1):  # noqa

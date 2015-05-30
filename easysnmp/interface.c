@@ -85,6 +85,9 @@ enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
 static PyObject *PyLogger = NULL;
 static PyObject *EasySNMPError = NULL;
+static PyObject *EasySNMPConnectionError = NULL;
+static PyObject *EasySNMPTimeoutError = NULL;
+static PyObject *EasySNMPUnknownObjectIDError = NULL;
 
 /*
  * Ripped wholesale from library/tools.h from Net-SNMP 5.7.3
@@ -925,7 +928,9 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
             goto UINT;
         case TYPE_UINTEGER:
             vars->type = ASN_UINTEGER;
+
 UINT:
+
             vars->val.integer = malloc(sizeof(long));
             if (val)
             {
@@ -949,7 +954,9 @@ UINT:
 
         case TYPE_OPAQUE:
             vars->type = ASN_OCTET_STR;
+
 OCT:
+
             vars->val.string = malloc(len);
             vars->val_len = len;
             if (val && len)
@@ -1097,9 +1104,18 @@ retry:
              break;
 
         case STAT_TIMEOUT:
+            snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
+            strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
+
+            PyErr_SetString(EasySNMPTimeoutError,
+                            "timed out while connecting to remote host");
+            break;
+
         case STAT_ERROR:
             snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
             strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
+
+            PyErr_SetString(EasySNMPError, tmp_err_str);
             break;
 
         default:
@@ -1107,7 +1123,9 @@ retry:
             *err_num = ss->s_snmp_errno;
             break;
     }
+
 done:
+
     if (tmp_err_str)
     {
         free(tmp_err_str);
@@ -1283,7 +1301,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     }
     if (session.version == -1)
     {
-        PyErr_Format(EasySNMPError, "unsupported SNMP version (%d)",
+        PyErr_Format(PyExc_ValueError, "unsupported SNMP version (%d)",
                      version);
         error = 1;
 
@@ -1302,10 +1320,12 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 
     if (ss == NULL)
     {
-        PyErr_SetString(EasySNMPError, "couldn't open SNMP session");
+        PyErr_SetString(EasySNMPConnectionError, "couldn't open SNMP session");
         error = 1;
     }
+
 end:
+
     if (error == 1)
     {
         return NULL;
@@ -1358,7 +1378,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     }
     else
     {
-        PyErr_Format(EasySNMPError, "unsupported SNMP version (%d)",
+        PyErr_Format(PyExc_ValueError, "unsupported SNMP version (%d)",
                      version);
         error = 1;
 
@@ -1409,7 +1429,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     }
     else
     {
-        PyErr_Format(EasySNMPError,
+        PyErr_Format(PyExc_ValueError,
                      "unsupported authentication protocol (%s)", auth_proto);
         error = 1;
 
@@ -1426,8 +1446,9 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
                             session.securityAuthKey,
                             &session.securityAuthKeyLen) != SNMPERR_SUCCESS)
             {
-                PyErr_SetString(EasySNMPError,
-                                "error generating Ku from authentication password");
+                PyErr_SetString(EasySNMPConnectionError,
+                                "error generating Ku from authentication "
+                                "password");
                 error = 1;
                 goto end;
             }
@@ -1458,7 +1479,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     }
     else
     {
-        PyErr_Format(EasySNMPError,
+        PyErr_Format(PyExc_ValueError,
                      "unsupported privacy protocol (%s)", priv_proto);
         error = 1;
 
@@ -1474,7 +1495,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
                         session.securityPrivKey,
                         &session.securityPrivKeyLen) != SNMPERR_SUCCESS)
         {
-            PyErr_SetString(EasySNMPError,
+            PyErr_SetString(EasySNMPConnectionError,
                             "couldn't gen Ku from priv pass phrase");
             goto end;
         }
@@ -1483,9 +1504,11 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     ss = snmp_sess_open(&session);
 
 end:
+
     if (ss == NULL)
     {
-        PyErr_Format(EasySNMPError, "couldn't open SNMP session (%s)",
+        PyErr_Format(EasySNMPConnectionError,
+                     "couldn't open SNMP session (%s)",
                      snmp_api_errstring(snmp_errno));
         error = 1;
     }
@@ -1534,8 +1557,9 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
 
     if (version != 3)
     {
-        PyErr_SetString(EasySNMPError,
-                        "you must use SNMP version 3 as it's the only version that supports tunneling");
+        PyErr_SetString(PyExc_ValueError,
+                        "you must use SNMP version 3 as it's the only "
+                        "version that supports tunneling");
         return NULL;
     }
 
@@ -1722,8 +1746,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                 }
                 else
                 {
-                    PyErr_Format(EasySNMPError,
-                                 "unknown object ID (%s)",
+                    PyErr_Format(EasySNMPUnknownObjectIDError,
+                                 "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
 
@@ -1880,6 +1904,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     }
 
 done:
+
     SAFE_FREE(oid_arr);
     if (error == 1)
     {
@@ -1994,8 +2019,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 }
                 else
                 {
-                    PyErr_Format(EasySNMPError,
-                                 "unknown object ID (%s)",
+                    PyErr_Format(EasySNMPUnknownObjectIDError,
+                                 "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
 
@@ -2148,6 +2173,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     }
 
 done:
+
     SAFE_FREE(oid_arr);
     if (error == 1)
     {
@@ -2301,8 +2327,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             }
             else
             {
-                PyErr_Format(EasySNMPError,
-                             "unknown object ID (%s)",
+                PyErr_Format(EasySNMPUnknownObjectIDError,
+                             "unknown object id (%s)",
                              (tag ? tag : "<null>"));
                 error = 1;
 
@@ -2405,7 +2431,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                    vars->name, vars->name_length * sizeof(oid));
         }
 
-        while(notdone) {
+        while (notdone) {
             status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
                                      err_str, &err_num, &err_ind);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
@@ -2563,6 +2589,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     }
 
 done:
+
     Py_XDECREF(varbinds);
     SAFE_FREE(oid_arr_len);
     SAFE_FREE(oid_arr_broken_check_len);
@@ -2689,8 +2716,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 }
                 else
                 {
-                    PyErr_Format(EasySNMPError,
-                                 "unknown object ID (%s)",
+                    PyErr_Format(EasySNMPUnknownObjectIDError,
+                                 "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
 
@@ -2873,6 +2900,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     }
 
 done:
+
     SAFE_FREE(oid_arr);
     if (error == 1)
     {
@@ -2955,8 +2983,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (oid_arr_len==0)
                 {
-                    PyErr_Format(EasySNMPError,
-                                 "unknown object ID (%s)",
+                    PyErr_Format(EasySNMPUnknownObjectIDError,
+                                 "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
 
@@ -3051,7 +3079,9 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
             ret = Py_BuildValue("i", 0); /* fail, return False */
         }
     }
+
 done:
+
     Py_XDECREF(varbind);
     SAFE_FREE(oid_arr);
     if (error == 1)
@@ -3077,7 +3107,7 @@ static PyObject *py_get_logger(char *logger_name)
     if (logging == NULL)
     {
         PyErr_SetString(PyExc_ImportError,
-                        "Could not import module 'logging'");
+                        "could not import the logging module ");
         return NULL;
     }
 
@@ -3224,6 +3254,12 @@ PyMODINIT_FUNC initinterface(void)
     /* Import our exceptions */
     exceptions_module = PyImport_ImportModule("easysnmp.exceptions");
     EasySNMPError = PyObject_GetAttrString(exceptions_module, "EasySNMPError");
+    EasySNMPConnectionError = PyObject_GetAttrString(exceptions_module,
+                                                     "EasySNMPConnectionError");
+    EasySNMPTimeoutError = PyObject_GetAttrString(exceptions_module,
+                                                  "EasySNMPTimeoutError");
+    EasySNMPUnknownObjectIDError = PyObject_GetAttrString(exceptions_module,
+                                                          "EasySNMPUnknownObjectIDError");
     Py_XDECREF(exceptions_module);
 
     /* Initialise logging (note: automatically has refcount 1) */
@@ -3239,8 +3275,12 @@ PyMODINIT_FUNC initinterface(void)
     return;
 
 done:
+
     Py_XDECREF(interface_module);
     Py_XDECREF(EasySNMPError);
+    Py_XDECREF(EasySNMPConnectionError);
+    Py_XDECREF(EasySNMPTimeoutError);
+    Py_XDECREF(EasySNMPUnknownObjectIDError);
     Py_XDECREF(PyLogger);
 
     return;
