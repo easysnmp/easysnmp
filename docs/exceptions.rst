@@ -9,3 +9,4 @@ Exceptions
 .. autoclass:: EasySNMPUnknownObjectIDError
 .. autoclass:: EasySNMPNoSuchObjectError
 .. autoclass:: EasySNMPNoSuchInstanceError
+.. autoclass:: EasySNMPUndeterminedTypeError
