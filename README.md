@@ -6,7 +6,13 @@ Net-SNMP bindings*
 [![Coverage Status](https://coveralls.io/repos/fgimian/easysnmp/badge.svg)](https://coveralls.io/r/fgimian/easysnmp)
 [![License](https://img.shields.io/badge/license-BSD-brightgreen.svg)](https://github.com/fgimian/easysnmp/blob/master/LICENSE)
 
-This is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
+<img src="http://easysnmp.readthedocs.org/en/latest/_static/easysnmp.svg"
+     alt="Easy SNMP Logo" height="150px">
+
+Awesome artwork provided courtesy of
+[Open Clip Art Library](https://openclipart.org/detail/154453/network)
+
+Easy SNMP is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
 but attempts to bring a more Pythonic interface to the library.   Check out
 the [Net-SNMP website](http://www.net-snmp.org/) for more information about 
 SNMP.
