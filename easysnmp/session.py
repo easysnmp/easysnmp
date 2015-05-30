@@ -1,6 +1,10 @@
+import os
 import re
 
-from . import interface
+# Don't attempt to import the C interface if building docs on RTD
+if not os.environ.get('READTHEDOCS', False):  # noqa
+    from . import interface
+
 from .exceptions import (
     EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
