@@ -18,11 +18,42 @@ of the SNMP protocol.
 
 Installation
 ------------
-Easy SNMP has been tested and is supported on the following operating systems:
+Easy SNMP has been tested and is supported on systems running Net-SNMP
+5.7.x.
 
-* CentOS 6 and CentOS 7
-* Debian 7 (Wheezy) and 8 (Jessie)
-* Ubuntu Server 12.04 (Precise Pangolin) and 14.04 (Trusty Tahr)
+If your OS ships with this version of Net-SNMP, then you can install it
+without compiling it via your package manager:
+
+On RHEL / CentOS systems:
+
+.. code-block:: bash
+
+    sudo yum install net-snmp-devel
+
+On Debian / Ubuntu systems:
+
+.. code-block:: bash
+
+    sudo apt-get install libsnmp-dev snmp-mibs-downloader
+
+If your OS doesn't ship with Net-SNMP 5.7.x, please follow instructions
+provided on the [Net-SNMP install page](http://www.net-snmp.org/docs/INSTALL.html)
+to build and install Net-SNMP 5.7.x on your system.
+
+You'll also need to ensure that you have the following packages installed so
+that Easy SNMP installs correctly:
+
+On RHEL / CentOS systems:
+
+.. code-block:: bash
+
+    sudo yum install gcc python-devel
+
+On Debian / Ubuntu systems:
+
+.. code-block:: bash
+
+    sudo apt-get install gcc python-dev
 
 Install Easy SNMP via pip as follows:
 
