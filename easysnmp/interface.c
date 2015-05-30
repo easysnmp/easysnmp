@@ -70,7 +70,7 @@ static int __snprint_value(char *buf, size_t buf_len,
                            struct tree *tp, int type, int flag);
 static int __sprint_num_objid(char *buf, oid *objid, int len);
 static int __scan_num_objid(char *buf, oid *objid, size_t *len);
-static int __get_type_str(int type, char *str);
+static int __get_type_str(int type, char *str, int log_error);
 static int __get_label_iid(char *name, char **last_label, char **iid,
                            int flag);
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
@@ -149,8 +149,8 @@ static int __is_numeric_oid(char *oidstr)
 static int __is_leaf(struct tree *tp)
 {
     char buf[MAX_TYPE_NAME_LEN];
-    return (tp && (__get_type_str(tp->type, buf) ||
-                   (tp->parent && __get_type_str(tp->parent->type, buf))));
+    return (tp && (__get_type_str(tp->type, buf, 0) ||
+                   (tp->parent && __get_type_str(tp->parent->type, buf, 0))));
 }
 
 static int __translate_appl_type(char *typestr)
@@ -463,7 +463,7 @@ static int __scan_num_objid(char *buf, oid *objid, size_t *len)
     return SUCCESS;
 }
 
-static int __get_type_str(int type, char *str)
+static int __get_type_str(int type, char *str, int log_error)
 {
     switch (type)
     {
@@ -532,8 +532,10 @@ static int __get_type_str(int type, char *str)
         case TYPE_NSAPADDRESS:
         default: /* unsupported types for now */
             strcpy(str, "");
-            py_log_msg(ERROR, "unspported type found: %d", type);
-
+            if (log_error)
+            {
+                py_log_msg(ERROR, "unspported type found: %d", type);
+            }
             return FAILURE;
     }
     return SUCCESS;
@@ -1864,7 +1866,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                 py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                            STRLEN(iid));
 
-                __get_type_str(type, type_str);
+                __get_type_str(type, type_str, 1);
 
                 py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                            strlen(type_str));
@@ -2132,7 +2134,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                            STRLEN(iid));
 
-                __get_type_str(type, type_str);
+                __get_type_str(type, type_str, 1);
 
                 py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                            strlen(type_str));
@@ -2531,7 +2533,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                                    STRLEN(iid));
 
-                        __get_type_str(type, type_str);
+                        __get_type_str(type, type_str, 1);
 
                         py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                                    strlen(type_str));
@@ -2843,7 +2845,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                         py_netsnmp_attr_set_string(varbind, "oid_index", iid,
                                                    STRLEN(iid));
 
-                        __get_type_str(type, type_str);
+                        __get_type_str(type, type_str, 1);
 
                         py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
                                                    strlen(type_str));
