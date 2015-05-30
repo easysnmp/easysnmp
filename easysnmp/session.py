@@ -65,10 +65,10 @@ def validate_results(varlist):
 
     for variable in varlist:
         if variable.snmp_type == 'NOSUCHOBJECT':
-            raise EasySNMPNoSuchObjectError('No such object could be found')
+            raise EasySNMPNoSuchObjectError('no such object could be found')
         if variable.value == 'NOSUCHINSTANCE':
             raise EasySNMPNoSuchInstanceError(
-                'No such instance could be found'
+                'no such instance could be found'
             )
 
 
@@ -163,7 +163,7 @@ class Session(object):
         if ':' in hostname:
             if remote_port:
                 raise ValueError(
-                    'A remote port was specified yet the hostname appears '
+                    'a remote port was specified yet the hostname appears '
                     'to have a port defined too'
                 )
             else:
@@ -413,7 +413,7 @@ class Session(object):
 
         if self.version == 1:
             raise EasySNMPError(
-                'You cannot perform a bulk GET operation for SNMP version 1'
+                'you cannot perform a bulk GET operation for SNMP version 1'
             )
 
         # Build our variable bindings for the C interface
