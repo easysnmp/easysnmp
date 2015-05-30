@@ -129,3 +129,4 @@ API
 
    session_api
    easy_api
+   exceptions
