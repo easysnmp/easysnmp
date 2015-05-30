@@ -46,8 +46,8 @@ def snmp_set_multiple(oid_values, **session_kargs):
     Perform multiple SNMP SET operations to update various pieces of
     information at the same time
 
-    :param oid_values: a dict containing OIDs as keys and their
-                       respective values to be set
+    :param oid_values: a list of tuples whereby each tuple contains a
+                       (oid, value) or an (oid, value, snmp_type)
     :param session_kargs: keyword arguments which will be sent used when
                           constructing the session for this operation;
                           all parameters in the Session class are supported

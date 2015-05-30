@@ -141,10 +141,10 @@ def test_v1_set_integer():
 
 
 def test_v1_set_multiple():
-    success = easysnmp.snmp_set_multiple({
-        'sysLocation.0': 'my marginally newer location',
-        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): 162
-    }, version=1, hostname='localhost', community='public')
+    success = easysnmp.snmp_set_multiple([
+        ('sysLocation.0', 'my marginally newer location'),
+        (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 162)
+    ], version=1, hostname='localhost', community='public')
     assert success
 
     res = easysnmp.snmp_get(
@@ -156,11 +156,11 @@ def test_v1_set_multiple():
 
 
 def test_v1_session_set_multiple_next(sess_v1):  # noqa
-    success = sess_v1.set_multiple({
-        '.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116': '.1.3.6.1.6.1.1',
-        '.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116': '1234',
-        '.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116':  4
-    })
+    success = sess_v1.set_multiple([
+        ('.1.3.6.1.6.3.12.1.2.1.2.116.101.115.116', '.1.3.6.1.6.1.1'),
+        ('.1.3.6.1.6.3.12.1.2.1.3.116.101.115.116', '1234'),
+        ('.1.3.6.1.6.3.12.1.2.1.9.116.101.115.116', 4),
+    ])
     assert success
 
     res = sess_v1.get_next([
@@ -323,10 +323,10 @@ def test_v1_session_set(sess_v1):  # noqa
 
 
 def test_v1_session_set_multiple(sess_v1):  # noqa
-    success = sess_v1.set_multiple({
-        'sysLocation.0': 'my slightly newer location',
-        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'): '160'
-    })
+    success = sess_v1.set_multiple([
+        ('sysLocation.0', 'my slightly newer location'),
+        (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 160),
+    ])
     assert success
 
     res = easysnmp.snmp_get(
