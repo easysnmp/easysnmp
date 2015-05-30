@@ -1312,7 +1312,6 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError, "unsupported SNMP version (%d)",
                      version);
         error = 1;
-
         goto end;
     }
 
@@ -1389,7 +1388,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError, "unsupported SNMP version (%d)",
                      version);
         error = 1;
-
         goto end;
     }
 
@@ -1440,7 +1438,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError,
                      "unsupported authentication protocol (%s)", auth_proto);
         error = 1;
-
         goto end;
     }
     if (session.securityLevel >= SNMP_SEC_LEVEL_AUTHNOPRIV)
@@ -1490,7 +1487,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError,
                      "unsupported privacy protocol (%s)", priv_proto);
         error = 1;
-
         goto end;
     }
 
@@ -1758,7 +1754,6 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                                  "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
-
                     snmp_free_pdu(pdu);
                     Py_DECREF(varbind);
                     goto done;
@@ -1813,6 +1808,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
         }
 
         val_tuple = PyTuple_New(varlist_len);
+
         /* initialize return tuple */
         for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++)
         {
@@ -1823,7 +1819,6 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
              vars && (varlist_ind < varlist_len);
              vars = vars->next_variable, varlist_ind++)
         {
-
             varbind = PySequence_GetItem(varlist, varlist_ind);
 
             if (PyObject_HasAttrString(varbind, "oid"))
@@ -2027,7 +2022,6 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                  "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
-
                     snmp_free_pdu(pdu);
                     Py_DECREF(varbind);
                     goto done;
@@ -2082,8 +2076,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
         }
 
         val_tuple = PyTuple_New(varlist_len);
+
         /* initialize return tuple */
-        val_tuple = PyTuple_New(varlist_len);
         for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++)
         {
             PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
@@ -2331,7 +2325,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                              "unknown object id (%s)",
                              (tag ? tag : "<null>"));
                 error = 1;
-
                 snmp_free_pdu(pdu);
                 Py_DECREF(varbind);
                 goto done;
@@ -2356,13 +2349,9 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         /* pre-allocate the return tuples */
         val_tuple = PyTuple_New(0);
 
-        if (!val_tuple)
+        if (PyErr_Occurred())
         {
-            /* propagate error */
-            PyErr_SetString(EasySNMPError,
-                            "couldn't allocate a new value tuple");
             error = 1;
-
             snmp_free_pdu(pdu);
             goto done;
         }
@@ -2709,7 +2698,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                  "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
-
                     snmp_free_pdu(pdu);
                     Py_DECREF(varbind);
                     goto done;
@@ -2965,7 +2953,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                                  "unknown object id (%s)",
                                  (tag ? tag : "<null>"));
                     error = 1;
-
                     snmp_free_pdu(pdu);
                     goto done;
                 }
@@ -2983,7 +2970,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                         PyErr_SetString(EasySNMPError,
                                         "no type found for object");
                         error = 1;
-
                         snmp_free_pdu(pdu);
                         goto done;
                     }
