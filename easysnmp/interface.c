@@ -1053,6 +1053,12 @@ retry:
         status = STAT_ERROR;
     }
 
+    // SNMP v3 doesn't quite raise timeouts correctly, so we correct it
+    if (strcmp(err_str, "Timeout") && (status == STAT_ERROR))
+    {
+        status = STAT_TIMEOUT;
+    }
+
     switch (status)
     {
         case STAT_SUCCESS:
