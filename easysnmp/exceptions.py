@@ -7,19 +7,25 @@ class EasySNMPConnectionError(EasySNMPError):
 
 
 class EasySNMPTimeoutError(EasySNMPConnectionError):
-    """The error raised when an SNMP request times out"""
+    """Raised when an SNMP request times out"""
 
 
 class EasySNMPUnknownObjectIDError(EasySNMPError):
-    """The error raised when an inexisted OID is requested"""
+    """Raised when an inexisted OID is requested"""
 
 
 class EasySNMPNoSuchObjectError(EasySNMPError):
-    """The error raised when a NOSUCHOBJECT type is returned from Net-SNMP"""
+    """Raised when a NOSUCHOBJECT type is returned from Net-SNMP"""
 
 
 class EasySNMPNoSuchInstanceError(EasySNMPError):
     """
-    The error raised when a NOSUCHINSTANCE value is returned from Net-SNMP
-    when a particular OID index doesn't exist
+    Raised when a NOSUCHINSTANCE value is returned from Net-SNMP when a
+    particular OID index doesn't exist
+    """
+
+
+class EasySNMPUndeterminedTypeError(EasySNMPError):
+    """
+    Raised when the type cannot be determine when setting the value of an OID
     """

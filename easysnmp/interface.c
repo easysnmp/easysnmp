@@ -88,6 +88,7 @@ static PyObject *EasySNMPError = NULL;
 static PyObject *EasySNMPConnectionError = NULL;
 static PyObject *EasySNMPTimeoutError = NULL;
 static PyObject *EasySNMPUnknownObjectIDError = NULL;
+static PyObject *EasySNMPUndeterminedTypeError = NULL;
 
 /*
  * Ripped wholesale from library/tools.h from Net-SNMP 5.7.3
@@ -2967,8 +2968,9 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                     type = __translate_appl_type(type_str);
                     if (type == TYPE_UNKNOWN)
                     {
-                        PyErr_SetString(EasySNMPError,
-                                        "no type found for object");
+                        PyErr_SetString(EasySNMPUndeterminedTypeError,
+                                        "a type could not be determine for "
+                                        "the object");
                         error = 1;
                         snmp_free_pdu(pdu);
                         goto done;
@@ -3220,6 +3222,8 @@ PyMODINIT_FUNC initinterface(void)
                                                   "EasySNMPTimeoutError");
     EasySNMPUnknownObjectIDError = PyObject_GetAttrString(exceptions_module,
                                                           "EasySNMPUnknownObjectIDError");
+    EasySNMPUndeterminedTypeError = PyObject_GetAttrString(exceptions_module,
+                                                           "EasySNMPUndeterminedTypeError");
     Py_XDECREF(exceptions_module);
 
     /* Initialise logging (note: automatically has refcount 1) */
@@ -3241,6 +3245,7 @@ done:
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
     Py_XDECREF(EasySNMPUnknownObjectIDError);
+    Py_XDECREF(EasySNMPUndeterminedTypeError);
     Py_XDECREF(PyLogger);
 
     return;
