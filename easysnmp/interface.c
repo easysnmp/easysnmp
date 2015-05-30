@@ -1771,11 +1771,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
             if (PyErr_Occurred())
             {
-                /* propagate error */
-                PyErr_SetString(EasySNMPError,
-                                "unknown python error");
                 error = 1;
-
                 snmp_free_pdu(pdu);
                 goto done;
             }
@@ -2044,11 +2040,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
             if (PyErr_Occurred())
             {
-                /* propagate error */
-                PyErr_SetString(EasySNMPError,
-                                "unknown python error");
                 error = 1;
-
                 snmp_free_pdu(pdu);
                 goto done;
             }
@@ -2356,11 +2348,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         if (PyErr_Occurred())
         {
-            /* propagate error */
-            PyErr_SetString(EasySNMPError,
-                            "unknown python error (varlist)");
             error = 1;
-
             snmp_free_pdu(pdu);
             goto done;
         }
@@ -2416,11 +2404,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         if (PyErr_Occurred())
         {
-            /* propagate error */
-            PyErr_SetString(EasySNMPError,
-                            "deleting old varbinds failed");
             error = 1;
-
             snmp_free_pdu(pdu);
             goto done;
         }
@@ -2588,10 +2572,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         if (PyErr_Occurred())
         {
-            /* propagate error */
-            PyErr_SetString(EasySNMPError, "unknown python error");
             error = 1;
-
             Py_DECREF(val_tuple);
         }
     }
@@ -2741,11 +2722,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             if (PyErr_Occurred())
             {
-                /* propagate error */
-                PyErr_SetString(EasySNMPError,
-                                "unknown python error");
                 error = 1;
-
                 snmp_free_pdu(pdu);
                 goto done;
             }
@@ -2796,11 +2773,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
                 if (PyErr_Occurred())
                 {
-                    /* propagate error */
-                    PyErr_SetString(EasySNMPError,
-                                    "deleting old varbinds failed");
                     error = 1;
-
                     snmp_free_pdu(pdu);
                     goto done;
                 }
@@ -2895,10 +2868,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
         if (PyErr_Occurred())
         {
-            /* propagate error */
-            PyErr_SetString(EasySNMPError, "unknown python error");
             error = 1;
-
             if (val_tuple)
             {
                 Py_DECREF(val_tuple);
@@ -3059,11 +3029,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
             if (PyErr_Occurred())
             {
-                /* propagate error */
-                PyErr_SetString(EasySNMPError,
-                                "unknown python error");
                 error = 1;
-
                 snmp_free_pdu(pdu);
                 goto done;
             }
