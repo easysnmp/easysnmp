@@ -3,7 +3,8 @@ from .easy import (  # noqa
     snmp_walk
 )
 from .exceptions import (  # noqa
-    EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
+    EasySNMPError, EasySNMPTimeoutError, EasySNMPNoSuchObjectError,
+    EasySNMPNoSuchInstanceError
 )
 from .session import Session  # noqa
 from .variables import SNMPVariable  # noqa
