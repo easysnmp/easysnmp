@@ -332,21 +332,29 @@ class Session(object):
         Perform an SNMP SET operation on multiple OIDs with multiple
         values using the prepared session
 
-        :param oid_values: a dict containing OIDs as keys and their
-                           respective values to be set
+        :param oid_values: a list of tuples whereby each tuple contains a
+                           (oid, value) or an (oid, value, snmp_type)
         :return: a list of SNMPVariable objects containing the values that
                  were retrieved via SNMP
         """
 
         varlist = SNMPVariableList()
-        for oid, value in oid_values.iteritems():
+        for oid_value in oid_values:
+            if len(oid_value) == 2:
+                oid, value = oid_value
+                snmp_type = None
+            else:
+                oid, value, snmp_type = oid_value
+
             # OIDs specified as a tuple (e.g. ('sysContact', 0))
             if isinstance(oid, tuple):
                 oid, oid_index = oid
-                varlist.append(SNMPVariable(oid, oid_index, value=value))
+                varlist.append(SNMPVariable(oid, oid_index, value, snmp_type))
             # OIDs specefied as a string (e.g. 'sysContact.0')
             else:
-                varlist.append(SNMPVariable(oid, value=value))
+                varlist.append(
+                    SNMPVariable(oid, value=value, snmp_type=snmp_type)
+                )
 
         # Perform the set operation and return whether or not it worked
         success = interface.set(self, varlist)
