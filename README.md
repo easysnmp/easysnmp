@@ -3,7 +3,7 @@
 Net-SNMP bindings*
 
 [![Build Status](https://travis-ci.org/fgimian/easysnmp.svg?branch=master)](https://travis-ci.org/fgimian/easysnmp)
-[![Coverage Status](https://coveralls.io/repos/fgimian/easysnmp/badge.svg)](https://coveralls.io/r/fgimian/painter)
+[![Coverage Status](https://coveralls.io/repos/fgimian/easysnmp/badge.svg)](https://coveralls.io/r/fgimian/easysnmp)
 [![License](https://img.shields.io/badge/license-BSD-brightgreen.svg)](https://github.com/fgimian/easysnmp/blob/master/LICENSE)
 
 This is a fork of the official [Net-SNMP Python Bindings](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)

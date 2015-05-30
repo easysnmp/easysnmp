@@ -19,3 +19,6 @@ develop-eggs/
 dist/
 *.egg-info/
 *.egg
+
+# Documentation builds
+docs/_build/
