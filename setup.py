@@ -22,21 +22,21 @@ if in_tree:
     incdir = os.popen(
         basedir + '/net-snmp-config --build-includes ' + basedir).read()
 
-    libs = re.findall(r" -l(\S+)", netsnmp_libs)
-    libdirs = re.findall(r" -L(\S+)", libdir)
-    incdirs = re.findall(r" -I(\S+)", incdir)
+    libs = re.findall(r' -l(\S+)', netsnmp_libs)
+    libdirs = re.findall(r' -L(\S+)', libdir)
+    incdirs = re.findall(r' -I(\S+)', incdir)
 
 # Otherwise, we use the system-installed SNMP libraries
 else:
     netsnmp_libs = os.popen('net-snmp-config --libs').read()
 
-    libs = re.findall(r" -l(\S+)", netsnmp_libs)
-    libdirs = re.findall(r" -L(\S+)", netsnmp_libs)
+    libs = re.findall(r' -l(\S+)', netsnmp_libs)
+    libdirs = re.findall(r' -L(\S+)', netsnmp_libs)
     incdirs = []
 
 
 class PyTest(TestCommand):
-    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+    user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
@@ -55,20 +55,32 @@ class PyTest(TestCommand):
 
 
 setup(
-    name="easysnmp",
-    version="1.0",
-    description='A more Pythonic Net-SNMP Python Interface',
+    name='easysnmp',
+    version='0.1',
+    description='A blazingly fast and Pythonic SNMP library based on the '
+                'official Net-SNMP bindings',
     author='Fotis Gimian',
     author_email='fgimiansoftware@gmail.com',
     url='https://github.com/fgimian/easysnmp',
-    license="BSD",
+    license='BSD',
     packages=['easysnmp'],
     tests_require=['pytest', 'pytest-cov', 'pytest-flake8'],
     cmdclass={'test': PyTest},
     ext_modules=[
         Extension(
-            "easysnmp.interface", ["easysnmp/interface.c"],
+            'easysnmp.interface', ['easysnmp/interface.c'],
             library_dirs=libdirs, include_dirs=incdirs, libraries=libs
         )
+    ],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: System :: Networking',
+        'Topic :: System :: Networking :: Monitoring'
     ]
 )
