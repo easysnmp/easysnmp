@@ -13,6 +13,11 @@ templates_path = ['_templates']
 # The master toctree document.
 master_doc = 'index'
 
+# General information about the project.
+project = u'Easy SNMP'
+copyright = u'2015, Fotis Gimian'
+author = u'Fotis Gimian'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
