@@ -6,7 +6,8 @@ if not os.environ.get('READTHEDOCS', False):  # noqa
     from . import interface
 
 from .exceptions import (
-    EasySNMPError, EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
+    EasySNMPError, EasySNMPTimeoutError,
+    EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
 from .variables import SNMPVariable, SNMPVariableList
 
