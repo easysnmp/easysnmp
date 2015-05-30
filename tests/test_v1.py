@@ -67,7 +67,7 @@ def test_v1_get_numeric():
 
 
 def test_v1_get_unknown():
-    with pytest.raises(easysnmp.EasySNMPInterfaceError):
+    with pytest.raises(easysnmp.EasySNMPError):
         easysnmp.snmp_get(
             'sysDescripto.0',
             version=1, hostname='localhost', community='public'
