@@ -2,6 +2,11 @@ import pytest
 from easysnmp.session import build_varlist, Session
 
 
+def test_invalid_snmp_version():
+    with pytest.raises(ValueError):
+        Session(version=4)
+
+
 def test_build_varlist():
     varlist, is_list = build_varlist('sysContact.0')
     assert len(varlist) == 1
