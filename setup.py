@@ -1,4 +1,7 @@
 """
+
+.. image:: http://easysnmp.readthedocs.org/en/latest/_static/easysnmp.png
+
 Introduction
 ------------
 
@@ -142,6 +145,7 @@ setup(
     version='0.1.1',
     description='A blazingly fast and Pythonic SNMP library based on the '
                 'official Net-SNMP bindings',
+    long_description=__doc__,
     author='Fotis Gimian',
     author_email='fgimiansoftware@gmail.com',
     url='https://github.com/fgimian/easysnmp',
