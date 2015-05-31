@@ -15,13 +15,15 @@ class EasySNMPUnknownObjectIDError(EasySNMPError):
 
 
 class EasySNMPNoSuchObjectError(EasySNMPError):
-    """Raised when a NOSUCHOBJECT type is returned from Net-SNMP"""
+    """
+    Raised when an OID is requested which may have some form of existence but
+    an invalid object name
+    """
 
 
 class EasySNMPNoSuchInstanceError(EasySNMPError):
     """
-    Raised when a NOSUCHINSTANCE value is returned from Net-SNMP when a
-    particular OID index doesn't exist
+    Raised when a particular OID index requested from Net-SNMP doesn't exist
     """
 
 

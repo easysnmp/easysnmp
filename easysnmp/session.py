@@ -200,7 +200,7 @@ class Session(object):
         self.retry_no_such = retry_no_such
 
         # The following variables are required for internal use as they are
-        # passed to the C interface.
+        # passed to the C interface
 
         #: internal field used to cache a created session structure
         self.sess_ptr = None
