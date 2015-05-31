@@ -20,6 +20,19 @@ SNMP.
 This module provides a full featured SNMP client API supporting all dialects
 of the SNMP protocol.
 
+## Why Another Library? ##
+
+* The [original Net-SNMP Python library](http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings)
+  is a great starting point but is quite un-Pythonic and lacks proper unit 
+  tests and documentation. 
+* [PySNMP](http://pysnmp.sourceforge.net/) is written in pure Python and 
+  therefore has a huge performance hit.  In some brief tests, I estimate that
+  both the Net-SNMP Python bindings and Easy SNMP are more than 4 times faster.
+  Further to this, PySNMP has an even less Pythonic interface than the official
+  Net-SNMP bindings.
+* Many other libraries like [Snimpy](https://snimpy.readthedocs.org/en/latest/)
+  are sadly based on PySNMP and so they suffer the same performance penalty.
+
 ## Quick Start ##
 
 There are primarily two ways you can use the Easy SNMP library.
