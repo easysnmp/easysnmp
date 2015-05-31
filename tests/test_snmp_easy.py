@@ -1,7 +1,14 @@
 import platform
 
 import pytest
-import easysnmp
+from easysnmp.easy import (
+    snmp_get, snmp_set, snmp_set_multiple, snmp_get_next, snmp_get_bulk,
+    snmp_walk
+)
+from easysnmp.exceptions import (
+    EasySNMPError, EasySNMPUnknownObjectIDError, EasySNMPNoSuchObjectError,
+    EasySNMPNoSuchInstanceError
+)
 
 from .fixtures import sess_v1_args, sess_v2_args, sess_v3_args
 from .helpers import snmp_set_via_cli
@@ -18,7 +25,7 @@ def reset_values():
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get(sess_args):
-    res = easysnmp.snmp_get('sysDescr.0', **sess_args)
+    res = snmp_get('sysDescr.0', **sess_args)
 
     assert platform.version() in res.value
     assert res.oid == 'sysDescr'
@@ -30,7 +37,7 @@ def test_snmp_get(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_tuple(sess_args):
-    res = easysnmp.snmp_get(('sysDescr', '0'), **sess_args)
+    res = snmp_get(('sysDescr', '0'), **sess_args)
 
     assert platform.version() in res.value
     assert res.oid == 'sysDescr'
@@ -42,7 +49,7 @@ def test_snmp_get_tuple(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_fully_qualified(sess_args):
-    res = easysnmp.snmp_get(
+    res = snmp_get(
         '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0', **sess_args
     )
 
@@ -56,7 +63,7 @@ def test_snmp_get_fully_qualified(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_fully_qualified_tuple(sess_args):
-    res = easysnmp.snmp_get(
+    res = snmp_get(
         ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'), **sess_args
     )
 
@@ -70,7 +77,7 @@ def test_snmp_get_fully_qualified_tuple(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_numeric(sess_args):
-    res = easysnmp.snmp_get(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
+    res = snmp_get(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
     assert platform.version() in res.value
     assert res.oid == 'sysDescr'
@@ -82,31 +89,31 @@ def test_snmp_get_numeric(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_unknown(sess_args):
-    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_get('sysDescripto.0', **sess_args)
+    with pytest.raises(EasySNMPUnknownObjectIDError):
+        snmp_get('sysDescripto.0', **sess_args)
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_instance(sess_args):
-    with pytest.raises(easysnmp.EasySNMPNoSuchInstanceError):
-        easysnmp.snmp_get('sysContact.1', **sess_args)
+    with pytest.raises(EasySNMPNoSuchInstanceError):
+        snmp_get('sysContact.1', **sess_args)
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_object(sess_args):
-    with pytest.raises(easysnmp.EasySNMPNoSuchObjectError):
-        easysnmp.snmp_get('iso', **sess_args)
+    with pytest.raises(EasySNMPNoSuchObjectError):
+        snmp_get('iso', **sess_args)
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_next(sess_args):
-    res = easysnmp.snmp_get_next('nsCacheEntry', **sess_args)
+    res = snmp_get_next('nsCacheEntry', **sess_args)
 
     assert res.oid == 'nsCacheTimeout'
     assert res.oid_index == '1.3.6.1.2.1.2.2'
@@ -118,7 +125,7 @@ def test_snmp_get_next(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_next_numeric(sess_args):
-    res = easysnmp.snmp_get_next(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
+    res = snmp_get_next(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
     assert res.oid == 'sysObjectID'
     assert res.oid_index == '0'
@@ -130,26 +137,26 @@ def test_snmp_get_next_numeric(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_next_unknown(sess_args):
-    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_get_next('sysDescripto.0', **sess_args)
+    with pytest.raises(EasySNMPUnknownObjectIDError):
+        snmp_get_next('sysDescripto.0', **sess_args)
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_set_string(sess_args):
-    res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
+    res = snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
     assert res.value != 'my newer location'
     assert res.snmp_type == 'OCTETSTR'
 
-    success = easysnmp.snmp_set(
+    success = snmp_set(
         ('sysLocation', '0'), 'my newer location', **sess_args
     )
     assert success
 
-    res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
+    res = snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
     assert res.value == 'my newer location'
@@ -160,12 +167,12 @@ def test_snmp_set_string(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_set_integer(sess_args):
-    success = easysnmp.snmp_set(
+    success = snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, **sess_args
     )
     assert success
 
-    res = easysnmp.snmp_get(
+    res = snmp_get(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), **sess_args
     )
     assert res.oid == 'nsCacheTimeout'
@@ -178,27 +185,27 @@ def test_snmp_set_integer(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_set_unknown(sess_args):
-    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_set('nsCacheTimeoooout', 1234, **sess_args)
+    with pytest.raises(EasySNMPUnknownObjectIDError):
+        snmp_set('nsCacheTimeoooout', 1234, **sess_args)
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_set_multiple(sess_args):
-    res = easysnmp.snmp_get(
+    res = snmp_get(
         ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
     )
     assert res[0].value != 'my newer location'
     assert res[1].value != '162'
 
-    success = easysnmp.snmp_set_multiple([
+    success = snmp_set_multiple([
         ('sysLocation.0', 'my newer location'),
         (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 162)
     ], **sess_args)
     assert success
 
-    res = easysnmp.snmp_get(
+    res = snmp_get(
         ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
     )
     assert res[0].value == 'my newer location'
@@ -210,13 +217,13 @@ def test_snmp_set_multiple(sess_args):
 )
 def test_snmp_get_bulk(sess_args):
     if sess_args['version'] == 1:
-        with pytest.raises(easysnmp.EasySNMPError):
-            easysnmp.snmp_get_bulk([
+        with pytest.raises(EasySNMPError):
+            snmp_get_bulk([
                 'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
                 'sysORUpTime'], 2, 8, **sess_args
             )
     else:
-        res = easysnmp.snmp_get_bulk([
+        res = snmp_get_bulk([
             'sysUpTime', 'sysORLastChange', 'sysORID', 'sysORDescr',
             'sysORUpTime'], 2, 8, **sess_args
         )
@@ -238,7 +245,7 @@ def test_snmp_get_bulk(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_walk(sess_args):
-    res = easysnmp.snmp_walk('system', **sess_args)
+    res = snmp_walk('system', **sess_args)
     assert len(res) >= 7
 
     assert platform.version() in res[0].value
@@ -251,7 +258,7 @@ def test_snmp_walk(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_walk_res(sess_args):
-    res = easysnmp.snmp_walk('system', **sess_args)
+    res = snmp_walk('system', **sess_args)
 
     assert len(res) >= 7
 
@@ -280,5 +287,5 @@ def test_snmp_walk_res(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_walk_unknown(sess_args):
-    with pytest.raises(easysnmp.EasySNMPUnknownObjectIDError):
-        easysnmp.snmp_walk('systemo', **sess_args)
+    with pytest.raises(EasySNMPUnknownObjectIDError):
+        snmp_walk('systemo', **sess_args)
