@@ -2,8 +2,10 @@ import platform
 
 import pytest
 from easysnmp.exceptions import (
-    EasySNMPError, EasySNMPConnectionError, EasySNMPTimeoutError
+    EasySNMPError, EasySNMPConnectionError, EasySNMPTimeoutError,
+    EasySNMPNoSuchObjectError, EasySNMPNoSuchInstanceError
 )
+
 from easysnmp.session import Session
 
 from .fixtures import sess_v1, sess_v2, sess_v3
@@ -220,6 +222,24 @@ def test_session_get_bulk(sess):  # noqa
         assert res[4].oid_index == '1'
         assert res[4].value >= 0
         assert res[4].snmp_type == 'TICKS'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_invalid_instance(sess):
+    # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
+    # invalid object ID, so it raises the same exception for both
+    if sess.version == 1:
+        with pytest.raises(EasySNMPNoSuchObjectError):
+            sess.get('sysDescr.100')
+    else:
+        with pytest.raises(EasySNMPNoSuchInstanceError):
+            sess.get('sysDescr.100')
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_invalid_object(sess):
+    with pytest.raises(EasySNMPNoSuchObjectError):
+        sess.get('iso')
 
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
