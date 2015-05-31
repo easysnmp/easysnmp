@@ -1280,6 +1280,14 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     Py_DECREF(tmp_for_conversion);
 }
 
+/*
+ * We create a custom little wrapper around snmp_sess_open which disables
+ * stderr during the call to avoid errors printed to stderr such as:
+ *
+ * getaddrinfo: <hostname> Name or service not known
+ *
+ * These errors are already handled by Python exceptions are are not needed.
+ */
 void *snmp_sess_open_quiet(SnmpSession *session)
 {
     int original_stderr;
