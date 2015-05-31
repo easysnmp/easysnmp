@@ -102,7 +102,14 @@ This includes install instructions for various operating systems.
 You may generate the documentation as follows:
 
 ```bash
+# Install Sphinx
 pip install sphinx
+
+# You may optionally export the READTHEDOCS environment variable to build docs
+# on systems where you haven't built the C interface
+export READTHEDOCS=1
+
+# Build the documentation into static HTML pages
 cd docs
 make html
 ```
