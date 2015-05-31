@@ -15,6 +15,22 @@ of the SNMP protocol.
 .. _Net-SNMP Python Bindings: http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings
 .. _Net-SNMP website: http://www.net-snmp.org/
 
+Why Another Library?
+--------------------
+
+* The `original Net-SNMP Python library`_ is a great starting point but is
+  quite un-Pythonic and lacks proper unit tests and documentation.
+* `PySNMP`_ is written in pure Python and therefore has a huge performance hit.
+  In some brief tests, I estimate that both the Net-SNMP Python bindings and
+  Easy SNMP are more than 4 times faster. Further to this, PySNMP has an even
+  less Pythonic interface than the official Net-SNMP bindings.
+* Many other libraries like `Snimpy`_ are sadly based on PySNMP and so they
+  suffer the same performance penalty.
+
+.. _original Net-SNMP Python library: http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings
+.. _PySNMP: http://pysnmp.sourceforge.net/
+.. _Snimpy: https://snimpy.readthedocs.org/en/latest/
+
 Quick Start
 -----------
 There are primarily two ways you can use the Easy SNMP library.
