@@ -24,7 +24,7 @@ def reset_values():
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
-def test_snmp_get(sess_args):
+def test_snmp_get_regular(sess_args):
     res = snmp_get('sysDescr.0', **sess_args)
 
     assert platform.version() in res.value

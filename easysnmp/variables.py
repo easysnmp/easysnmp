@@ -1,49 +1,5 @@
-import string
-import re
-
-# This regular expression is used to extract the index from an OID
-OID_INDEX_RE = re.compile(
-    r'''(
-            (?:\.\d+)+                   # numeric OID
-            |                            # or
-            (?:\w+(?:[-:]*\w+)+)         # regular OID
-            |                            # or
-            (?:\.iso(?:\.\w+[-:]*\w+)+)  # fully qualified OID
-        )
-        \.?(.*)                          # OID index
-     ''',
-    re.VERBOSE
-)
-
-
-def tostr(value):
-    """
-    Converts any variable to a string or returns None if the variable
-    contained None to begin with
-
-    :param value: the value you wish to convert to a string
-    """
-
-    return None if value is None else str(value)
-
-
-def normalize_oid(oid, oid_index):
-    """
-    Ensures that the index is set correctly given an OID definition
-
-    :param oid: the OID to normalize
-    :param oid_index: the OID index to normalize
-    """
-
-    # Determine the OID index from the OID if not specified
-    if oid_index is None and oid is not None:
-        # We attempt to extract the index from an OID (e.g. sysDescr.0
-        # or .iso.org.dod.internet.mgmt.mib-2.system.sysContact.0)
-        match = OID_INDEX_RE.match(oid)
-        if match:
-            oid, oid_index = match.group(1, 2)
-
-    return oid, oid_index
+from .helpers import normalize_oid
+from .utils import strip_non_printable, tostr
 
 
 class SNMPVariable(object):
@@ -65,15 +21,7 @@ class SNMPVariable(object):
         self.snmp_type = snmp_type
 
     def __repr__(self):
-        # Filter all non-printable characters
-        printable_value = filter(
-            lambda c: c in string.printable, self.value
-        )
-        if printable_value != self.value:
-            if printable_value:
-                printable_value += ' '
-            printable_value += '(contains binary)'
-
+        printable_value = strip_non_printable(self.value)
         return (
             "<{0} value='{1}' (oid='{2}', oid_index='{3}', "
             "snmp_type='{4}')>".format(

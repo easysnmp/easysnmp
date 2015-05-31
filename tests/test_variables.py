@@ -1,7 +1,7 @@
-from easysnmp.variables import SNMPVariable
+from easysnmp.variables import SNMPVariable, SNMPVariableList
 
 
-def test_snmp_variable():
+def test_snmp_variable_regular():
     var = SNMPVariable('sysDescr', '0')
     assert var.oid == 'sysDescr'
     assert var.oid_index == '0'
@@ -80,3 +80,8 @@ def test_snmp_variable_numeric():
     assert var.oid_index == ''
     assert var.value is None
     assert var.snmp_type is None
+
+
+def test_snmp_variable_list():
+    varlist = SNMPVariableList(['sysContact.0', 'sysLocation.0', 'sysDescr.0'])
+    assert varlist.varbinds == ['sysContact.0', 'sysLocation.0', 'sysDescr.0']
