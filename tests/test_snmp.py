@@ -7,6 +7,14 @@ from .fixtures import (
     sess_v1_args, sess_v2_args, sess_v3_args,
     sess_v1, sess_v2, sess_v3
 )
+from .helpers import snmp_set_via_cli
+
+
+@pytest.yield_fixture(autouse=True)
+def reset_values():
+    snmp_set_via_cli('sysLocation.0', 'my original location', 's')
+    snmp_set_via_cli('nsCacheTimeout.1.3.6.1.2.1.2.2', '0', 'i')
+    yield
 
 
 @pytest.mark.parametrize(
@@ -136,18 +144,18 @@ def test_snmp_set_string(sess_args):
     res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
-    assert res.value != 'my marginally newer location'
+    assert res.value != 'my newer location'
     assert res.snmp_type == 'OCTETSTR'
 
     success = easysnmp.snmp_set(
-        ('sysLocation', '0'), 'my marginally newer location', **sess_args
+        ('sysLocation', '0'), 'my newer location', **sess_args
     )
     assert success
 
     res = easysnmp.snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
-    assert res.value == 'my marginally newer location'
+    assert res.value == 'my newer location'
     assert res.snmp_type == 'OCTETSTR'
 
 
@@ -181,8 +189,14 @@ def test_snmp_set_unknown(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_set_multiple(sess_args):
+    res = easysnmp.snmp_get(
+        ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
+    )
+    assert res[0].value != 'my newer location'
+    assert res[1].value != '162'
+
     success = easysnmp.snmp_set_multiple([
-        ('sysLocation.0', 'my marginally newer location'),
+        ('sysLocation.0', 'my newer location'),
         (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 162)
     ], **sess_args)
     assert success
@@ -190,7 +204,7 @@ def test_snmp_set_multiple(sess_args):
     res = easysnmp.snmp_get(
         ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
     )
-    assert res[0].value == 'my marginally newer location'
+    assert res[0].value == 'my newer location'
     assert res[1].value == '162'
 
 
@@ -293,7 +307,7 @@ def test_snmp_walk(sess_args):
     assert platform.version() in res[0].value
     assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
     assert res[4].value == platform.node()
-    assert res[5].value == 'my marginally newer location'
+    assert res[5].value == 'my original location'
 
 
 @pytest.mark.parametrize(
@@ -321,7 +335,7 @@ def test_snmp_walk_res(sess_args):
 
     assert res[5].oid == 'sysLocation'
     assert res[5].oid_index == '0'
-    assert res[5].value == 'my marginally newer location'
+    assert res[5].value == 'my original location'
     assert res[5].snmp_type == 'OCTETSTR'
 
 
@@ -355,7 +369,7 @@ def test_snmp_session_get(sess):
 
     assert res[2].oid == 'sysLocation'
     assert res[2].oid_index == '0'
-    assert res[2].value == 'my marginally newer location'
+    assert res[2].value == 'my original location'
     assert res[2].snmp_type == 'OCTETSTR'
 
 
@@ -387,6 +401,9 @@ def test_snmp_session_get_next(sess):
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
 def test_snmp_session_set(sess):
+    res = sess.get(('sysLocation', '0'))
+    assert res.value != 'my newer location'
+
     success = sess.set(('sysLocation', '0'), 'my newer location')
     assert success
 
@@ -396,14 +413,18 @@ def test_snmp_session_set(sess):
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
 def test_snmp_session_set_multiple(sess):
+    res = sess.get(['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'])
+    assert res[0].value != 'my newer location'
+    assert res[1].value != '160'
+
     success = sess.set_multiple([
-        ('sysLocation.0', 'my slightly newer location'),
+        ('sysLocation.0', 'my newer location'),
         (('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 160),
     ])
     assert success
 
     res = sess.get(['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'])
-    assert res[0].value == 'my slightly newer location'
+    assert res[0].value == 'my newer location'
     assert res[1].value == '160'
 
 
@@ -458,5 +479,5 @@ def test_snmp_session_walk(sess):
 
     assert res[5].oid == 'sysLocation'
     assert res[5].oid_index == '0'
-    assert res[5].value == 'my slightly newer location'
+    assert res[5].value == 'my original location'
     assert res[5].snmp_type == 'OCTETSTR'
