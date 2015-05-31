@@ -1232,6 +1232,10 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
         PyObject* val_obj =  (val ?
                               Py_BuildValue("s#", val, len) :
                               Py_BuildValue(""));
+        if (!val_obj)
+        {
+            return -1;
+        }
         ret = PyObject_SetAttrString(obj, attr_name, val_obj);
         Py_DECREF(val_obj);
     }
@@ -1272,10 +1276,18 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
                                STRLEN(err_str));
 
     tmp_for_conversion = PyInt_FromLong(err_num);
+    if (!tmp_for_conversion)
+    {
+        return; /* nothing better to do? */
+    }
     PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
 
     tmp_for_conversion = PyInt_FromLong(err_ind);
+    if (!tmp_for_conversion)
+    {
+        return; /* nothing better to do? */
+    }
     PyObject_SetAttrString(session, "error_index", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
 }
