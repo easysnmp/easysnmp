@@ -92,8 +92,8 @@ are planning on requesting multiple pieces of SNMP data from a source.
     # Perform an SNMP walk
     system_items = session.walk('system')
 
-    # Each returned item can be used normally as its related type (str or int) but
-    # also has several extended attributes with SNMP-specific information
+    # Each returned item can be used normally as its related type (str or int)
+    # but also has several extended attributes with SNMP-specific information
     for item in system_items:
         print '{oid}.{oid_index} {snmp_type} = {value}'.format(
             oid=item.oid,
