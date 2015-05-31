@@ -122,19 +122,18 @@ class Session(object):
     :param use_numeric: set to True to have <tags> returned by the get
                         methods untranslated (i.e. dotted-decimal). Setting
                         the use_long_names value for the session is highly
-                        recommended.
+                        recommended
     :param use_sprint_value: set to True to have return values for get
                              and getnext methods formatted with the libraries
                              sprint_value function. This will result in
                              certain data types being returned in
                              non-canonical format Note: values returned with
                              this option set may not be appropriate for set
-                             operations (see discussion of value formats
-                             in <vars> description section)
+                             operations
     :param use_enums: set to True to have integer return values converted
                       to enumeration identifiers if possible, these values
                       will also be acceptable when supplied to set operations
-    :param best_guess: this setting controls how <tags> are parsed; setting
+    :param best_guess: this setting controls how oids are parsed; setting
                        to 0 causes a regular lookup.  setting to 1 causes a
                        regular expression match (defined as -Ib in snmpcmd);
                        setting to 2 causes a random access lookup (defined
