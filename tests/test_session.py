@@ -1,4 +1,5 @@
 import platform
+import re
 
 import pytest
 from easysnmp.exceptions import (
@@ -139,6 +140,39 @@ def test_session_get(sess):
     assert res[2].oid_index == '0'
     assert res[2].value == 'my original location'
     assert res[2].snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_use_numeric(sess):
+    sess.use_numeric = True
+    res = sess.get('sysContact.0')
+
+    assert res.oid == '.1.3.6.1.2.1.1.4'
+    assert res.oid_index == '0'
+    assert res.value == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_use_sprint_value(sess):
+    sess.use_sprint_value = True
+    res = sess.get('sysUpTimeInstance')
+
+    assert res.oid == 'sysUpTimeInstance'
+    assert res.oid_index == ''
+    assert re.match(r'^\d+:\d+:\d+:\d+\.\d+$', res.value)
+    assert res.snmp_type == 'TICKS'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_use_enums(sess):
+    sess.use_enums = True
+    res = sess.get('ifAdminStatus.1')
+
+    assert res.oid == 'ifAdminStatus'
+    assert res.oid_index == '1'
+    assert res.value == 'up'
+    assert res.snmp_type == 'INTEGER'
 
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
