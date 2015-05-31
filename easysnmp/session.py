@@ -347,6 +347,7 @@ class Session(object):
             if len(oid_value) == 2:
                 oid, value = oid_value
                 snmp_type = None
+            # TODO: Determine the best way to test this
             else:
                 oid, value, snmp_type = oid_value
 
