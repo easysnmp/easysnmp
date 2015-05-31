@@ -13,6 +13,7 @@ typedef int Py_ssize_t;
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <ctype.h>
 #ifdef I_SYS_TIME
 #include <sys/time.h>
@@ -1279,6 +1280,28 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     Py_DECREF(tmp_for_conversion);
 }
 
+void *snmp_sess_open_quiet(SnmpSession *session)
+{
+    int original_stderr;
+    int dev_null;
+    SnmpSession *ss = NULL;
+
+    // Redirect stderr to /dev/null
+    original_stderr = dup(STDERR_FILENO);
+    dev_null = open("/dev/null", O_WRONLY);
+    dup2(dev_null, STDERR_FILENO);
+    close(dev_null);
+
+    // Open the session
+    ss = snmp_sess_open(session);
+
+    // Restore stderr output
+    dup2(original_stderr, STDERR_FILENO);
+    close(original_stderr);
+
+    return ss;
+}
+
 static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 {
     int version;
@@ -1335,7 +1358,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     session.timeout = timeout; /* 1000000L */
     session.authenticator = NULL;
 
-    ss = snmp_sess_open(&session);
+    ss = snmp_sess_open_quiet(&session);
 
     if (ss == NULL)
     {
@@ -1517,7 +1540,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         }
     }
 
-    ss = snmp_sess_open(&session);
+    ss = snmp_sess_open_quiet(&session);
 
 end:
 
@@ -1629,7 +1652,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
                          netsnmp_transport_create_config("trust_cert",
                                                          trust_cert));
 
-    ss = snmp_sess_open(&session);
+    ss = snmp_sess_open_quiet(&session);
 
     if (!ss)
     {
