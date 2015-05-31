@@ -97,8 +97,14 @@ def test_snmp_get_unknown(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_instance(sess_args):
-    with pytest.raises(EasySNMPNoSuchInstanceError):
-        snmp_get('sysContact.1', **sess_args)
+    # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
+    # invalid object ID, so it raises the same exception for both
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchObjectError):
+            snmp_get('sysContact.1', **sess_args)
+    else:
+        with pytest.raises(EasySNMPNoSuchInstanceError):
+            snmp_get('sysContact.1', **sess_args)
 
 
 @pytest.mark.parametrize(

@@ -88,6 +88,7 @@ static PyObject *EasySNMPError = NULL;
 static PyObject *EasySNMPConnectionError = NULL;
 static PyObject *EasySNMPTimeoutError = NULL;
 static PyObject *EasySNMPUnknownObjectIDError = NULL;
+static PyObject *EasySNMPNoSuchObjectError = NULL;
 static PyObject *EasySNMPUndeterminedTypeError = NULL;
 
 /*
@@ -1080,6 +1081,9 @@ retry:
                         }
                         goto retry;
                     }
+                    PyErr_SetString(EasySNMPNoSuchObjectError,
+                                    "no such object could be found");
+                    break;
 
                 /* Pv1, SNMPsec, Pv2p, v2c, v2u, v2*, and SNMPv3 PDUs */
                 case SNMP_ERR_TOOBIG:
@@ -1108,6 +1112,13 @@ retry:
                     *err_num = (int)(*response)->errstat;
                     *err_ind = (*response)->errindex;
                     status = (*response)->errstat;
+                    // printf("=================ERROR======================\n");
+                    // printf("Error String: %s\n", err_str);
+                    // printf("Error Number: %d\n", *err_num);
+                    // printf("Error Index: %d\n", *err_ind);
+                    // printf("Status: %d\n", status);
+                    // printf("=================ERROR======================\n");
+                    PyErr_SetString(EasySNMPError, err_str);
                     break;
              }
              break;
@@ -1672,6 +1683,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     int oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
+    int status;
     u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
@@ -1773,9 +1785,14 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             }
         }
 
-        __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str, &err_num,
-                        &err_ind);
+        status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+                                 &err_num, &err_ind);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
+        if (status != 0)
+        {
+            error = 1;
+            goto done;
+        }
 
         /*
         ** Set up for numeric or full OID's, if necessary.  Save the old
@@ -1933,6 +1950,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     int oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
+    int status;
     u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
@@ -2041,9 +2059,14 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
             }
         }
 
-        __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str, &err_num,
-                        &err_ind);
+        status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+                                 &err_num, &err_ind);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
+        if (status != 0)
+        {
+            error = 1;
+            goto done;
+        }
 
         /*
         ** Set up for numeric or full OID's, if necessary.  Save the old
@@ -2418,6 +2441,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                      err_str, &err_num, &err_ind);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
+            if (status != 0)
+            {
+                error = 1;
+                goto done;
+            }
 
             if (!response || !response->variables ||
                 status != STAT_SUCCESS ||
@@ -2609,6 +2637,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     int oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
+    int status;
     u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
@@ -2716,10 +2745,15 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 goto done;
             }
 
-            __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
-                            &err_num, &err_ind);
+            status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+                                     err_str, &err_num, &err_ind);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
+            if (status != 0)
+            {
+                error = 1;
+                goto done;
+            }
 
             /*
             ** Set up for numeric or full OID's, if necessary.  Save the old
@@ -3026,6 +3060,11 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
         status = __send_sync_pdu(ss, pdu, &response, NO_RETRY_NOSUCH,
                                  err_str, &err_num, &err_ind);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
+        if (status != 0)
+        {
+            error = 1;
+            goto done;
+        }
 
         if (response)
         {
@@ -3222,6 +3261,8 @@ PyMODINIT_FUNC initinterface(void)
                                                   "EasySNMPTimeoutError");
     EasySNMPUnknownObjectIDError = PyObject_GetAttrString(exceptions_module,
                                                           "EasySNMPUnknownObjectIDError");
+    EasySNMPNoSuchObjectError = PyObject_GetAttrString(exceptions_module,
+                                                       "EasySNMPNoSuchObjectError");
     EasySNMPUndeterminedTypeError = PyObject_GetAttrString(exceptions_module,
                                                            "EasySNMPUndeterminedTypeError");
     Py_XDECREF(exceptions_module);
@@ -3245,6 +3286,7 @@ done:
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
     Py_XDECREF(EasySNMPUnknownObjectIDError);
+    Py_XDECREF(EasySNMPNoSuchObjectError);
     Py_XDECREF(EasySNMPUndeterminedTypeError);
     Py_XDECREF(PyLogger);
 
