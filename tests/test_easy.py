@@ -123,7 +123,7 @@ def test_snmp_get_next(sess_args):
 
     assert res.oid == 'nsCacheTimeout'
     assert res.oid_index == '1.3.6.1.2.1.2.2'
-    assert res.value >= 0
+    assert int(res.value) >= 0
     assert res.snmp_type == 'INTEGER'
 
 
@@ -238,12 +238,12 @@ def test_snmp_get_bulk(sess_args):
 
         assert res[0].oid == 'sysUpTimeInstance'
         assert res[0].oid_index is ''
-        assert res[0].value > 0
+        assert int(res[0].value) > 0
         assert res[0].snmp_type == 'TICKS'
 
         assert res[4].oid == 'sysORUpTime'
         assert res[4].oid_index == '1'
-        assert res[4].value >= 0
+        assert int(res[4].value) >= 0
         assert res[4].snmp_type == 'TICKS'
 
 
