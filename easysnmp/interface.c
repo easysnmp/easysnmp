@@ -1187,7 +1187,6 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "utf-8",
                                                              "surrogateescape");
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
-            Py_DECREF(attr_bytes);
 #else
             retval = PyString_AsStringAndSize(attr, val, len);
 #endif
