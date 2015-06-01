@@ -46,6 +46,14 @@ def test_snmp_variable_repr_binary_only():
     )
 
 
+def test_snmp_variable_repr_none():
+    var = SNMPVariable()
+    assert var.__repr__() == (
+        "<SNMPVariable value=(none) "
+        "(oid=(none), oid_index=(none), snmp_type=(none))>"
+    )
+
+
 def test_snmp_variable_extract_oid_index():
     var = SNMPVariable('sysDescr.0')
     assert var.oid == 'sysDescr'

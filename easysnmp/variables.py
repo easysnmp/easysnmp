@@ -22,11 +22,23 @@ class SNMPVariable(object):
 
     def __repr__(self):
         printable_value = strip_non_printable(self.value)
+        repr_value = (
+            '(none)' if printable_value is None
+            else "'{0}'".format(printable_value)
+        )
+        repr_oid = '(none)' if self.oid is None else "'{0}'".format(self.oid)
+        repr_oid_index = (
+            '(none)' if self.oid_index is None
+            else "'{0}'".format(self.oid_index)
+        )
+        repr_snmp_type = (
+            '(none)' if self.snmp_type is None
+            else "'{0}'".format(self.snmp_type)
+        )
         return (
-            "<{0} value='{1}' (oid='{2}', oid_index='{3}', "
-            "snmp_type='{4}')>".format(
-                self.__class__.__name__, printable_value, self.oid,
-                self.oid_index, self.snmp_type
+            "<{0} value={1} (oid={2}, oid_index={3}, snmp_type={4})>".format(
+                self.__class__.__name__,
+                repr_value, repr_oid, repr_oid_index, repr_snmp_type
             )
         )
 
