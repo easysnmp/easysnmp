@@ -1113,12 +1113,6 @@ retry:
                     *err_num = (int)(*response)->errstat;
                     *err_ind = (*response)->errindex;
                     status = (*response)->errstat;
-                    // printf("=================ERROR======================\n");
-                    // printf("Error String: %s\n", err_str);
-                    // printf("Error Number: %d\n", *err_num);
-                    // printf("Error Index: %d\n", *err_ind);
-                    // printf("Status: %d\n", status);
-                    // printf("=================ERROR======================\n");
                     PyErr_SetString(EasySNMPError, err_str);
                     break;
              }
@@ -2580,7 +2574,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
 
-                        py_log_msg(DEBUG, "netsnmp_walk: filling response: %s:%s",
+                        py_log_msg(DEBUG,
+                                   "netsnmp_walk: filling response: %s:%s",
                                    tag, iid);
 
                         py_netsnmp_attr_set_string(varbind, "oid", tag,
@@ -2590,8 +2585,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
                         __get_type_str(type, type_str, 1);
 
-                        py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
-                                                   strlen(type_str));
+                        py_netsnmp_attr_set_string(varbind, "snmp_type",
+                                                   type_str, strlen(type_str));
 
                         len = __snprint_value((char *) str_buf,
                                               sizeof(str_buf), vars, tp,
@@ -2896,8 +2891,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
                         __get_type_str(type, type_str, 1);
 
-                        py_netsnmp_attr_set_string(varbind, "snmp_type", type_str,
-                                                   strlen(type_str));
+                        py_netsnmp_attr_set_string(varbind, "snmp_type",
+                                                   type_str, strlen(type_str));
 
                         len = __snprint_value((char *) str_buf,
                                               sizeof(str_buf), vars, tp, type,
