@@ -128,7 +128,7 @@ def test_session_get(sess):
 
     assert res[0].oid == 'sysUpTimeInstance'
     assert res[0].oid_index is ''
-    assert res[0].value > 0
+    assert int(res[0].value) > 0
     assert res[0].snmp_type == 'TICKS'
 
     assert res[1].oid == 'sysContact'
@@ -197,7 +197,7 @@ def test_session_get_next(sess):
 
     assert res[2].oid == 'sysORLastChange'
     assert res[2].oid_index == '0'
-    assert res[2].value >= 0
+    assert int(res[2].value) >= 0
     assert res[2].snmp_type == 'TICKS'
 
 
@@ -249,12 +249,12 @@ def test_session_get_bulk(sess):  # noqa
 
         assert res[0].oid == 'sysUpTimeInstance'
         assert res[0].oid_index is ''
-        assert res[0].value > 0
+        assert int(res[0].value) > 0
         assert res[0].snmp_type == 'TICKS'
 
         assert res[4].oid == 'sysORUpTime'
         assert res[4].oid_index == '1'
-        assert res[4].value >= 0
+        assert int(res[4].value) >= 0
         assert res[4].snmp_type == 'TICKS'
 
 
