@@ -9,7 +9,9 @@ def strip_non_printable(value):
     :param value: the value that you wish to strip
     """
     # Filter all non-printable characters
-    printable_value = filter(lambda c: c in string.printable, value)
+    # (note that we must use join to account for the fact that Python 3
+    # returns a generator)
+    printable_value = ''.join(filter(lambda c: c in string.printable, value))
 
     if printable_value != value:
         if printable_value:

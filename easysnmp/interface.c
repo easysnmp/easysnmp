@@ -1180,7 +1180,18 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
         if (attr)
         {
             int retval;
+
+#if PY_MAJOR_VERSION >= 3
+            // Encode the provided attribute using UTF-8 into bytes and
+            // retrieve its value and length
+            PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "utf-8",
+                                                             "surrogateescape");
+            retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
+            Py_DECREF(attr_bytes);
+#else
             retval = PyString_AsStringAndSize(attr, val, len);
+#endif
+
             Py_DECREF(attr);
             return retval;
         }
@@ -1198,7 +1209,7 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
         PyObject *attr = PyObject_GetAttrString(obj, attr_name);
         if (attr)
         {
-            val = PyInt_AsLong(attr);
+            val = PyLong_AsLong(attr);
             Py_DECREF(attr);
         }
     }
@@ -1275,7 +1286,7 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     py_netsnmp_attr_set_string(session, "error_string", err_str,
                                STRLEN(err_str));
 
-    tmp_for_conversion = PyInt_FromLong(err_num);
+    tmp_for_conversion = PyLong_FromLong(err_num);
     if (!tmp_for_conversion)
     {
         return; /* nothing better to do? */
@@ -1283,7 +1294,7 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
 
-    tmp_for_conversion = PyInt_FromLong(err_ind);
+    tmp_for_conversion = PyLong_FromLong(err_ind);
     if (!tmp_for_conversion)
     {
         return; /* nothing better to do? */
@@ -3167,7 +3178,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
     va_list fmt_args;
 
     va_start(fmt_args, printf_fmt);
-    log_msg = PyString_FromFormatV(printf_fmt, fmt_args);
+    log_msg = PyUnicode_FromFormatV(printf_fmt, fmt_args);
     va_end(fmt_args);
 
     if (log_msg == NULL)
@@ -3218,7 +3229,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
  * See: https://docs.python.org/2/c-api/structures.html for more info.
  *
  */
-static PyMethodDef ClientMethods[] =
+static PyMethodDef interface_methods[] =
     {
         {
             "session",
@@ -3283,20 +3294,36 @@ static PyMethodDef ClientMethods[] =
     };
 
 /* entry point when importing the module */
+#if PY_MAJOR_VERSION >= 3
+
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "interface",
+    NULL,
+    -1,
+    interface_methods
+};
+
+PyMODINIT_FUNC PyInit_interface(void)
+{
+    /* Initialise the module */
+    PyObject *interface_module = PyModule_Create(&moduledef);
+
+#else
+
 PyMODINIT_FUNC initinterface(void)
 {
-    PyObject *interface_module;
-    PyObject *exceptions_module;
-
     /* Initialise the module */
-    interface_module = Py_InitModule("interface", ClientMethods);
+    PyObject *interface_module = Py_InitModule("interface", interface_methods);
+
+#endif
     if (interface_module == NULL)
     {
         goto done;
     }
 
     /* Import our exceptions */
-    exceptions_module = PyImport_ImportModule("easysnmp.exceptions");
+    PyObject *exceptions_module = PyImport_ImportModule("easysnmp.exceptions");
     EasySNMPError = PyObject_GetAttrString(exceptions_module, "EasySNMPError");
     EasySNMPConnectionError = PyObject_GetAttrString(exceptions_module,
                                                      "EasySNMPConnectionError");
@@ -3320,7 +3347,11 @@ PyMODINIT_FUNC initinterface(void)
 
     py_log_msg(DEBUG, "initialised netsnmp_interface");
 
+#if PY_MAJOR_VERSION >= 3
+    return interface_module;
+#else
     return;
+#endif
 
 done:
 
@@ -3333,5 +3364,9 @@ done:
     Py_XDECREF(EasySNMPUndeterminedTypeError);
     Py_XDECREF(PyLogger);
 
+#if PY_MAJOR_VERSION >= 3
+    return NULL;
+#else
     return;
+#endif
 }
