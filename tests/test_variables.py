@@ -69,7 +69,7 @@ def test_snmp_variable_doesnt_extract_oid_index():
         '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0'
     )
     assert var.oid == '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr'
-    assert var.oid_index is '0'
+    assert var.oid_index == '0'
     assert var.value is None
     assert var.snmp_type is None
 
