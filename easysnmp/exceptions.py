@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+
+
 class EasySNMPError(Exception):
     """The base Easy SNMP exception which covers all exceptions raised"""
 

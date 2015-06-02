@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import re
 
 # This regular expression is used to extract the index from an OID

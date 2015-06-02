@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from easysnmp.utils import strip_non_printable, tostr
 
 
@@ -20,7 +22,7 @@ def test_tostr_none():
 
 
 def test_tostr_string():
-    assert tostr('hello there') is 'hello there'
+    assert tostr('hello there') == 'hello there'
 
 
 def test_tostr_integer():
