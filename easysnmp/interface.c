@@ -53,9 +53,9 @@ typedef int Py_ssize_t;
 #define SAFE_FREE(x)                                                          \
     do                                                                        \
     {                                                                         \
-        if ((x) != NULL)                                                      \
+        if (x != NULL)                                                        \
         {                                                                     \
-            free((x));                                                        \
+            free(x);                                                          \
         }                                                                     \
     }                                                                         \
     while (0)
@@ -826,7 +826,9 @@ static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
             return rtp; /* HACK: otherwise, concat_oid_str confuses things */
         }
     }
+
 done:
+
     if (iid && *iid && oid_arr_len)
     {
         __concat_oid_str(oid_arr, oid_arr_len, iid);
@@ -892,7 +894,7 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
              vars->next_variable;
              vars = vars->next_variable)
         {
-            /*EXIT*/;
+            /* EXIT */;
         }
 
         vars->next_variable =
@@ -1067,7 +1069,8 @@ retry:
     switch (status)
     {
         case STAT_SUCCESS:
-            switch ((*response)->errstat)
+            status = (*response)->errstat;
+            switch (status)
             {
                 case SNMP_ERR_NOERROR:
                     break;
@@ -1112,7 +1115,8 @@ retry:
                             STR_BUF_SIZE);
                     *err_num = (int)(*response)->errstat;
                     *err_ind = (*response)->errindex;
-                    status = (*response)->errstat;
+                    py_log_msg(DEBUG, "sync PDU: %s", err_str);
+
                     PyErr_SetString(EasySNMPError, err_str);
                     break;
              }
@@ -1121,6 +1125,7 @@ retry:
         case STAT_TIMEOUT:
             snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
             strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
+            py_log_msg(DEBUG, "sync PDU: %s", err_str);
 
             PyErr_SetString(EasySNMPTimeoutError,
                             "timed out while connecting to remote host");
@@ -1129,6 +1134,7 @@ retry:
         case STAT_ERROR:
             snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
             strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
+            py_log_msg(DEBUG, "sync PDU: %s", err_str);
 
             PyErr_SetString(EasySNMPError, tmp_err_str);
             break;
@@ -1136,6 +1142,8 @@ retry:
         default:
             strcat(err_str, "send_sync_pdu: unknown status");
             *err_num = ss->s_snmp_errno;
+            py_log_msg(DEBUG, "sync PDU: %s", err_str);
+
             break;
     }
 
@@ -1145,8 +1153,6 @@ done:
     {
         free(tmp_err_str);
     }
-
-    py_log_msg(DEBUG, "sync PDU: %s", err_str);
 
     return status;
 }
@@ -1392,7 +1398,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 
 end:
 
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -1566,8 +1572,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 
     ss = snmp_sess_open_quiet(&session);
 
-end:
-
     if (ss == NULL)
     {
         PyErr_Format(EasySNMPConnectionError,
@@ -1575,10 +1579,13 @@ end:
                      snmp_api_errstring(snmp_errno));
         error = 1;
     }
-    free (session.securityEngineID);
-    free (session.contextEngineID);
 
-    if (error == 1)
+end:
+
+    free(session.securityEngineID);
+    free(session.contextEngineID);
+
+    if (error)
     {
         return NULL;
     }
@@ -1687,7 +1694,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
      * Note: on a 64-bit system the statement below discards the upper 32
      * bits of "ss", which is most likely a bug.
      */
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -1970,7 +1977,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 done:
 
     SAFE_FREE(oid_arr);
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -2240,7 +2247,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 done:
 
     SAFE_FREE(oid_arr);
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -2655,7 +2662,7 @@ done:
     }
     SAFE_FREE(oid_arr);
     SAFE_FREE(oid_arr_broken_check);
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -2951,7 +2958,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 done:
 
     SAFE_FREE(oid_arr);
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
@@ -3133,7 +3140,7 @@ done:
 
     Py_XDECREF(varbind);
     SAFE_FREE(oid_arr);
-    if (error == 1)
+    if (error)
     {
         return NULL;
     }
