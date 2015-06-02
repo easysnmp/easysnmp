@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import platform
 import re
 
@@ -127,7 +129,7 @@ def test_session_get(sess):
     assert len(res) == 3
 
     assert res[0].oid == 'sysUpTimeInstance'
-    assert res[0].oid_index is ''
+    assert res[0].oid_index == ''
     assert int(res[0].value) > 0
     assert res[0].snmp_type == 'TICKS'
 
@@ -248,7 +250,7 @@ def test_session_get_bulk(sess):  # noqa
         assert len(res) == 26
 
         assert res[0].oid == 'sysUpTimeInstance'
-        assert res[0].oid_index is ''
+        assert res[0].oid_index == ''
         assert int(res[0].value) > 0
         assert res[0].snmp_type == 'TICKS'
 

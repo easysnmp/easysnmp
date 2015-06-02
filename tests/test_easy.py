@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import platform
 
 import pytest
@@ -237,7 +239,7 @@ def test_snmp_get_bulk(sess_args):
         assert len(res) == 26
 
         assert res[0].oid == 'sysUpTimeInstance'
-        assert res[0].oid_index is ''
+        assert res[0].oid_index == ''
         assert int(res[0].value) > 0
         assert res[0].snmp_type == 'TICKS'
 

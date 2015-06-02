@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from .helpers import normalize_oid
 from .utils import strip_non_printable, tostr
 
