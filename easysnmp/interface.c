@@ -1725,7 +1725,6 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     PyObject *session;
     PyObject *varlist;
     PyObject *varbind;
-    PyObject *val_tuple = NULL;
     int varlist_len = 0;
     int varlist_ind;
     netsnmp_session *ss;
@@ -1879,14 +1878,6 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                                NETSNMP_OID_OUTPUT_NUMERIC);
         }
 
-        val_tuple = PyTuple_New(varlist_len);
-
-        /* initialize return tuple */
-        for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++)
-        {
-            PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
-        }
-
         for (vars = (response ? response->variables : NULL), varlist_ind = 0;
              vars && (varlist_ind < varlist_len);
              vars = vars->next_variable, varlist_ind++)
@@ -1940,19 +1931,6 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                 py_netsnmp_attr_set_string(varbind, "value",
                                            (char *) str_buf, len);
 
-                /* save in return tuple as well */
-                if ((type == SNMP_ENDOFMIBVIEW) ||
-                    (type == SNMP_NOSUCHOBJECT) ||
-                    (type == SNMP_NOSUCHINSTANCE))
-                {
-                    /* Translate error to None */
-                    PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
-                }
-                else
-                {
-                    PyTuple_SetItem(val_tuple, varlist_ind,
-                                    Py_BuildValue("s#", str_buf, len));
-                }
                 Py_DECREF(varbind);
             }
             else
@@ -1983,7 +1961,7 @@ done:
     }
     else
     {
-        return (val_tuple ? val_tuple : Py_BuildValue(""));
+        return Py_None;
     }
 }
 
@@ -1992,7 +1970,6 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     PyObject *session;
     PyObject *varlist;
     PyObject *varbind;
-    PyObject *val_tuple = NULL;
     int varlist_len = 0;
     int varlist_ind;
     netsnmp_session *ss;
@@ -2153,14 +2130,6 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                NETSNMP_OID_OUTPUT_NUMERIC);
         }
 
-        val_tuple = PyTuple_New(varlist_len);
-
-        /* initialize return tuple */
-        for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++)
-        {
-            PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
-        }
-
         for (vars = (response ? response->variables : NULL), varlist_ind = 0;
              vars && (varlist_ind < varlist_len);
              vars = vars->next_variable, varlist_ind++)
@@ -2210,19 +2179,6 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 py_netsnmp_attr_set_string(varbind, "value", (char *) str_buf,
                                            len);
 
-                /* save in return tuple as well */
-                if ((type == SNMP_ENDOFMIBVIEW) ||
-                    (type == SNMP_NOSUCHOBJECT) ||
-                    (type == SNMP_NOSUCHINSTANCE))
-                {
-                    /* Translate error to None */
-                    PyTuple_SetItem(val_tuple, varlist_ind, Py_BuildValue(""));
-                }
-                else
-                {
-                    PyTuple_SetItem(val_tuple, varlist_ind,
-                                    Py_BuildValue("s#", str_buf, len));
-                }
                 Py_DECREF(varbind);
             }
             else
@@ -2253,7 +2209,7 @@ done:
     }
     else
     {
-        return (val_tuple ? val_tuple : Py_BuildValue(""));
+        return Py_None;
     }
 }
 
@@ -2263,7 +2219,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     PyObject *varlist;
     PyObject *varlist_iter;
     PyObject *varbind;
-    PyObject *val_tuple = NULL;
     PyObject *varbinds  = NULL;
     int varlist_len = 0;
     int varlist_ind;
@@ -2295,7 +2250,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     int err_num;
     char err_str[STR_BUF_SIZE];
     int notdone = 1;
-    int result_count = 0;
     char *tmpstr;
     Py_ssize_t tmplen;
     int error = 0;
@@ -2423,9 +2377,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             snmp_free_pdu(pdu);
             goto done;
         }
-
-        /* pre-allocate the return tuples */
-        val_tuple = PyTuple_New(0);
 
         if (PyErr_Occurred())
         {
@@ -2605,19 +2556,9 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
                         /* push the varbind onto the return varbinds */
                         PyList_Append(varbinds, varbind);
-
-                        /* save in return tuple as well */
-                        /* save in return tuple as well - steals ref */
-                        _PyTuple_Resize(&val_tuple, result_count + 1);
-                        PyTuple_SetItem(val_tuple, result_count++,
-                                        Py_BuildValue("s#", str_buf, len));
                     }
                     else
                     {
-                        /* Return None for this variable. */
-                        _PyTuple_Resize(&val_tuple, result_count + 1);
-                        PyTuple_SetItem(val_tuple, result_count++,
-                                        Py_BuildValue(""));
                         py_log_msg(DEBUG, "netsnmp_walk: bad varbind (%d)",
                                    varlist_ind);
                     }
@@ -2646,7 +2587,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         if (PyErr_Occurred())
         {
             error = 1;
-            Py_DECREF(val_tuple);
         }
     }
 
@@ -2668,7 +2608,7 @@ done:
     }
     else
     {
-        return (val_tuple ? val_tuple : Py_BuildValue(""));
+        return Py_None;
     }
 }
 
@@ -2681,7 +2621,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     PyObject *varbinds;
     PyObject *varbind;
     PyObject *varbinds_iter;
-    PyObject *val_tuple = NULL;
     int varbind_ind;
     netsnmp_session *ss;
     netsnmp_pdu *pdu, *response;
@@ -2841,9 +2780,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                    NETSNMP_OID_OUTPUT_NUMERIC);
             }
 
-            /* create tuple in which to return results */
-            val_tuple = PyTuple_New(0);
-
             if(response && response->variables)
             {
                 /* clear varlist to receive response varbinds*/
@@ -2912,11 +2848,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                         /* push varbind onto varbinds */
                         PyList_Append(varbinds, varbind);
 
-                        /* save in return tuple as well - steals ref */
-                        _PyTuple_Resize(&val_tuple, varbind_ind + 1);
-                        PyTuple_SetItem(val_tuple, varbind_ind,
-                                        Py_BuildValue("s#", str_buf, len));
-
                         Py_DECREF(varbind);
                     }
                     else
@@ -2925,7 +2856,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                         /* not sure why making vabind failed - should not happen*/
                         PyList_Append(varbinds, none); /* increments ref */
                         /* Return None for this variable. */
-                        PyTuple_SetItem(val_tuple, varbind_ind, none); /* steals ref */
                         Py_XDECREF(varbind);
                     }
                 }
@@ -2947,11 +2877,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
         if (PyErr_Occurred())
         {
             error = 1;
-            if (val_tuple)
-            {
-                Py_DECREF(val_tuple);
-            }
-            val_tuple = NULL;
         }
     }
 
@@ -2964,7 +2889,7 @@ done:
     }
     else
     {
-        return (val_tuple ? val_tuple : Py_BuildValue(""));
+        return Py_None;
     }
 }
 
