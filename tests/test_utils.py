@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from easysnmp.compat import ub
 from easysnmp.utils import strip_non_printable, tostr
 
 
@@ -8,13 +9,15 @@ def test_strip_non_printable_regular():
 
 
 def test_strip_non_printable_contains_binary():
-    assert strip_non_printable(chr(20) + 'my thingo' + chr(155)) == (
+    assert strip_non_printable(ub(chr(20)) + 'my thingo' + ub(chr(155))) == (
         'my thingo (contains binary)'
     )
 
 
 def test_strip_non_printable_only_binary():
-    assert strip_non_printable(chr(20) + chr(155)) == '(contains binary)'
+    assert strip_non_printable(ub(chr(20)) + ub(chr(155))) == (
+        '(contains binary)'
+    )
 
 
 def test_tostr_none():

@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from easysnmp.compat import ub
 from easysnmp.variables import SNMPVariable, SNMPVariableList
 
 
@@ -27,7 +28,7 @@ def test_snmp_variable_repr():
 def test_snmp_variable_repr_binary():
     var = SNMPVariable(
         'sysDescr', '0',
-        chr(20) + 'my thingo' + chr(155),
+        ub(chr(20)) + 'my thingo' + ub(chr(155)),
         'OCTETSTR'
     )
     assert var.__repr__() == (
@@ -39,7 +40,7 @@ def test_snmp_variable_repr_binary():
 def test_snmp_variable_repr_binary_only():
     var = SNMPVariable(
         'sysDescr', '0',
-        chr(20) + chr(155),
+        ub(chr(20)) + ub(chr(155)),
         'OCTETSTR'
     )
     assert var.__repr__() == (

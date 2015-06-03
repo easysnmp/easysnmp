@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import string
 
+from .compat import ub, text_type
+
 
 def strip_non_printable(value):
     """
@@ -29,9 +31,17 @@ def strip_non_printable(value):
 def tostr(value):
     """
     Converts any variable to a string or returns None if the variable
-    contained None to begin with
+    contained None to begin with; this function currently supports None,
+    unicode strings, byte strings and numbers
 
     :param value: the value you wish to convert to a string
     """
 
-    return None if value is None else str(value)
+    if value is None:
+        return None
+    elif isinstance(value, text_type):
+        return value
+    elif isinstance(value, (int, float)):
+        return str(value)
+    else:
+        return ub(value)
