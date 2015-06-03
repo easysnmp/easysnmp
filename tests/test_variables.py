@@ -52,8 +52,7 @@ def test_snmp_variable_repr_binary_only():
 def test_snmp_variable_repr_none():
     var = SNMPVariable()
     assert var.__repr__() == (
-        "<SNMPVariable value=(none) "
-        "(oid=(none), oid_index=(none), snmp_type=(none))>"
+        "<SNMPVariable value=None (oid=None, oid_index=None, snmp_type=None)>"
     )
 
 
