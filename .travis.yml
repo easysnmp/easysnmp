@@ -58,6 +58,10 @@ script:
   # Run the unit tests using py.test
   - python setup.py test
 
+after_script:
+  # Stop the SNMPD daemon
+  - pkill snmpd
+
 after_success:
   # Send coverage statistics to Coveralls
   coveralls
