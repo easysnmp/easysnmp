@@ -1347,8 +1347,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     SnmpSession *ss = NULL;
     int error = 0;
 
-    if (!PyArg_ParseTuple(args, "issiii", &version,
-                          &community, &peer, &lport,
+    if (!PyArg_ParseTuple(args, "issiii", &version, &community, &peer, &lport,
                           &retries, &timeout))
     {
         return NULL;
