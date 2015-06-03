@@ -47,9 +47,8 @@ before_install:
   # Install the SNMP MIBs
   - sudo apt-get install -y snmp-mibs-downloader
 
-  # Copy our test SNMP config and start up SNMPD
-  - sudo cp tests/snmpd.conf /usr/local/etc
-  - sudo /usr/local/sbin/snmpd -c /usr/local/etc/snmpd.conf
+  # Start up SNMPD with our test config
+  - snmpd -c tests/snmpd.conf
 
 install:
   # Install the Coveralls library

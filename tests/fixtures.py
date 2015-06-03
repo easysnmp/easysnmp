@@ -15,6 +15,7 @@ def sess_v1_args():
     return {
         'version': 1,
         'hostname': 'localhost',
+        'remote_port': 11161,
         'community': 'public'
     }
 
@@ -24,6 +25,7 @@ def sess_v2_args():
     return {
         'version': 2,
         'hostname': 'localhost',
+        'remote_port': 11161,
         'community': 'public'
     }
 
@@ -33,6 +35,7 @@ def sess_v3_args():
     return {
         'version': 3,
         'hostname': 'localhost',
+        'remote_port': 11161,
         'security_level': 'authPriv',
         'security_username': 'initial',
         'privacy_password': 'priv_pass',
