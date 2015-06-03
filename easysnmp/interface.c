@@ -2346,11 +2346,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                NULL, best_guess);
             }
 
-            py_log_msg(DEBUG, "netsnmp_walk: filling request: %s:%s:%d:%d",
-                       tag, iid, oid_arr_len[varlist_ind], best_guess);
-
             if (oid_arr_len[varlist_ind])
             {
+                py_log_msg(DEBUG, "netsnmp_walk: filling request: %s:%s:%d:%d",
+                           tag, iid, oid_arr_len[varlist_ind], best_guess);
+
                 snmp_add_null_var(pdu, oid_arr[varlist_ind],
                                   oid_arr_len[varlist_ind]);
             }
