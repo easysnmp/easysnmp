@@ -156,6 +156,16 @@ def test_session_get_use_numeric(sess):
 
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_non_utf8_compatible(sess):
+    res = sess.get('ifPhysAddress.2')
+
+    assert res.oid == 'ifPhysAddress'
+    assert res.oid_index == '2'
+    assert res.value
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
 def test_session_get_use_sprint_value(sess):
     sess.use_sprint_value = True
     res = sess.get('sysUpTimeInstance')

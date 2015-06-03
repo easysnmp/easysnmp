@@ -867,7 +867,7 @@ static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str)
     while (cp)
     {
         sscanf(cp, "%lu", &(doid_arr[(*doid_arr_len)++]));
-        /* doid_arr[(*doid_arr_len)++] =  atoi(cp); */
+        /* doid_arr[(*doid_arr_len)++] = atoi(cp); */
         cp = strtok_r(NULL, ".", &st);
     }
     free(soid_buf);
@@ -1182,10 +1182,14 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             int retval;
 
 #if PY_MAJOR_VERSION >= 3
-            // Encode the provided attribute using UTF-8 into bytes and
+            // Encode the provided attribute using latin-1 into bytes and
             // retrieve its value and length
-            PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "utf-8",
+            PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1",
                                                              "surrogateescape");
+            if (!attr_bytes)
+            {
+                return -1;
+            }
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
 #else
             retval = PyString_AsStringAndSize(attr, val, len);
@@ -1239,9 +1243,8 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
     int ret = -1;
     if (obj && attr_name)
     {
-        PyObject* val_obj =  (val ?
-                              Py_BuildValue("s#", val, len) :
-                              Py_BuildValue(""));
+        PyObject* val_obj = PyUnicode_Decode(val, len, "latin-1",
+                                             "surrogateescape");
         if (!val_obj)
         {
             return -1;
