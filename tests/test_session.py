@@ -156,16 +156,6 @@ def test_session_get_use_numeric(sess):
 
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
-def test_session_non_utf8_compatible(sess):
-    res = sess.get('ifPhysAddress.2')
-
-    assert res.oid == 'ifPhysAddress'
-    assert res.oid_index == '2'
-    assert res.value
-    assert res.snmp_type == 'OCTETSTR'
-
-
-@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
 def test_session_get_use_sprint_value(sess):
     sess.use_sprint_value = True
     res = sess.get('sysUpTimeInstance')
@@ -293,6 +283,33 @@ def test_session_walk(sess):
     res = sess.walk('system')
 
     assert len(res) >= 7
+
+    assert res[0].oid == 'sysDescr'
+    assert res[0].oid_index == '0'
+    assert platform.version() in res[0].value
+    assert res[0].snmp_type == 'OCTETSTR'
+
+    assert res[3].oid == 'sysContact'
+    assert res[3].oid_index == '0'
+    assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[3].snmp_type == 'OCTETSTR'
+
+    assert res[4].oid == 'sysName'
+    assert res[4].oid_index == '0'
+    assert res[4].value == platform.node()
+    assert res[4].snmp_type == 'OCTETSTR'
+
+    assert res[5].oid == 'sysLocation'
+    assert res[5].oid_index == '0'
+    assert res[5].value == 'my original location'
+    assert res[5].snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_walk_all(sess):
+    res = sess.walk('.')
+
+    assert len(res) > 0
 
     assert res[0].oid == 'sysDescr'
     assert res[0].oid_index == '0'

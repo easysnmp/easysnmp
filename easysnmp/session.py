@@ -49,6 +49,9 @@ def build_varlist(oids):
         if isinstance(oid, tuple):
             oid, oid_index = oid
             varlist.append(SNMPVariable(oid, oid_index))
+        # OID . is specified (which we convert to iso)
+        elif oid == '.':
+            varlist.append(SNMPVariable('iso'))
         # OIDs specefied as a string (e.g. 'sysContact.0')
         else:
             varlist.append(SNMPVariable(oid))
