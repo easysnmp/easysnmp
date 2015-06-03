@@ -7,8 +7,17 @@ if PY3:
 
     def ub(s):
         return s
+
+    def urepr(s):
+        return repr(s)
 else:
     text_type = unicode  # noqa
 
     def ub(s):
         return s.decode('latin-1')
+
+    def urepr(s):
+        if isinstance(s, unicode):  # noqa
+            return repr(s)[1:]
+        else:
+            return repr(s)

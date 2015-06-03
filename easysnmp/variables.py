@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from .compat import urepr
 from .helpers import normalize_oid
 from .utils import strip_non_printable, tostr
 
@@ -27,8 +28,8 @@ class SNMPVariable(object):
         return (
             "<{0} value={1} (oid={2}, oid_index={3}, snmp_type={4})>".format(
                 self.__class__.__name__,
-                repr(printable_value), repr(self.oid), repr(self.oid_index),
-                repr(self.snmp_type)
+                urepr(printable_value), urepr(self.oid),
+                urepr(self.oid_index), urepr(self.snmp_type)
             )
         )
 
