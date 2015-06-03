@@ -50,6 +50,11 @@ before_install:
   # Start up SNMPD with our test config
   - snmpd -c tests/snmpd.conf
 
+  # Ensure that all mibs are loaded by the SNMP client/client library
+  # SNMP will prefer $HOME/.snmp/snmp.conf over /usr/local/etc/snmp.conf
+  - mkdir -m 0755 ~/.snmp
+  - echo 'mibs +ALL' > ~/.snmp/snmp.conf
+
 install:
   # Install the Coveralls library
   - pip install coveralls
