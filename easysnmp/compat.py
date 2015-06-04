@@ -1,3 +1,4 @@
+import logging
 import sys
 
 PY3 = sys.version_info[0] == 3
@@ -21,3 +22,8 @@ else:
             return repr(s)[1:]
         else:
             return repr(s)
+
+
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
