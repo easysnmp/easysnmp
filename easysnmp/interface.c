@@ -3079,17 +3079,55 @@ done:
  */
 static PyObject *py_get_logger(char *logger_name)
 {
-    PyObject *logger;
+    PyObject *logger = NULL;
+    PyObject *null_handler = NULL;
+
+    logger = PyObject_CallMethod(logging_import, "getLogger", "s", logger_name);
+    if (logger == NULL)
+    {
+        const char *err_msg = "failed to call logging.getLogger";
+        PyErr_SetString(PyExc_RuntimeError, err_msg);
+        goto done;
+    }
 
     /*
-     * TODO: modify to instead add a NullHandler from easysnmp.compat
-     *       instead of calling basicConfig() which treads on application
-     *       logging.
+     * Since this is a library module, a handler needs to be configured when
+     * logging; otherwise a warning is emitted to stderr.
+     *
+     * https://docs.python.org/3.4/howto/logging.html#library-config recommends:
+     * >>> logging.getLogger('foo').addHandler(logging.NullHandler())
+     *
+     * However NullHandler doesn't come with python <2.6 and <3.1, so we need
+     * to improvise by using an identical copy in easysnmp.compat.
+     *
      */
-    PyObject_CallMethod(logging_import, "basicConfig", NULL);
-    logger = PyObject_CallMethod(logging_import, "getLogger", "s", logger_name);
+
+    null_handler = PyObject_CallMethod(easysnmp_compat_import, "NullHandler", NULL);
+    if (null_handler == NULL)
+    {
+        const char *err_msg = "failed to call easysnmp.compat.NullHandler()";
+        PyErr_SetString(PyExc_RuntimeError, err_msg);
+        goto done;
+    }
+
+    if (PyObject_CallMethod(logger, "addHandler", "O", null_handler) == NULL)
+    {
+        const char *err_msg = "failed to call logger.addHandler(NullHandler())";
+        PyErr_SetString(PyExc_RuntimeError, err_msg);
+        goto done;
+    }
+
+    /* we don't need the null_handler around anymore. */
+    Py_DECREF(null_handler);
 
     return logger;
+
+done:
+
+    Py_XDECREF(logger);
+    Py_XDECREF(null_handler);
+
+    return NULL;
 }
 
 static void py_log_msg(int log_level, char *printf_fmt, ...)
