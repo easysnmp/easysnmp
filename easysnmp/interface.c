@@ -86,6 +86,7 @@ enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
 static PyObject *easysnmp_import = NULL;
 static PyObject *easysnmp_exceptions_import = NULL;
+static PyObject *easysnmp_compat_import = NULL;
 static PyObject *logging_import = NULL;
 
 static PyObject *PyLogger = NULL;
@@ -3247,6 +3248,7 @@ PyMODINIT_FUNC initinterface(void)
      * import logging
      * import easysnmp
      * import easysnmp.exceptions
+     * import easysnmp.compat
      *
      */
     logging_import = PyImport_ImportModule("logging");
@@ -3268,7 +3270,15 @@ PyMODINIT_FUNC initinterface(void)
     easysnmp_exceptions_import = PyImport_ImportModule("easysnmp.exceptions");
     if (easysnmp_exceptions_import == NULL)
     {
-        const char *err_msg = "failed to import 'exceptions'";
+        const char *err_msg = "failed to import 'easysnmp.exceptions'";
+        PyErr_SetString(PyExc_ImportError, err_msg);
+        goto done;
+    }
+
+    easysnmp_compat_import = PyImport_ImportModule("easysnmp.compat");
+    if (easysnmp_compat_import == NULL)
+    {
+        const char *err_msg = "failed to import 'easysnmp.compat'";
         PyErr_SetString(PyExc_ImportError, err_msg);
         goto done;
     }
@@ -3306,6 +3316,7 @@ done:
     Py_XDECREF(logging_import);
     Py_XDECREF(easysnmp_import);
     Py_XDECREF(easysnmp_exceptions_import);
+    Py_XDECREF(easysnmp_compat_import);
     Py_XDECREF(EasySNMPError);
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
