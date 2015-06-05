@@ -84,6 +84,10 @@ static void py_log_msg(int log_level, char *printf_fmt, ...);
 
 enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
+static PyObject *easysnmp_import = NULL;
+static PyObject *easysnmp_exceptions_import = NULL;
+static PyObject *logging_import = NULL;
+
 static PyObject *PyLogger = NULL;
 static PyObject *EasySNMPError = NULL;
 static PyObject *EasySNMPConnectionError = NULL;
@@ -1159,15 +1163,7 @@ done:
 
 static PyObject *py_netsnmp_construct_varbind(void)
 {
-    PyObject *module;
-    PyObject *dict;
-    PyObject *callable;
-
-    module = PyImport_ImportModule("easysnmp");
-    dict = PyModule_GetDict(module);
-    callable = PyDict_GetItemString(dict, "SNMPVariable");
-
-    return PyObject_CallFunction(callable, "");
+    return PyObject_CallMethod(easysnmp_import, "SNMPVariable", NULL);
 }
 
 static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
@@ -3082,20 +3078,15 @@ done:
  */
 static PyObject *py_get_logger(char *logger_name)
 {
-    PyObject *logging;
     PyObject *logger;
 
-    logging = PyImport_ImportModule("logging");
-
-    if (logging == NULL)
-    {
-        PyErr_SetString(PyExc_ImportError,
-                        "could not import the logging module ");
-        return NULL;
-    }
-
-    PyObject_CallMethod(logging, "basicConfig", "");
-    logger = PyObject_CallMethod(logging, "getLogger", "s", logger_name);
+    /*
+     * TODO: modify to instead add a NullHandler from easysnmp.compat
+     *       instead of calling basicConfig() which treads on application
+     *       logging.
+     */
+    PyObject_CallMethod(logging_import, "basicConfig", NULL);
+    logger = PyObject_CallMethod(logging_import, "getLogger", "s", logger_name);
 
     return logger;
 }
@@ -3250,20 +3241,49 @@ PyMODINIT_FUNC initinterface(void)
         goto done;
     }
 
-    /* Import our exceptions */
-    PyObject *exceptions_module = PyImport_ImportModule("easysnmp.exceptions");
-    EasySNMPError = PyObject_GetAttrString(exceptions_module, "EasySNMPError");
-    EasySNMPConnectionError = PyObject_GetAttrString(exceptions_module,
+    /*
+     * Perform global imports:
+     *
+     * import logging
+     * import easysnmp
+     * import easysnmp.exceptions
+     *
+     */
+    logging_import = PyImport_ImportModule("logging");
+    if (logging_import == NULL)
+    {
+        const char *err_msg = "failed to import 'logging'";
+        PyErr_SetString(PyExc_ImportError, err_msg);
+        goto done;
+    }
+
+    easysnmp_import = PyImport_ImportModule("easysnmp");
+    if (easysnmp_import == NULL)
+    {
+        const char *err_msg = "failed to import 'easysnmp'";
+        PyErr_SetString(PyExc_ImportError, err_msg);
+        goto done;
+    }
+
+    easysnmp_exceptions_import = PyImport_ImportModule("easysnmp.exceptions");
+    if (easysnmp_exceptions_import == NULL)
+    {
+        const char *err_msg = "failed to import 'exceptions'";
+        PyErr_SetString(PyExc_ImportError, err_msg);
+        goto done;
+    }
+
+    EasySNMPError = PyObject_GetAttrString(easysnmp_exceptions_import, "EasySNMPError");
+    EasySNMPConnectionError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                      "EasySNMPConnectionError");
-    EasySNMPTimeoutError = PyObject_GetAttrString(exceptions_module,
+    EasySNMPTimeoutError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                   "EasySNMPTimeoutError");
-    EasySNMPUnknownObjectIDError = PyObject_GetAttrString(exceptions_module,
+    EasySNMPUnknownObjectIDError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                           "EasySNMPUnknownObjectIDError");
-    EasySNMPNoSuchObjectError = PyObject_GetAttrString(exceptions_module,
+    EasySNMPNoSuchObjectError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                        "EasySNMPNoSuchObjectError");
-    EasySNMPUndeterminedTypeError = PyObject_GetAttrString(exceptions_module,
+    EasySNMPUndeterminedTypeError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                            "EasySNMPUndeterminedTypeError");
-    Py_XDECREF(exceptions_module);
 
     /* Initialise logging (note: automatically has refcount 1) */
     PyLogger = py_get_logger("easysnmp.interface");
@@ -3273,7 +3293,7 @@ PyMODINIT_FUNC initinterface(void)
         goto done;
     }
 
-    py_log_msg(DEBUG, "initialised netsnmp_interface");
+    py_log_msg(DEBUG, "initialised easysnmp.interface");
 
 #if PY_MAJOR_VERSION >= 3
     return interface_module;
@@ -3282,8 +3302,10 @@ PyMODINIT_FUNC initinterface(void)
 #endif
 
 done:
-
     Py_XDECREF(interface_module);
+    Py_XDECREF(logging_import);
+    Py_XDECREF(easysnmp_import);
+    Py_XDECREF(easysnmp_exceptions_import);
     Py_XDECREF(EasySNMPError);
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
