@@ -128,13 +128,14 @@ class Session(object):
                         methods untranslated (i.e. dotted-decimal). Setting
                         the use_long_names value for the session is highly
                         recommended
-    :param use_sprint_value: set to True to have return values for get
-                             and getnext methods formatted with the libraries
-                             sprint_value function. This will result in
-                             certain data types being returned in
-                             non-canonical format Note: values returned with
-                             this option set may not be appropriate for set
-                             operations
+    :param use_sprint_value: set to False to disable having return values for
+                             get and getnext methods formatted with the
+                             libraries sprint_value function.  Otherwise, when
+                             set to True (which is the default), it will
+                             result in certain data types being returned in
+                             non-canonical format.  Please note that values
+                             returned with this option set may not be
+                             appropriate for set operations.
     :param use_enums: set to True to have integer return values converted
                       to enumeration identifiers if possible, these values
                       will also be acceptable when supplied to set operations
@@ -160,7 +161,7 @@ class Session(object):
         security_engine_id='', context='', engine_boots=0, engine_time=0,
         our_identity='', their_identity='', their_hostname='',
         trust_cert='', use_long_names=False, use_numeric=False,
-        use_sprint_value=False, use_enums=False, best_guess=0,
+        use_sprint_value=True, use_enums=False, best_guess=0,
         retry_no_such=False
     ):
         # Validate and extract the remote port
