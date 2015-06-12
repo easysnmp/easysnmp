@@ -79,6 +79,30 @@ def test_snmp_get_fully_qualified_tuple(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_numeric(sess_args):
+    res = snmp_get('.1.3.6.1.2.1.1.1.0', **sess_args)
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_numeric_no_leading_dot(sess_args):
+    res = snmp_get('1.3.6.1.2.1.1.1.0', **sess_args)
+
+    assert platform.version() in res.value
+    assert res.oid == 'sysDescr'
+    assert res.oid_index == '0'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_numeric_tuple(sess_args):
     res = snmp_get(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
     assert platform.version() in res.value

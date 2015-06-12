@@ -5,13 +5,13 @@ import re
 # This regular expression is used to extract the index from an OID
 OID_INDEX_RE = re.compile(
     r'''(
-            (?:\.\d+)+                   # numeric OID
-            |                            # or
-            (?:\w+(?:[-:]*\w+)+)         # regular OID
-            |                            # or
-            (?:\.iso(?:\.\w+[-:]*\w+)+)  # fully qualified OID
+            \.?\d+(?:\.\d+)*              # numeric OID
+            |                             # or
+            (?:\w+(?:[-:]*\w+)+)          # regular OID
+            |                             # or
+            (?:\.?iso(?:\.\w+[-:]*\w+)+)  # fully qualified OID
         )
-        \.?(.*)                          # OID index
+        \.?(.*)                           # OID index
      ''',
     re.VERBOSE
 )
