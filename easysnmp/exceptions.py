@@ -17,6 +17,13 @@ class EasySNMPUnknownObjectIDError(EasySNMPError):
     """Raised when an inexisted OID is requested"""
 
 
+class EasySNMPNoSuchNameError(EasySNMPError):
+    """
+    Raised when an OID is requested which may be an invalid object name
+    or invalid instance (only applies to SNMPv1).
+    """
+
+
 class EasySNMPNoSuchObjectError(EasySNMPError):
     """
     Raised when an OID is requested which may have some form of existence but

@@ -93,6 +93,7 @@ static PyObject *PyLogger = NULL;
 static PyObject *EasySNMPError = NULL;
 static PyObject *EasySNMPConnectionError = NULL;
 static PyObject *EasySNMPTimeoutError = NULL;
+static PyObject *EasySNMPNoSuchNameError = NULL;
 static PyObject *EasySNMPUnknownObjectIDError = NULL;
 static PyObject *EasySNMPNoSuchObjectError = NULL;
 static PyObject *EasySNMPUndeterminedTypeError = NULL;
@@ -1081,17 +1082,45 @@ retry:
                     break;
 
                 case SNMP_ERR_NOSUCHNAME:
-                    if (retry_nosuch &&
-                        (pdu = snmp_fix_pdu(*response, command)))
+
+                    /*
+                     * if retry_nosuch is set, then remove the offending
+                     * OID which returns with NoSuchName, until none exist.
+                     */
+                    if (retry_nosuch)
                     {
+                        /*
+                         * fix the GET REQUEST message using snmp_fix_pdu
+                         * which elidse variable which return NOSUCHNAME error,
+                         * until there is either a successful response
+                         * (which indicates SNMP_ERR_NOERROR) or returns NULL
+                         * likely indicating no more remaining variables.
+                         */
+                        pdu = snmp_fix_pdu(*response, command);
+
+                        /*
+                         * The condition when pdu==NULL will happen when
+                         * there are no OIDs left to retry.
+                         */
+                        if (!pdu)
+                        {
+                            status = STAT_SUCCESS;
+                            goto done;
+                        }
+
                         if (*response)
                         {
                             snmp_free_pdu(*response);
                         }
+
                         goto retry;
                     }
-                    PyErr_SetString(EasySNMPNoSuchObjectError,
-                                    "no such object could be found");
+                    else /* !retry_nosuch */
+                    {
+                        PyErr_SetString(EasySNMPNoSuchNameError,
+                                        "no such name error encountered");
+                    }
+
                     break;
 
                 /* Pv1, SNMPsec, Pv2p, v2c, v2u, v2*, and SNMPv3 PDUs */
@@ -3340,6 +3369,8 @@ PyMODINIT_FUNC initinterface(void)
                                                      "EasySNMPConnectionError");
     EasySNMPTimeoutError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                   "EasySNMPTimeoutError");
+    EasySNMPNoSuchNameError = PyObject_GetAttrString(easysnmp_exceptions_import,
+                                                     "EasySNMPNoSuchNameError");
     EasySNMPUnknownObjectIDError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                           "EasySNMPUnknownObjectIDError");
     EasySNMPNoSuchObjectError = PyObject_GetAttrString(easysnmp_exceptions_import,
@@ -3372,6 +3403,7 @@ done:
     Py_XDECREF(EasySNMPError);
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
+    Py_XDECREF(EasySNMPNoSuchNameError);
     Py_XDECREF(EasySNMPUnknownObjectIDError);
     Py_XDECREF(EasySNMPNoSuchObjectError);
     Py_XDECREF(EasySNMPUndeterminedTypeError);
