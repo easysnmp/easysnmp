@@ -69,11 +69,18 @@ def validate_results(varlist):
     """
 
     for variable in varlist:
+        # Create a printable variable string for the error
+        varstr = variable.oid
+        if variable.oid_index:
+            varstr += ' with index {0}'.format(variable.oid_index)
+
         if variable.snmp_type == 'NOSUCHOBJECT':
-            raise EasySNMPNoSuchObjectError('no such object could be found')
-        if variable.value == 'NOSUCHINSTANCE':
+            raise EasySNMPNoSuchObjectError(
+                'no such object {0} could be found'.format(varstr)
+            )
+        if variable.snmp_type == 'NOSUCHINSTANCE':
             raise EasySNMPNoSuchInstanceError(
-                'no such instance could be found'
+                'no such instance {0} could be found'.format(varstr)
             )
 
 
@@ -149,6 +156,9 @@ class Session(object):
                           SNMP variables, when set to False this feature is
                           disabled and the entire get request will fail on
                           any NOSUCH error (applies to v1 only)
+    :param abort_on_nonexistent: raise an exception if no object or no
+                                 instance is found for the given oid and
+                                 oid index
     """
 
     def __init__(
@@ -161,7 +171,7 @@ class Session(object):
         our_identity='', their_identity='', their_hostname='',
         trust_cert='', use_long_names=False, use_numeric=False,
         use_sprint_value=False, use_enums=False, best_guess=0,
-        retry_no_such=False
+        retry_no_such=False, abort_on_nonexistent=False
     ):
         # Validate and extract the remote port
         if ':' in hostname:
@@ -202,6 +212,7 @@ class Session(object):
         self.use_enums = use_enums
         self.best_guess = best_guess
         self.retry_no_such = retry_no_such
+        self.abort_on_nonexistent = abort_on_nonexistent
 
         # The following variables are required for internal use as they are
         # passed to the C interface
@@ -304,7 +315,8 @@ class Session(object):
         interface.get(self, varlist)
 
         # Validate the variable list returned
-        validate_results(varlist)
+        if self.abort_on_nonexistent:
+            validate_results(varlist)
 
         # Return a list or single item depending on what was passed in
         return list(varlist) if is_list else varlist[0]
@@ -392,7 +404,8 @@ class Session(object):
         interface.getnext(self, varlist)
 
         # Validate the variable list returned
-        validate_results(varlist)
+        if self.abort_on_nonexistent:
+            validate_results(varlist)
 
         # Return a list or single item depending on what was passed in
         return list(varlist) if is_list else varlist[0]
@@ -427,7 +440,8 @@ class Session(object):
         interface.getbulk(self, non_repeaters, max_repetitions, varlist)
 
         # Validate the variable list returned
-        validate_results(varlist)
+        if self.abort_on_nonexistent:
+            validate_results(varlist)
 
         # Return a list of variables
         return varlist
@@ -453,7 +467,8 @@ class Session(object):
         interface.walk(self, varlist)
 
         # Validate the variable list returned
-        validate_results(varlist)
+        if self.abort_on_nonexistent:
+            validate_results(varlist)
 
         # Return a list of variables
         return list(varlist)

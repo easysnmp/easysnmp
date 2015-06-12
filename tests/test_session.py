@@ -264,6 +264,18 @@ def test_session_get_bulk(sess):  # noqa
 def test_session_get_invalid_instance(sess):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
     # invalid object ID, so it raises the same exception for both
+    res = sess.get('sysDescr.100')
+    if sess.version == 1:
+        assert res.snmp_type == 'NOSUCHOBJECT'
+    else:
+        assert res.snmp_type == 'NOSUCHINSTANCE'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_invalid_instance_with_abort_enabled(sess):
+    # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
+    # invalid object ID, so it raises the same exception for both
+    sess.abort_on_nonexistent = True
     if sess.version == 1:
         with pytest.raises(EasySNMPNoSuchObjectError):
             sess.get('sysDescr.100')
@@ -274,6 +286,13 @@ def test_session_get_invalid_instance(sess):
 
 @pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
 def test_session_get_invalid_object(sess):
+    res = sess.get('iso')
+    assert res.snmp_type == 'NOSUCHOBJECT'
+
+
+@pytest.mark.parametrize('sess', [sess_v1(), sess_v2(), sess_v3()])
+def test_session_get_invalid_object_with_abort_enabled(sess):
+    sess.abort_on_nonexistent = True
     with pytest.raises(EasySNMPNoSuchObjectError):
         sess.get('iso')
 

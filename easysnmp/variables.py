@@ -15,7 +15,9 @@ class SNMPVariable(object):
     :param value: the OID value
     :param snmp_type: the snmp_type of data contained in val (please see
                       http://www.net-snmp.org/wiki/index.php/TUT:snmpset#Data_Types
-                      for further information)
+                      for further information); in the case that an object
+                      or instance is not found, the type will be set to
+                      NOSUCHOBJECT and NOSUCHINSTANCE respectively
     """
 
     def __init__(self, oid=None, oid_index=None, value=None, snmp_type=None):
