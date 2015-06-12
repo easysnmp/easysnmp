@@ -2146,16 +2146,20 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                                        vars->name_length);
                 str_buf[sizeof(str_buf) - 1] = '\0';
 
+                type = __translate_asn_type(vars->type);
+
                 if (__is_leaf(tp))
                 {
-                    type = (tp->type ? tp->type : tp->parent->type);
                     getlabel_flag &= ~NON_LEAF_NAME;
+                    py_log_msg(DEBUG, "netsnmp_getnext: is_leaf: %d", tp->type);
                 }
                 else
                 {
                     getlabel_flag |= NON_LEAF_NAME;
-                    type = __translate_asn_type(vars->type);
+                    py_log_msg(DEBUG, "netsnmp_getnext: !is_leaf: %d", tp->type);
                 }
+
+                py_log_msg(DEBUG, "netsnmp_getnext: str_buf: %s", str_buf);
 
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
@@ -2517,16 +2521,20 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                                                vars->name_length);
                         str_buf[sizeof(str_buf) - 1] = '\0';
 
+                        type = __translate_asn_type(vars->type);
+
                         if (__is_leaf(tp))
                         {
-                            type = (tp->type ? tp->type : tp->parent->type);
                             getlabel_flag &= ~NON_LEAF_NAME;
+                            py_log_msg(DEBUG, "netsnmp_walk: is_leaf: %d", tp->type);
                         }
                         else
                         {
                             getlabel_flag |= NON_LEAF_NAME;
-                            type = __translate_asn_type(vars->type);
+                            py_log_msg(DEBUG, "netsnmp_walk: !is_leaf: %d", tp->type);
                         }
+
+                        py_log_msg(DEBUG, "netsnmp_walk: str_buf: %s", str_buf);
 
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
@@ -2812,16 +2820,22 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                                                vars->name,
                                                                vars->name_length);
                         str_buf[sizeof(str_buf) - 1] = '\0';
+
+                        type = __translate_asn_type(vars->type);
+
                         if (__is_leaf(tp))
                         {
-                            type = (tp->type ? tp->type : tp->parent->type);
                             getlabel_flag &= ~NON_LEAF_NAME;
+                            py_log_msg(DEBUG, "netsnmp_getbulk: is_leaf: %d", tp->type);
                         }
                         else
                         {
                             getlabel_flag |= NON_LEAF_NAME;
-                            type = __translate_asn_type(vars->type);
+                            py_log_msg(DEBUG, "netsnmp_getbulk: !is_leaf: %d", tp->type);
                         }
+
+                        py_log_msg(DEBUG, "netsnmp_getbulk: str_buf: %s", str_buf);
+
 
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
