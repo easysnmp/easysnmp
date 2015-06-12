@@ -1898,16 +1898,16 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 
                 str_buf[sizeof(str_buf) - 1] = '\0';
 
+                type = __translate_asn_type(vars->type);
+
                 if (__is_leaf(tp))
                 {
-                    type = (tp->type ? tp->type : tp->parent->type);
                     getlabel_flag &= ~NON_LEAF_NAME;
-                    py_log_msg(DEBUG, "netsnmp_get: is_leaf: %d", type);
+                    py_log_msg(DEBUG, "netsnmp_get: is_leaf: %d", tp->type);
                 }
                 else
                 {
                     getlabel_flag |= NON_LEAF_NAME;
-                    type = __translate_asn_type(vars->type);
                     py_log_msg(DEBUG, "netsnmp_get: !is_leaf: %d", tp->type);
                 }
 
