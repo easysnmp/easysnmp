@@ -93,6 +93,7 @@ static PyObject *PyLogger = NULL;
 static PyObject *EasySNMPError = NULL;
 static PyObject *EasySNMPConnectionError = NULL;
 static PyObject *EasySNMPTimeoutError = NULL;
+static PyObject *EasySNMPNoSuchNameError = NULL;
 static PyObject *EasySNMPUnknownObjectIDError = NULL;
 static PyObject *EasySNMPNoSuchObjectError = NULL;
 static PyObject *EasySNMPUndeterminedTypeError = NULL;
@@ -1081,17 +1082,45 @@ retry:
                     break;
 
                 case SNMP_ERR_NOSUCHNAME:
-                    if (retry_nosuch &&
-                        (pdu = snmp_fix_pdu(*response, command)))
+
+                    /*
+                     * if retry_nosuch is set, then remove the offending
+                     * OID which returns with NoSuchName, until none exist.
+                     */
+                    if (retry_nosuch)
                     {
+                        /*
+                         * fix the GET REQUEST message using snmp_fix_pdu
+                         * which elidse variable which return NOSUCHNAME error,
+                         * until there is either a successful response
+                         * (which indicates SNMP_ERR_NOERROR) or returns NULL
+                         * likely indicating no more remaining variables.
+                         */
+                        pdu = snmp_fix_pdu(*response, command);
+
+                        /*
+                         * The condition when pdu==NULL will happen when
+                         * there are no OIDs left to retry.
+                         */
+                        if (!pdu)
+                        {
+                            status = STAT_SUCCESS;
+                            goto done;
+                        }
+
                         if (*response)
                         {
                             snmp_free_pdu(*response);
                         }
+
                         goto retry;
                     }
-                    PyErr_SetString(EasySNMPNoSuchObjectError,
-                                    "no such object could be found");
+                    else /* !retry_nosuch */
+                    {
+                        PyErr_SetString(EasySNMPNoSuchNameError,
+                                        "no such name error encountered");
+                    }
+
                     break;
 
                 /* Pv1, SNMPsec, Pv2p, v2c, v2u, v2*, and SNMPv3 PDUs */
@@ -2146,16 +2175,20 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                                        vars->name_length);
                 str_buf[sizeof(str_buf) - 1] = '\0';
 
+                type = __translate_asn_type(vars->type);
+
                 if (__is_leaf(tp))
                 {
-                    type = (tp->type ? tp->type : tp->parent->type);
                     getlabel_flag &= ~NON_LEAF_NAME;
+                    py_log_msg(DEBUG, "netsnmp_getnext: is_leaf: %d", tp->type);
                 }
                 else
                 {
                     getlabel_flag |= NON_LEAF_NAME;
-                    type = __translate_asn_type(vars->type);
+                    py_log_msg(DEBUG, "netsnmp_getnext: !is_leaf: %d", tp->type);
                 }
+
+                py_log_msg(DEBUG, "netsnmp_getnext: str_buf: %s", str_buf);
 
                 __get_label_iid((char *) str_buf, &tag, &iid, getlabel_flag);
 
@@ -2517,16 +2550,20 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                                                vars->name_length);
                         str_buf[sizeof(str_buf) - 1] = '\0';
 
+                        type = __translate_asn_type(vars->type);
+
                         if (__is_leaf(tp))
                         {
-                            type = (tp->type ? tp->type : tp->parent->type);
                             getlabel_flag &= ~NON_LEAF_NAME;
+                            py_log_msg(DEBUG, "netsnmp_walk: is_leaf: %d", tp->type);
                         }
                         else
                         {
                             getlabel_flag |= NON_LEAF_NAME;
-                            type = __translate_asn_type(vars->type);
+                            py_log_msg(DEBUG, "netsnmp_walk: !is_leaf: %d", tp->type);
                         }
+
+                        py_log_msg(DEBUG, "netsnmp_walk: str_buf: %s", str_buf);
 
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
@@ -2812,16 +2849,22 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                                                vars->name,
                                                                vars->name_length);
                         str_buf[sizeof(str_buf) - 1] = '\0';
+
+                        type = __translate_asn_type(vars->type);
+
                         if (__is_leaf(tp))
                         {
-                            type = (tp->type ? tp->type : tp->parent->type);
                             getlabel_flag &= ~NON_LEAF_NAME;
+                            py_log_msg(DEBUG, "netsnmp_getbulk: is_leaf: %d", tp->type);
                         }
                         else
                         {
                             getlabel_flag |= NON_LEAF_NAME;
-                            type = __translate_asn_type(vars->type);
+                            py_log_msg(DEBUG, "netsnmp_getbulk: !is_leaf: %d", tp->type);
                         }
+
+                        py_log_msg(DEBUG, "netsnmp_getbulk: str_buf: %s", str_buf);
+
 
                         __get_label_iid((char *) str_buf, &tag, &iid,
                                         getlabel_flag);
@@ -3326,6 +3369,8 @@ PyMODINIT_FUNC initinterface(void)
                                                      "EasySNMPConnectionError");
     EasySNMPTimeoutError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                   "EasySNMPTimeoutError");
+    EasySNMPNoSuchNameError = PyObject_GetAttrString(easysnmp_exceptions_import,
+                                                     "EasySNMPNoSuchNameError");
     EasySNMPUnknownObjectIDError = PyObject_GetAttrString(easysnmp_exceptions_import,
                                                           "EasySNMPUnknownObjectIDError");
     EasySNMPNoSuchObjectError = PyObject_GetAttrString(easysnmp_exceptions_import,
@@ -3358,6 +3403,7 @@ done:
     Py_XDECREF(EasySNMPError);
     Py_XDECREF(EasySNMPConnectionError);
     Py_XDECREF(EasySNMPTimeoutError);
+    Py_XDECREF(EasySNMPNoSuchNameError);
     Py_XDECREF(EasySNMPUnknownObjectIDError);
     Py_XDECREF(EasySNMPNoSuchObjectError);
     Py_XDECREF(EasySNMPUndeterminedTypeError);
