@@ -9,7 +9,7 @@ from easysnmp.easy import (
 )
 from easysnmp.exceptions import (
     EasySNMPError, EasySNMPUnknownObjectIDError, EasySNMPNoSuchObjectError,
-    EasySNMPNoSuchInstanceError
+    EasySNMPNoSuchInstanceError, EasySNMPNoSuchNameError
 )
 
 from .fixtures import sess_v1_args, sess_v2_args, sess_v3_args
@@ -124,12 +124,13 @@ def test_snmp_get_unknown(sess_args):
 )
 def test_snmp_get_invalid_instance(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
-    # invalid object ID, so it raises the same exception for both
-    res = snmp_get('sysContact.1', **sess_args)
+    # invalid object ID, instead it excepts with noSuchName
     if sess_args['version'] == 1:
-        res.snmp_type == 'NOSUCHOBJECT'
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('sysContact.1', **sess_args)
     else:
-        res.snmp_type == 'NOSUCHINSTANCE'
+        res = snmp_get('sysContact.1', **sess_args)
+        assert res.snmp_type == 'NOSUCHINSTANCE'
 
 
 @pytest.mark.parametrize(
@@ -139,7 +140,7 @@ def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
     # invalid object ID, so it raises the same exception for both
     if sess_args['version'] == 1:
-        with pytest.raises(EasySNMPNoSuchObjectError):
+        with pytest.raises(EasySNMPNoSuchNameError):
             snmp_get('sysContact.1', abort_on_nonexistent=True, **sess_args)
     else:
         with pytest.raises(EasySNMPNoSuchInstanceError):
@@ -150,16 +151,24 @@ def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_object(sess_args):
-    res = snmp_get('iso', **sess_args)
-    assert res.snmp_type == 'NOSUCHOBJECT'
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('iso', **sess_args)
+    else:
+        res = snmp_get('iso', **sess_args)
+        assert res.snmp_type == 'NOSUCHOBJECT'
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_object_with_abort_enabled(sess_args):
-    with pytest.raises(EasySNMPNoSuchObjectError):
-        snmp_get('iso', abort_on_nonexistent=True, **sess_args)
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('iso', abort_on_nonexistent=True, **sess_args)
+    else:
+        with pytest.raises(EasySNMPNoSuchObjectError):
+            snmp_get('iso', abort_on_nonexistent=True, **sess_args)
 
 
 @pytest.mark.parametrize(
