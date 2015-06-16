@@ -8,7 +8,7 @@ from setuptools.command.test import test as TestCommand
 # Determine if a base directory has been provided with the --basedir option
 in_tree = False
 # Add compiler flags if debug is set
-compile_args = []
+compile_args = ['-Wno-unused-function']
 for arg in sys.argv:
     if arg.startswith('--debug'):
         # Note from GCC manual:
