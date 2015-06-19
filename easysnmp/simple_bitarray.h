@@ -139,11 +139,11 @@ static inline void bitarray_print_base16(bitarray *bitarray)
 
             for (j = 0; j < limb_size; j++)
             {
-                        /* mask the byte we want to print in hex */
-                        unsigned long mask = (0xFFUL) << (j * CHAR_BIT);
-                        c = (unsigned char) ((bitarray[i].limb & mask) >> (j * CHAR_BIT));
-                        printf("%02x", c);
-                    }
+                /* mask the byte we want to print in hex */
+                unsigned long mask = (0xFFUL) << (j * CHAR_BIT);
+                c = (unsigned char) ((bitarray[i].limb & mask) >> (j * CHAR_BIT));
+                printf("%02x", c);
+            }
 
             printf(" ");
         }
