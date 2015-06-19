@@ -119,9 +119,7 @@ def test_snmp_get_unknown(sess_args):
         snmp_get('sysDescripto.0', **sess_args)
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args()]
-)
+@pytest.mark.parametrize('sess_args', [sess_v1_args()])
 def test_snmp_v1_get_with_retry_no_such(sess_args):
     sess_args['retry_no_such'] = True
 
