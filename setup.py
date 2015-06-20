@@ -7,8 +7,15 @@ from setuptools.command.test import test as TestCommand
 
 # Determine if a base directory has been provided with the --basedir option
 in_tree = False
+# Add compiler flags if debug is set
+compile_args = ['-Wno-unused-function']
 for arg in sys.argv:
-    if arg.startswith('--basedir='):
+    if arg.startswith('--debug'):
+        # Note from GCC manual:
+        #       If you use multiple -O options, with or without level numbers,
+        #       the last such option is the one that is effective.
+        compile_args.extend('-Wall -O0 -g'.split())
+    elif arg.startswith('--basedir='):
         basedir = arg.split('=')[1]
         sys.argv.remove(arg)
         in_tree = True
@@ -79,7 +86,8 @@ setup(
     ext_modules=[
         Extension(
             'easysnmp.interface', ['easysnmp/interface.c'],
-            library_dirs=libdirs, include_dirs=incdirs, libraries=libs
+            library_dirs=libdirs, include_dirs=incdirs, libraries=libs,
+            extra_compile_args=compile_args
         )
     ],
     classifiers=[

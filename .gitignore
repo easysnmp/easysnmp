@@ -22,3 +22,6 @@ dist/
 
 # Documentation builds
 docs/_build/
+
+# vim stuff
+.ropeproject

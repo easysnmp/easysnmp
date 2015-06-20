@@ -9,7 +9,7 @@ from easysnmp.easy import (
 )
 from easysnmp.exceptions import (
     EasySNMPError, EasySNMPUnknownObjectIDError, EasySNMPNoSuchObjectError,
-    EasySNMPNoSuchInstanceError
+    EasySNMPNoSuchInstanceError, EasySNMPNoSuchNameError
 )
 
 from .fixtures import sess_v1_args, sess_v2_args, sess_v3_args
@@ -119,17 +119,39 @@ def test_snmp_get_unknown(sess_args):
         snmp_get('sysDescripto.0', **sess_args)
 
 
+@pytest.mark.parametrize('sess_args', [sess_v1_args()])
+def test_snmp_v1_get_with_retry_no_such(sess_args):
+    sess_args['retry_no_such'] = True
+
+    res = snmp_get(['iso', 'sysDescr.0', 'iso'], **sess_args)
+
+    assert res[0]
+    assert res[0].oid == 'iso'
+    assert res[0].snmp_type == 'NOSUCHNAME'
+
+    assert res[1]
+    assert platform.version() in res[1].value
+    assert res[1].oid == 'sysDescr'
+    assert res[1].oid_index == '0'
+    assert res[1].snmp_type == 'OCTETSTR'
+
+    assert res[2]
+    assert res[2].oid == 'iso'
+    assert res[2].snmp_type == 'NOSUCHNAME'
+
+
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_instance(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
-    # invalid object ID, so it raises the same exception for both
-    res = snmp_get('sysContact.1', **sess_args)
+    # invalid object ID, instead it excepts with noSuchName
     if sess_args['version'] == 1:
-        res.snmp_type == 'NOSUCHOBJECT'
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('sysContact.1', **sess_args)
     else:
-        res.snmp_type == 'NOSUCHINSTANCE'
+        res = snmp_get('sysContact.1', **sess_args)
+        assert res.snmp_type == 'NOSUCHINSTANCE'
 
 
 @pytest.mark.parametrize(
@@ -139,7 +161,7 @@ def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
     # invalid object ID, so it raises the same exception for both
     if sess_args['version'] == 1:
-        with pytest.raises(EasySNMPNoSuchObjectError):
+        with pytest.raises(EasySNMPNoSuchNameError):
             snmp_get('sysContact.1', abort_on_nonexistent=True, **sess_args)
     else:
         with pytest.raises(EasySNMPNoSuchInstanceError):
@@ -150,16 +172,24 @@ def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_object(sess_args):
-    res = snmp_get('iso', **sess_args)
-    assert res.snmp_type == 'NOSUCHOBJECT'
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('iso', **sess_args)
+    else:
+        res = snmp_get('iso', **sess_args)
+        assert res.snmp_type == 'NOSUCHOBJECT'
 
 
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
 def test_snmp_get_invalid_object_with_abort_enabled(sess_args):
-    with pytest.raises(EasySNMPNoSuchObjectError):
-        snmp_get('iso', abort_on_nonexistent=True, **sess_args)
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get('iso', abort_on_nonexistent=True, **sess_args)
+    else:
+        with pytest.raises(EasySNMPNoSuchObjectError):
+            snmp_get('iso', abort_on_nonexistent=True, **sess_args)
 
 
 @pytest.mark.parametrize(
@@ -184,6 +214,60 @@ def test_snmp_get_next_numeric(sess_args):
     assert res.oid_index == '0'
     assert res.value == '.1.3.6.1.4.1.8072.3.2.10'
     assert res.snmp_type == 'OBJECTID'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args()]
+)
+def test_snmp_v1_get_next_with_retry_no_such(sess_args):
+    sess_args['retry_no_such'] = True
+
+    res = snmp_get(['iso.9', 'sysDescr.0', 'iso.9'], **sess_args)
+
+    assert res[0]
+    assert res[0].value == 'NOSUCHNAME'
+    assert res[0].oid == 'iso'
+    assert res[0].oid_index == '9'
+    assert res[0].snmp_type == 'NOSUCHNAME'
+
+    assert res[1]
+    assert platform.version() in res[1].value
+    assert res[1].oid == 'sysDescr'
+    assert res[1].oid_index == '0'
+    assert res[1].snmp_type == 'OCTETSTR'
+
+    assert res[2]
+    assert res[2].value == 'NOSUCHNAME'
+    assert res[2].oid == 'iso'
+    assert res[2].oid_index == '9'
+    assert res[2].snmp_type == 'NOSUCHNAME'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_get_next_end_of_mib_view(sess_args):
+    if sess_args['version'] == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            snmp_get_next(['iso.9', 'sysDescr', 'iso.9'], **sess_args)
+    else:
+        res = snmp_get_next(['iso.9', 'sysDescr', 'iso.9'], **sess_args)
+
+        assert res[0]
+        assert res[0].value == 'ENDOFMIBVIEW'
+        assert res[0].oid == 'iso.9'
+        assert res[0].snmp_type == 'ENDOFMIBVIEW'
+
+        assert res[1]
+        assert platform.version() in res[1].value
+        assert res[1].oid == 'sysDescr'
+        assert res[1].oid_index == '0'
+        assert res[1].snmp_type == 'OCTETSTR'
+
+        assert res[2]
+        assert res[2].value == 'ENDOFMIBVIEW'
+        assert res[2].oid == 'iso.9'
+        assert res[2].snmp_type == 'ENDOFMIBVIEW'
 
 
 @pytest.mark.parametrize(
