@@ -55,7 +55,7 @@
 ## [0.2] - 2015-06-02
 [0.2]: https://github.com/fgimian/easysnmp/tree/0.2
 
-* Introduced support for Python 3.2, 3.3, 3.4.
+* Introduced support for Python 3.x.
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.1.1...0.2)
 
@@ -95,13 +95,13 @@
   Net-SNMP 5.7.2. ([PR#2])
 
 - Import and overhaul of the original Net-SNMP Python bindings:
-    - README.md: an overview and quickstart of the project
+    - Wrote a README that provides an overview and quickstart of the project
     - Sphinx generated documentation which is also hosted on readthedocs.
-    - conform to PEP8 using `flake8`
-    - coverage support via coveralls.io (integrated into travis)
-    - a simple pythonic interface which resembles the use of the Net-SNMP CLI
+    - Conform to PEP8 using `flake8`
+    - Coverage support via coveralls.io (integrated into travis)
+    - A simple pythonic interface which resembles the use of the Net-SNMP CLI
       client utilities.
-    - python package uploaded to PyPI
+    - Python package uploaded to PyPI
 
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/6c0f8c32709fc240f57934ed50e31bf05af04e20...0.1)
