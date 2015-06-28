@@ -1,11 +1,5 @@
 #include <Python.h>
 
-#if PY_VERSION_HEX < 0x02050000
-typedef int Py_ssize_t;
-#define PY_SSIZE_T_MAX (INT_MAX)
-#define PY_SSIZE_T_MIN (INT_MIN)
-#endif
-
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/snmpv3_api.h>
