@@ -42,7 +42,8 @@
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.1...0.2.2)
 
-## [0.2.1](https://github.com/fgimian/easysnmp/tree/0.2.1) (2015-06-02)
+## [0.2.1] - 2015-06-02
+[0.2.1]: https://github.com/fgimian/easysnmp/tree/0.2.1
 
 * Various fixes to the C interface including better exception handling and
   removal of remnant debug code.
