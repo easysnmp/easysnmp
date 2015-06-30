@@ -1,6 +1,6 @@
-# Easy SNMP Change Log
+# Easy SNMP Change Log #
 
-## [Unreleased](https://github.com/fgimian/easysnmp/tree/HEAD)
+## [0.2.3](https://github.com/fgimian/easysnmp/tree/0.2.3) - 2015-06-30 ##
 
 * Introduce this changelog.
 
@@ -29,10 +29,9 @@
 [PR#13]: https://github.com/fgimian/easysnmp/pull/13
 [5604a4bb]: https://github.com/fgimian/easysnmp/commit/5604a4bbe72844295e966af270469aeccad19e98
 
-[Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.2...HEAD)
+[Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.2...0.2.3)
 
-## [0.2.2] - 2015-06-03
-[0.2.2]: https://github.com/fgimian/easysnmp/tree/0.2.2
+## [0.2.2](https://github.com/fgimian/easysnmp/tree/0.2.2) - 2015-06-03 ##
 
 * Cosmetic fixes to the codebase.
 
@@ -42,8 +41,7 @@
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.1...0.2.2)
 
-## [0.2.1] - 2015-06-02
-[0.2.1]: https://github.com/fgimian/easysnmp/tree/0.2.1
+## [0.2.1](https://github.com/fgimian/easysnmp/tree/0.2.1) - 2015-06-02 ##
 
 * Various fixes to the C interface including better exception handling and
   removal of remnant debug code.
@@ -53,15 +51,13 @@
 [71c567f9]: https://github.com/fgimian/easysnmp/commit/71c567f9ae0cabe8eee970ed0b102956b8c73565
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2...0.2.1)
 
-## [0.2] - 2015-06-02
-[0.2]: https://github.com/fgimian/easysnmp/tree/0.2
+## [0.2](https://github.com/fgimian/easysnmp/tree/0.2) - 2015-06-02 ##
 
 * Introduced support for Python 3.x.
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.1.1...0.2)
 
-## [0.1.1] - 2015-06-02
-[0.1.1]: https://github.com/fgimian/easysnmp/tree/0.1.1
+## [0.1.1](https://github.com/fgimian/easysnmp/tree/0.1.1) - 2015-06-02 ##
 
 * Added PyPI documentation. ([da16cd74])
 
@@ -79,18 +75,21 @@
 [15fce1ea]: https://github.com/fgimian/easysnmp/commit/15fce1ea7adcee4dc86d1a42271f123e749a0241
 [427a9dfd]: https://github.com/fgimian/easysnmp/commit/427a9dfd4740ce22f2af6bee617fe7a78a7bbcae
 
-## [0.1] - 2015-05-30
-[0.1]: https://github.com/fgimian/easysnmp/tree/0.1
+## [0.1](https://github.com/fgimian/easysnmp/tree/0.1) - 2015-05-30 ##
 
 - Raise Python exceptions in the C interface where necessary.
 
 - Bug fixes to the C interface when specifying context engine session ID
-  and the value returned when requesting an invalid OID. ([PR#6])
+  and the value returned when requesting an invalid OID.
+  ([PR#6](https://github.com/fgimian/easysnmp/pull/6))
 
 - Implement python logging in the C interface and rewrite existing
-  fprintf diagnostics to use the logging interface. ([PR#4])
+  fprintf diagnostics to use the logging interface.
+  ([PR#4](https://github.com/fgimian/easysnmp/pull/4))
 
-- Unit tests rewritten in pytest and travis-ci integration. ([PR#2], [b2018587])
+- Unit tests rewritten in pytest and travis-ci integration.
+  ([PR#2](https://github.com/fgimian/easysnmp/pull/2),
+   [b2018587](https://github.com/fgimian/easysnmp/commit/b20185875feae252b7f912f693156fca1d88b3d0))
 
 - Implement `compat_netsnmp_memdup()` to fix C interface to compile against
   Net-SNMP 5.7.2. ([PR#2])
@@ -104,10 +103,4 @@
       client utilities.
     - Python package uploaded to PyPI
 
-
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/6c0f8c32709fc240f57934ed50e31bf05af04e20...0.1)
-
-[PR#6]: https://github.com/fgimian/easysnmp/pull/6
-[PR#4]: https://github.com/fgimian/easysnmp/pull/4
-[PR#2]: https://github.com/fgimian/easysnmp/pull/2
-[b2018587]: https://github.com/fgimian/easysnmp/commit/b20185875feae252b7f912f693156fca1d88b3d0
