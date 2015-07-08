@@ -72,7 +72,7 @@ except IOError:
 
 setup(
     name='easysnmp',
-    version='0.2.4',
+    version='0.2.5-dev',
     description='A blazingly fast and Pythonic SNMP library based on the '
                 'official Net-SNMP bindings',
     long_description=long_description,
