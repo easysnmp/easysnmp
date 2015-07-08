@@ -2,7 +2,13 @@
 
 ## [Unreleased](https://github.com/fgimian/easysnmp/tree/HEAD) ##
 
-[Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.3...HEAD)
+[Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.4...HEAD)
+
+## [0.2.4](https://github.com/fgimian/easysnmp/tree/0.2.4) - 2015-07-09 ##
+
+* Ensured that the simple bitarray header is correctly referenced.
+
+[Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.3...0.2.4)
 
 ## [0.2.3](https://github.com/fgimian/easysnmp/tree/0.2.3) - 2015-06-30 ##
 
