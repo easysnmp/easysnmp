@@ -8,7 +8,7 @@ def snmp_get(oids, **session_kargs):
     Perform an SNMP GET operation to retrieve a particular piece of
     information
 
-    :param oids: you may pass in a list of OIDs or single item; eoch item
+    :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
                  (e.g. 'sysDescr.0') or may be a tuple containing the
                  name as its first item and index as its second
@@ -64,7 +64,7 @@ def snmp_get_next(oids, **session_kargs):
     Uses an SNMP GETNEXT operation to retrieve the next variable after
     the chosen item
 
-    :param oids: you may pass in a list of OIDs or single item; eoch item
+    :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
                  (e.g. 'sysDescr.0') or may be a tuple containing the
                  name as its first item and index as its second
@@ -83,7 +83,7 @@ def snmp_get_bulk(oids, non_repeaters, max_repetitions, **session_kargs):
     Performs a bulk SNMP GET operation to retrieve multiple pieces of
     information in a single packet
 
-    :param oids: you may pass in a list of OIDs or single item; eoch item
+    :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
                  (e.g. 'sysDescr.0') or may be a tuple containing the
                  name as its first item and index as its second
