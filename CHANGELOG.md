@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/fgimian/easysnmp/tree/HEAD) ##
 
+* interface.c: remove printf debug statements when making SNMPv1 fixes ([320df28])
+
+[320df28]: https://github.com/fgimian/easysnmp/commit/320df2882bbc5e3f57a7e71164497b063baa855e
+
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.4...HEAD)
 
 ## [0.2.4](https://github.com/fgimian/easysnmp/tree/0.2.4) - 2015-07-09 ##
