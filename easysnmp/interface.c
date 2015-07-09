@@ -2109,7 +2109,6 @@ done:
     /* the pointers will be equal if we didn't allocate additional space */
     if (invalid_oids != snmpv1_invalid_oids)
     {
-        printf("free bitarray\n");
         bitarray_free(invalid_oids);
     }
 
@@ -2445,7 +2444,6 @@ done:
     /* the pointers will be equal if we didn't allocate additional space */
     if (invalid_oids != snmpv1_invalid_oids)
     {
-        printf("free bitarray\n");
         bitarray_free(invalid_oids);
     }
 
