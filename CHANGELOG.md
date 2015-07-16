@@ -2,9 +2,13 @@
 
 ## [Unreleased](https://github.com/fgimian/easysnmp/tree/HEAD) ##
 
-* interface.c: remove printf debug statements when making SNMPv1 fixes ([320df28])
+* support Net-SNMP 5.6.x to add support for OSX. ([#12], [4e121e9])
+
+* interface.c: remove printf debug statements when making SNMPv1 fixes. ([320df28])
 
 [320df28]: https://github.com/fgimian/easysnmp/commit/320df2882bbc5e3f57a7e71164497b063baa855e
+[#12]: https://github.com/fgimian/easysnmp/issues/12
+[4e121e9]: https://github.com/fgimian/easysnmp/commit/4e121e9f9b4613485bcb8f9bab48b4528a223db3
 
 [Full Changelog](https://github.com/fgimian/easysnmp/compare/0.2.4...HEAD)
 

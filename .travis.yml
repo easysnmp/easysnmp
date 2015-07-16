@@ -8,6 +8,8 @@ python:
   - 3.4
 
 env:
+  - NET_SNMP_VERSION=5.6
+  - NET_SNMP_VERSION=5.6.2.1
   - NET_SNMP_VERSION=5.7.2
   - NET_SNMP_VERSION=5.7.3
 
@@ -48,7 +50,7 @@ before_install:
   - sudo apt-get install -y snmp-mibs-downloader
 
   # Start up SNMPD with our test config
-  - snmpd -c tests/snmpd.conf
+  - snmpd -C -c tests/snmpd.conf
 
   # Ensure that all mibs are loaded by the SNMP client/client library
   # SNMP will prefer $HOME/.snmp/snmp.conf over /usr/local/etc/snmp.conf
