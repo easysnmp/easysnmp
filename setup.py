@@ -24,10 +24,8 @@ for arg in sys.argv:
 if in_tree:
     netsnmp_libs = os.popen(basedir + '/net-snmp-config --libs').read()
 
-    libdir = os.popen(
-        basedir + '/net-snmp-config --build-lib-dirs ' + basedir).read()
-    incdir = os.popen(
-        basedir + '/net-snmp-config --build-includes ' + basedir).read()
+    libdirs = os.popen(basedir + '/net-snmp-config --build-lib-dirs').read()
+    incdirs = os.popen(basedir + '/net-snmp-config --build-includes').read()
 
     libs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-l')]   # noqa
     libdirs = [flag[2:] for flag in shlex.split(libdirs) if flag.startswith('-L')]     # noqa
