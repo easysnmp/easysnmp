@@ -24,12 +24,12 @@ for arg in sys.argv:
 if in_tree:
     netsnmp_libs = os.popen(basedir + '/net-snmp-config --libs').read()
 
-    libdirs = os.popen(basedir + '/net-snmp-config --build-lib-dirs').read()
-    incdirs = os.popen(basedir + '/net-snmp-config --build-includes').read()
+    libdirs = os.popen('{0}/net-snmp-config --build-lib-dirs {1}'.format(basedir, basedir)).read()  # noqa
+    incdirs = os.popen('{0}/net-snmp-config --build-includes {1}'.format(basedir, basedir)).read()  # noqa
 
-    libs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-l')]   # noqa
-    libdirs = [flag[2:] for flag in shlex.split(libdirs) if flag.startswith('-L')]     # noqa
-    incdirs = [flag[2:] for flag in shlex.split(incdirs) if flag.startswith('-I')]     # noqa
+    libs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-l')]  # noqa
+    libdirs = [flag[2:] for flag in shlex.split(libdirs) if flag.startswith('-L')]    # noqa
+    incdirs = [flag[2:] for flag in shlex.split(incdirs) if flag.startswith('-I')]    # noqa
 
 # Otherwise, we use the system-installed SNMP libraries
 else:
