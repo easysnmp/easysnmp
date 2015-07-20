@@ -175,6 +175,36 @@ static int __translate_appl_type(char *typestr)
         return TYPE_UNKNOWN;
     }
 
+    /*
+     * looking at a one-char string, so use snmpset(1)
+     * type specification that allows for single characters
+     * (note: 'd' for decimal string and 'x' for hex is missing)
+     */
+    if (typestr[1] == '\0')
+    {
+        switch (typestr[0])
+        {
+            case 'i':
+                return  TYPE_INTEGER;
+            case 'u':
+                return  TYPE_UNSIGNED32;
+            case 's':
+                return  TYPE_OCTETSTR;
+            case 'n':
+                return  TYPE_NULL;
+            case 'o':
+                return  TYPE_OBJID;
+            case 't':
+                return  TYPE_TIMETICKS;
+            case 'a':
+                return  TYPE_IPADDR;
+            case 'b':
+                return  TYPE_BITSTRING;
+            default:
+                return TYPE_UNKNOWN;
+        }
+    }
+
     if (!strncasecmp(typestr, "INTEGER32", 8))
     {
         return TYPE_INTEGER32;
