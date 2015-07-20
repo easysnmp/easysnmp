@@ -303,9 +303,89 @@ def test_snmp_set_string(sess_args):
 @pytest.mark.parametrize(
     'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
 )
+def test_snmp_set_string_long_type(sess_args):
+    res = snmp_get(('sysLocation', '0'), **sess_args)
+    assert res.oid == 'sysLocation'
+    assert res.oid_index == '0'
+    assert res.value != 'my newer location'
+    assert res.snmp_type == 'OCTETSTR'
+
+    success = snmp_set(
+        ('sysLocation', '0'), 'my newer location', 'OCTETSTR', **sess_args
+    )
+    assert success
+
+    res = snmp_get(('sysLocation', '0'), **sess_args)
+    assert res.oid == 'sysLocation'
+    assert res.oid_index == '0'
+    assert res.value == 'my newer location'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_string_short_type(sess_args):
+    res = snmp_get(('sysLocation', '0'), **sess_args)
+    assert res.oid == 'sysLocation'
+    assert res.oid_index == '0'
+    assert res.value != 'my newer location'
+    assert res.snmp_type == 'OCTETSTR'
+
+    success = snmp_set(
+        ('sysLocation', '0'), 'my newer location', 's', **sess_args
+    )
+    assert success
+
+    res = snmp_get(('sysLocation', '0'), **sess_args)
+    assert res.oid == 'sysLocation'
+    assert res.oid_index == '0'
+    assert res.value == 'my newer location'
+    assert res.snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
 def test_snmp_set_integer(sess_args):
     success = snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, **sess_args
+    )
+    assert success
+
+    res = snmp_get(
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), **sess_args
+    )
+    assert res.oid == 'nsCacheTimeout'
+    assert res.oid_index == '1.3.6.1.2.1.2.2'
+    assert res.value == '65'
+    assert res.snmp_type == 'INTEGER'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_integer_long_type(sess_args):
+    success = snmp_set(
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, 'INTEGER', **sess_args
+    )
+    assert success
+
+    res = snmp_get(
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), **sess_args
+    )
+    assert res.oid == 'nsCacheTimeout'
+    assert res.oid_index == '1.3.6.1.2.1.2.2'
+    assert res.value == '65'
+    assert res.snmp_type == 'INTEGER'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_set_integer_short_type(sess_args):
+    success = snmp_set(
+        ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, 'i', **sess_args
     )
     assert success
 
