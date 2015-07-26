@@ -1840,7 +1840,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2170,7 +2171,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2510,7 +2512,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2911,7 +2914,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
