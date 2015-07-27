@@ -124,6 +124,15 @@ static inline void bitarray_free(bitarray *bitarray)
     }
 }
 
+static inline void bitarray_buf_init(void *buf, size_t buf_size)
+{
+        bitarray *ba = buf;
+
+        size_t nbits = (buf_size - sizeof(bitarray_word)) * CHAR_BIT;
+
+        ba[0].limb = nbits;
+}
+
 static inline void bitarray_print_base16(bitarray *bitarray)
 {
     bitarray_word i;
