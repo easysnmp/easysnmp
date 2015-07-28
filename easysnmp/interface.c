@@ -134,7 +134,10 @@ void __libraries_init(char *appname)
     have_inited = 1;
 
     snmp_set_quick_print(1);
-    snmp_enable_stderrlog();
+
+    /* completely disable logging otherwise it will default to stderr */
+    netsnmp_register_loghandler(NETSNMP_LOGHANDLER_NONE, 0);
+
     init_snmp(appname);
 
     netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
@@ -1406,36 +1409,6 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     Py_DECREF(tmp_for_conversion);
 }
 
-/*
- * We create a custom little wrapper around snmp_sess_open which disables
- * stderr during the call to avoid errors printed to stderr such as:
- *
- * getaddrinfo: <hostname> Name or service not known
- *
- * These errors are already handled by Python exceptions are are not needed.
- */
-void *snmp_sess_open_quiet(SnmpSession *session)
-{
-    int original_stderr;
-    int dev_null;
-    SnmpSession *ss = NULL;
-
-    // Redirect stderr to /dev/null
-    original_stderr = dup(STDERR_FILENO);
-    dev_null = open("/dev/null", O_WRONLY);
-    dup2(dev_null, STDERR_FILENO);
-    close(dev_null);
-
-    // Open the session
-    ss = snmp_sess_open(session);
-
-    // Restore stderr output
-    dup2(original_stderr, STDERR_FILENO);
-    close(original_stderr);
-
-    return ss;
-}
-
 static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 {
     int version;
@@ -1453,8 +1426,6 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     {
         return NULL;
     }
-
-    __libraries_init("python");
 
     snmp_sess_init(&session);
 
@@ -1491,7 +1462,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     session.timeout = timeout; /* 1000000L */
     session.authenticator = NULL;
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (ss == NULL)
     {
@@ -1544,7 +1515,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    __libraries_init("python");
     snmp_sess_init(&session);
 
     if (version == 3)
@@ -1673,7 +1643,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         }
     }
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (ss == NULL)
     {
@@ -1736,7 +1706,6 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
         return NULL;
     }
 
-    __libraries_init("python");
     snmp_sess_init(&session);
 
     session.peername = peer;
@@ -1786,7 +1755,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
                          netsnmp_transport_create_config("trust_cert",
                                                          trust_cert));
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (!ss)
     {
@@ -3632,6 +3601,9 @@ PyMODINIT_FUNC initinterface(void)
     {
         goto done;
     }
+
+    /* initialise the netsnmp library */
+    __libraries_init("python");
 
     py_log_msg(DEBUG, "initialised easysnmp.interface");
 
