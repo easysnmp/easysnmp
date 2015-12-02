@@ -1,9 +1,9 @@
 Source: python-easysnmp
 Maintainer: Norman Ovenseri <norman@uber.com>
-Build-Depends: debhelper (>= 7), python (>= 2.7), python-dev, python-setuptools, python-pip
+Build-Depends: debhelper (>= 7), python (>= 2.7), python-dev, libsnmp-dev, python-setuptools, python-pip
 X-Python-Version: 2.7
 
 Package: python-easysnmp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dev, snmp, libsnmp-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dev, snmp
 Description: EasySNMP uses Net-SNMP bindings for performant snmp commands
