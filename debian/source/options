@@ -1,0 +1,4 @@
+extend-diff-ignore = '(.*\.(pyc))$'
+extend-diff-ignore = '(.*egg-info\/)'
+extend-diff-ignore = '(.*DISTRIBUTION\/)'
+extend-diff-ignore = '(.*build\/)'

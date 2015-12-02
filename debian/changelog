@@ -1,0 +1,5 @@
+python-easysnmp (0.2.4) stable; urgency=medium
+
+  * First stable commit
+
+ -- Norman Ovenseri <norman@uber.com>  Tue, 1 Dec 2015 18:55:00 -0800
