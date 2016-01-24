@@ -7,5 +7,5 @@ X-Python-Version: 2.7
 Package: python-easysnmp
 Architecture: all
 Section: utils
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, snmp
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, snmp, gcc, snmp-mibs-downloader
 Description: EasySNMP uses Net-SNMP bindings for performant snmp commands
