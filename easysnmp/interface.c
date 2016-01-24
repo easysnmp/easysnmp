@@ -134,7 +134,10 @@ void __libraries_init(char *appname)
     have_inited = 1;
 
     snmp_set_quick_print(1);
-    snmp_enable_stderrlog();
+
+    /* completely disable logging otherwise it will default to stderr */
+    netsnmp_register_loghandler(NETSNMP_LOGHANDLER_NONE, 0);
+
     init_snmp(appname);
 
     netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
@@ -173,6 +176,36 @@ static int __translate_appl_type(char *typestr)
     if (typestr == NULL || *typestr == '\0')
     {
         return TYPE_UNKNOWN;
+    }
+
+    /*
+     * looking at a one-char string, so use snmpset(1)
+     * type specification that allows for single characters
+     * (note: 'd' for decimal string and 'x' for hex is missing)
+     */
+    if (typestr[1] == '\0')
+    {
+        switch (typestr[0])
+        {
+            case 'i':
+                return  TYPE_INTEGER;
+            case 'u':
+                return  TYPE_UNSIGNED32;
+            case 's':
+                return  TYPE_OCTETSTR;
+            case 'n':
+                return  TYPE_NULL;
+            case 'o':
+                return  TYPE_OBJID;
+            case 't':
+                return  TYPE_TIMETICKS;
+            case 'a':
+                return  TYPE_IPADDR;
+            case 'b':
+                return  TYPE_BITSTRING;
+            default:
+                return TYPE_UNKNOWN;
+        }
     }
 
     if (!strncasecmp(typestr, "INTEGER32", 8))
@@ -1376,36 +1409,6 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     Py_DECREF(tmp_for_conversion);
 }
 
-/*
- * We create a custom little wrapper around snmp_sess_open which disables
- * stderr during the call to avoid errors printed to stderr such as:
- *
- * getaddrinfo: <hostname> Name or service not known
- *
- * These errors are already handled by Python exceptions are are not needed.
- */
-void *snmp_sess_open_quiet(SnmpSession *session)
-{
-    int original_stderr;
-    int dev_null;
-    SnmpSession *ss = NULL;
-
-    // Redirect stderr to /dev/null
-    original_stderr = dup(STDERR_FILENO);
-    dev_null = open("/dev/null", O_WRONLY);
-    dup2(dev_null, STDERR_FILENO);
-    close(dev_null);
-
-    // Open the session
-    ss = snmp_sess_open(session);
-
-    // Restore stderr output
-    dup2(original_stderr, STDERR_FILENO);
-    close(original_stderr);
-
-    return ss;
-}
-
 static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 {
     int version;
@@ -1423,8 +1426,6 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     {
         return NULL;
     }
-
-    __libraries_init("python");
 
     snmp_sess_init(&session);
 
@@ -1461,7 +1462,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     session.timeout = timeout; /* 1000000L */
     session.authenticator = NULL;
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (ss == NULL)
     {
@@ -1514,7 +1515,6 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    __libraries_init("python");
     snmp_sess_init(&session);
 
     if (version == 3)
@@ -1643,7 +1643,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         }
     }
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (ss == NULL)
     {
@@ -1706,7 +1706,6 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
         return NULL;
     }
 
-    __libraries_init("python");
     snmp_sess_init(&session);
 
     session.peername = peer;
@@ -1756,7 +1755,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
                          netsnmp_transport_create_config("trust_cert",
                                                          trust_cert));
 
-    ss = snmp_sess_open_quiet(&session);
+    ss = snmp_sess_open(&session);
 
     if (!ss)
     {
@@ -1810,7 +1809,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2109,7 +2109,6 @@ done:
     /* the pointers will be equal if we didn't allocate additional space */
     if (invalid_oids != snmpv1_invalid_oids)
     {
-        printf("free bitarray\n");
         bitarray_free(invalid_oids);
     }
 
@@ -2141,7 +2140,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2445,7 +2445,6 @@ done:
     /* the pointers will be equal if we didn't allocate additional space */
     if (invalid_oids != snmpv1_invalid_oids)
     {
-        printf("free bitarray\n");
         bitarray_free(invalid_oids);
     }
 
@@ -2482,7 +2481,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -2883,7 +2883,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
-    u_char str_buf[STR_BUF_SIZE], *str_bufp = str_buf;
+    u_char str_buf[STR_BUF_SIZE];
+    u_char *str_bufp = str_buf;
     size_t str_buf_len = sizeof(str_buf);
     size_t out_len = 0;
     int buf_over = 0;
@@ -3600,6 +3601,9 @@ PyMODINIT_FUNC initinterface(void)
     {
         goto done;
     }
+
+    /* initialise the netsnmp library */
+    __libraries_init("python");
 
     py_log_msg(DEBUG, "initialised easysnmp.interface");
 

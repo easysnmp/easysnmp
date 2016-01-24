@@ -1,6 +1,6 @@
 import os
-import re
 import sys
+import shlex
 
 from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
@@ -24,21 +24,19 @@ for arg in sys.argv:
 if in_tree:
     netsnmp_libs = os.popen(basedir + '/net-snmp-config --libs').read()
 
-    libdir = os.popen(
-        basedir + '/net-snmp-config --build-lib-dirs ' + basedir).read()
-    incdir = os.popen(
-        basedir + '/net-snmp-config --build-includes ' + basedir).read()
+    libdirs = os.popen('{0}/net-snmp-config --build-lib-dirs {1}'.format(basedir, basedir)).read()  # noqa
+    incdirs = os.popen('{0}/net-snmp-config --build-includes {1}'.format(basedir, basedir)).read()  # noqa
 
-    libs = re.findall(r' -l(\S+)', netsnmp_libs)
-    libdirs = re.findall(r' -L(\S+)', libdir)
-    incdirs = re.findall(r' -I(\S+)', incdir)
+    libs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-l')]  # noqa
+    libdirs = [flag[2:] for flag in shlex.split(libdirs) if flag.startswith('-L')]    # noqa
+    incdirs = [flag[2:] for flag in shlex.split(incdirs) if flag.startswith('-I')]    # noqa
 
 # Otherwise, we use the system-installed SNMP libraries
 else:
     netsnmp_libs = os.popen('net-snmp-config --libs').read()
 
-    libs = re.findall(r' -l(\S+)', netsnmp_libs)
-    libdirs = re.findall(r' -L(\S+)', netsnmp_libs)
+    libs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-l')]     # noqa
+    libdirs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-L')]  # noqa
     incdirs = []
 
 
@@ -72,7 +70,7 @@ except IOError:
 
 setup(
     name='easysnmp',
-    version='0.2.4',
+    version='0.2.5-dev',
     description='A blazingly fast and Pythonic SNMP library based on the '
                 'official Net-SNMP bindings',
     long_description=long_description,

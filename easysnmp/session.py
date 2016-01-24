@@ -298,7 +298,7 @@ class Session(object):
         Perform an SNMP GET operation using the prepared session to
         retrieve a particular piece of information
 
-        :param oids: you may pass in a list of OIDs or single item; eoch item
+        :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
@@ -387,7 +387,7 @@ class Session(object):
         Uses an SNMP GETNEXT operation using the prepared session to
         retrieve the next variable after the chosen item
 
-        :param oids: you may pass in a list of OIDs or single item; eoch item
+        :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
@@ -415,7 +415,7 @@ class Session(object):
         Performs a bulk SNMP GET operation using the prepared session to
         retrieve multiple pieces of information in a single packet
 
-        :param oids: you may pass in a list of OIDs or single item; eoch item
+        :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
                      (e.g. 'sysDescr.0') or may be a tuple containing the
                      name as its first item and index as its second
