@@ -1,5 +1,12 @@
+python-easysnmp (0.2.5) stable; urgency=medium
+
+  * Implemented bulk walk for up to 10X fast walk
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 24 Jan 2016 18:25:00 -0800
+
 python-easysnmp (0.2.4) stable; urgency=medium
 
   * First stable commit
 
  -- Norman Ovenseri <norman@uber.com>  Tue, 1 Dec 2015 18:55:00 -0800
+

@@ -410,7 +410,7 @@ class Session(object):
         # Return a list or single item depending on what was passed in
         return list(varlist) if is_list else varlist[0]
 
-    def get_bulk(self, oids, non_repeaters, max_repetitions):
+    def get_bulk(self, oids, non_repeaters=0, max_repetitions=10):
         """
         Performs a bulk SNMP GET operation using the prepared session to
         retrieve multiple pieces of information in a single packet
@@ -472,6 +472,33 @@ class Session(object):
 
         # Return a list of variables
         return list(varlist)
+
+    def bulkwalk(self, oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10):
+        """
+        Uses SNMP GETBULK operation using the prepared session to
+        automatically retrieve multiple pieces of information in an OID
+
+        :param oids: you may pass in a single item (multiple values currently
+                     experimental) which may be a string representing the
+                     entire OID (e.g. 'sysDescr.0') or may be a tuple
+                     containing the name as its first item and index as its
+                     second (e.g. ('sysDescr', 0))
+        :return: a list of SNMPVariable objects containing the values that
+                 were retrieved via SNMP
+        """
+
+        # Build our variable bindings for the C interface
+        varlist, _ = build_varlist(oids)
+
+        # Perform the SNMP walk using GETNEXT operations
+        interface.bulkwalk(self, non_repeaters, max_repetitions, varlist)
+
+        # Validate the variable list returned
+        if self.abort_on_nonexistent:
+            validate_results(varlist)
+
+        # Return a list of variables
+        return varlist
 
     def __del__(self):
         """Deletes the session and frees up memory"""
