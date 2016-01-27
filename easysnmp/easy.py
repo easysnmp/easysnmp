@@ -107,11 +107,11 @@ def snmp_walk(oids='.1.3.6.1.2.1', **session_kargs):
     Uses SNMP GETNEXT operation to automatically retrieve multiple
     pieces of information in an OID for you
 
-    :param oids: you may pass in a single item (multiple values currently
-                 experimental) which may be a string representing the
-                 entire OID (e.g. 'sysDescr.0') or may be a tuple
-                 containing the name as its first item and index as its
-                 second (e.g. ('sysDescr', 0))
+    :param oids: you may pass in a single item
+                 * string representing the
+                 entire OID (e.g. 'sysDescr.0')
+                 * tuple (name, index) (e.g. ('sysDescr', 0))
+                 * list of OIDs
     :param session_kargs: keyword arguments which will be sent used when
                           constructing the session for this operation;
                           all parameters in the Session class are supported
@@ -134,6 +134,11 @@ def snmp_bulkwalk(
                  entire OID (e.g. 'sysDescr.0')
                  * tuple (name, index) (e.g. ('sysDescr', 0))
                  * list of OIDs
+    :param non_repeaters: the number of objects that are only expected to
+                          return a single GETNEXT instance, not multiple
+                          instances
+    :param max_repetitions: the number of objects that should be returned
+                            for all the repeating OIDs
     :return: a list of SNMPVariable objects containing the values that
              were retrieved via SNMP
     """

@@ -1,7 +1,8 @@
 python-easysnmp (1.0) stable; urgency=medium
 
   * Implemented bulk walk for up to 30X faster walk
-  * Matching bulkwalk and walk code
+  * bulkwalk and walk support list of oids
+  * Matching bulkwalk and walk code, which fixes memory leak and simplifies code.
   * Added/changed logging code in interface.c for easier debug
 
  -- Norman Ovenseri <norman@uber.com>  Sun, 24 Jan 2016 18:25:00 -0800
