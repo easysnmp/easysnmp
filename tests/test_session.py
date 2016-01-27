@@ -364,3 +364,62 @@ def test_session_walk_all(sess):
         assert res[5].oid_index == '0'
         assert res[5].value == 'my original location'
         assert res[5].snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v2(), sess_v3()])
+def test_session_bulkwalk(sess):
+    res = sess.bulkwalk('system')
+
+    assert len(res) >= 7
+
+    assert res[0].oid == 'sysDescr'
+    assert res[0].oid_index == '0'
+    assert platform.version() in res[0].value
+    assert res[0].snmp_type == 'OCTETSTR'
+
+    assert res[3].oid == 'sysContact'
+    assert res[3].oid_index == '0'
+    assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[3].snmp_type == 'OCTETSTR'
+
+    assert res[4].oid == 'sysName'
+    assert res[4].oid_index == '0'
+    assert res[4].value == platform.node()
+    assert res[4].snmp_type == 'OCTETSTR'
+
+    assert res[5].oid == 'sysLocation'
+    assert res[5].oid_index == '0'
+    assert res[5].value == 'my original location'
+    assert res[5].snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize('sess', [sess_v2(), sess_v3()])
+def test_session_bulkwalk_all(sess):
+    # TODO: Determine why walking iso doesn't work for SNMP v1
+    if sess.version == 1:
+        with pytest.raises(EasySNMPNoSuchNameError):
+            sess.bulkwalk('.')
+    else:
+        res = sess.bulkwalk('.')
+
+        assert len(res) > 0
+
+        assert res[0].oid == 'sysDescr'
+        assert res[0].oid_index == '0'
+        assert platform.version() in res[0].value
+        assert res[0].snmp_type == 'OCTETSTR'
+
+        assert res[3].oid == 'sysContact'
+        assert res[3].oid_index == '0'
+        assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
+        assert res[3].snmp_type == 'OCTETSTR'
+
+        assert res[4].oid == 'sysName'
+        assert res[4].oid_index == '0'
+        assert res[4].value == platform.node()
+        assert res[4].snmp_type == 'OCTETSTR'
+
+        assert res[5].oid == 'sysLocation'
+        assert res[5].oid_index == '0'
+        assert res[5].value == 'my original location'
+        assert res[5].snmp_type == 'OCTETSTR'

@@ -473,16 +473,18 @@ class Session(object):
         # Return a list of variables
         return list(varlist)
 
-    def bulkwalk(self, oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10):
+    def bulkwalk(
+        self, oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10
+    ):
         """
         Uses SNMP GETBULK operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID
 
-        :param oids: you may pass in a single item (multiple values currently
-                     experimental) which may be a string representing the
-                     entire OID (e.g. 'sysDescr.0') or may be a tuple
-                     containing the name as its first item and index as its
-                     second (e.g. ('sysDescr', 0))
+        :param oids: you may pass in a single item
+                     * string representing the
+                     entire OID (e.g. 'sysDescr.0')
+                     * tuple (name, index) (e.g. ('sysDescr', 0))
+                     * list of OIDs
         :return: a list of SNMPVariable objects containing the values that
                  were retrieved via SNMP
         """
