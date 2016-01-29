@@ -1762,9 +1762,10 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args) {
 
         py_log_msg(DEBUG, "netsnmp_get: str_buf: %s", str_buf);
 
+        py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
         __get_label_iid((char *)str_buf, &tag, &iid, getlabel_flag);
 
-        py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
+        py_netsnmp_attr_set_string(varbind, "root_oid", tag, STRLEN(tag));
         py_netsnmp_attr_set_string(varbind, "oid_index", iid, STRLEN(iid));
 
         __get_type_str(type, type_str, 1);
@@ -2043,6 +2044,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args) {
 
         py_log_msg(DEBUG, "netsnmp_getnext: str_buf: %s", str_buf);
 
+        py_netsnmp_attr_set_string(varbind, "root_oid", tag, STRLEN(tag));
         __get_label_iid((char *)str_buf, &tag, &iid, getlabel_flag);
 
         py_log_msg(DEBUG, "netsnmp_getnext: filling response: %s:%s", tag, iid);
@@ -2128,6 +2130,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
   int len;
   oid **oid_arr = NULL;
   int *oid_arr_len = NULL;
+  char **initial_oid_str_arr = NULL;
   char **oid_str_arr = NULL;
   char **oid_idx_str_arr = NULL;
   int type;
@@ -2199,6 +2202,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
 
     oid_arr_len = calloc(varlist_len, sizeof(int));
     oid_arr = calloc(varlist_len, sizeof(oid *));
+    initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
     oid_str_arr = calloc(varlist_len, sizeof(char *));
     oid_idx_str_arr = calloc(varlist_len, sizeof(char *));
 
@@ -2216,6 +2220,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
                                  NULL) >= 0 &&
           py_netsnmp_attr_string(varbind, "oid_index",
                                  &oid_idx_str_arr[varlist_ind], NULL) >= 0) {
+
+        initial_oid_str_arr[varlist_ind] = oid_str_arr[varlist_ind];
 
         py_log_msg(DEBUG, "netsnmp_walk: Initial oid(%s) oid_idx(%s)",
                    oid_str_arr[varlist_ind], oid_idx_str_arr[varlist_ind]);
@@ -2360,12 +2366,17 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
 
               py_log_msg(DEBUG, "netsnmp_walk: str_buf: %s", str_buf);
 
+              py_netsnmp_attr_set_string(varbind, "root_oid",
+                                        initial_oid_str_arr[varlist_ind],
+                                        STRLEN(initial_oid_str_arr[varlist_ind]));
+
               __get_label_iid((char *)str_buf, &oid_str_arr[varlist_ind],
                               &oid_idx_str_arr[varlist_ind], getlabel_flag);
 
               py_log_msg(DEBUG, "netsnmp_walk: filling response: %s:%s",
                          oid_str_arr[varlist_ind],
                          oid_idx_str_arr[varlist_ind]);
+
 
               py_netsnmp_attr_set_string(varbind, "oid",
                                          oid_str_arr[varlist_ind],
@@ -2427,6 +2438,7 @@ done:
   py_log_msg(DEBUG, "netsnmp_walk: Starting cleanup");
 
   Py_XDECREF(varbinds);
+  SAFE_FREE(initial_oid_str_arr);
   SAFE_FREE(oid_arr_len);
 
   for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++) {
@@ -2629,6 +2641,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args) {
 
             py_log_msg(DEBUG, "netsnmp_getbulk: str_buf: %s", str_buf);
 
+            py_netsnmp_attr_set_string(varbind, "root_oid", tag, STRLEN(tag));
             __get_label_iid((char *)str_buf, &tag, &iid, getlabel_flag);
 
             py_netsnmp_attr_set_string(varbind, "oid", tag, STRLEN(tag));
@@ -2700,6 +2713,8 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
   int len;
   oid **oid_arr = NULL;
   int *oid_arr_len = NULL;
+  char **initial_oid_str_arr = NULL;
+  char **initial_oid_idx_str_arr = NULL;
   char **oid_str_arr = NULL;
   char **oid_idx_str_arr = NULL;
   int type;
@@ -2778,6 +2793,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
 
     oid_arr_len = calloc(varlist_len, sizeof(int));
     oid_arr = calloc(varlist_len, sizeof(oid *));
+    initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
     oid_str_arr = calloc(varlist_len, sizeof(char *));
     oid_idx_str_arr = calloc(varlist_len, sizeof(char *));
 
@@ -2796,8 +2812,12 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
           py_netsnmp_attr_string(varbind, "oid_index",
                                  &oid_idx_str_arr[varlist_ind], NULL) >= 0) {
 
+
+        initial_oid_str_arr[varlist_ind] = oid_str_arr[varlist_ind];
+
         py_log_msg(DEBUG, "netsnmp_bulkwalk: Initial oid(%s) oid_idx(%s)",
                    oid_str_arr[varlist_ind], oid_idx_str_arr[varlist_ind]);
+
         // Get oid array len
         tp = __tag2oid(oid_str_arr[varlist_ind], oid_idx_str_arr[varlist_ind],
                        oid_arr[varlist_ind], &oid_arr_len[varlist_ind], NULL,
@@ -2940,6 +2960,9 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
 
               py_log_msg(DEBUG, "netsnmp_bulkwalk: str_buf: %s", str_buf);
 
+              py_netsnmp_attr_set_string(varbind, "root_oid",
+                                        initial_oid_str_arr[varlist_ind],
+                                        STRLEN(initial_oid_str_arr[varlist_ind]));
               __get_label_iid((char *)str_buf, &oid_str_arr[varlist_ind],
                               &oid_idx_str_arr[varlist_ind], getlabel_flag);
 
@@ -3009,6 +3032,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
 done:
   py_log_msg(DEBUG, "netsnmp_bulkwalk: Starting cleanup");
   Py_XDECREF(varbinds);
+  SAFE_FREE(initial_oid_str_arr);
   SAFE_FREE(oid_arr_len);
 
   for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++) {
@@ -3064,7 +3088,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args) {
 
     ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
 
-    /* PyObject_SetAttrString(); */
     if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0) {
       goto done;
     }
