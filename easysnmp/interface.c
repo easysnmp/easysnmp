@@ -2714,7 +2714,6 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
   oid **oid_arr = NULL;
   int *oid_arr_len = NULL;
   char **initial_oid_str_arr = NULL;
-  char **initial_oid_idx_str_arr = NULL;
   char **oid_str_arr = NULL;
   char **oid_idx_str_arr = NULL;
   int type;
