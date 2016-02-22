@@ -10,7 +10,6 @@
        (PY_VERSION_HEX >= 0x03000000) && \
        (PY_VERSION_HEX <  0x03010000))   \
     )
-
 #define USE_DEPRECATED_COBJECT_API
 
 #define PyCapsule_New(pointer, name, destructor)     \
@@ -2065,7 +2064,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args) {
           Py_DECREF(varlist_iter);
           goto done;
         }
-        /* release reference when done */
+
         Py_DECREF(varbind);
       }
 
@@ -2346,7 +2345,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
     varlist_len = 0;
     while (varlist_iter && (varbind = PyIter_Next(varlist_iter))) {
       varlist_len++;
-      Py_DECREF(varbind);
     }
     Py_DECREF(varlist_iter);
 
@@ -2961,7 +2959,6 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     varlist_len = 0;
     while (varlist_iter && (varbind = PyIter_Next(varlist_iter))) {
       varlist_len++;
-      Py_DECREF(varbind);
     }
     Py_DECREF(varlist_iter);
 
