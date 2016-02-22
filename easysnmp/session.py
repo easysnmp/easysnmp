@@ -494,6 +494,11 @@ class Session(object):
                  were retrieved via SNMP
         """
 
+        if self.version == 1:
+            raise EasySNMPError(
+                'you cannot perform a bulk walk operation for SNMP version 1'
+            )
+
         # Build our variable bindings for the C interface
         varlist, _ = build_varlist(oids)
 
@@ -506,7 +511,3 @@ class Session(object):
 
         # Return a list of variables
         return varlist
-
-    def __del__(self):
-        """Deletes the session and frees up memory"""
-        return interface.delete_session(self)

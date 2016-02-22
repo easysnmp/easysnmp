@@ -1,3 +1,10 @@
+python-easysnmp (2.0) stable; urgency=medium
+
+  * Added Python Capsules support to c extension
+  * Memory leak bashing!
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 21 Feb 2016 17:23:00 -0800
+
 python-easysnmp (1.0) stable; urgency=medium
 
   * Implemented bulk walk for up to 30X faster walk
