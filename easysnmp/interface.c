@@ -1938,6 +1938,9 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args) {
   op_data_error = snmp_op_data_load(&op_data, session_ctx->best_guess);
 
   if (op_data_error || PyErr_Occurred()) {
+    if(PyErr_Occurred()) {
+      goto exception;
+    }
     error = 1;
     goto done;
   }
@@ -1972,7 +1975,11 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args) {
       status = send_pdu_request(session_ctx, &op_data);
       if((status != STAT_SUCCESS) || PyErr_Occurred()) {
 
-        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d) or PyError Occurred",
+        if(PyErr_Occurred()) {
+          goto exception;
+        }
+
+        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d)",
           op_data.op_name, status);
         error = 1;
         goto done;
@@ -2124,6 +2131,10 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args) {
   op_data_error = snmp_op_data_load(&op_data, session_ctx->best_guess);
 
   if (op_data_error || PyErr_Occurred()) {
+    if(PyErr_Occurred()) {
+      goto exception;
+    }
+
     error = 1;
     goto done;
   }
@@ -2158,7 +2169,11 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args) {
       status = send_pdu_request(session_ctx, &op_data);
       if((status != STAT_SUCCESS) || PyErr_Occurred()) {
 
-        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d) or PyError Occurred",
+        if(PyErr_Occurred()) {
+          goto exception;
+        }
+
+        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d)",
           op_data.op_name, status);
         error = 1;
         goto done;
@@ -2310,6 +2325,10 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
   op_data_error = snmp_op_data_load(&op_data, session_ctx->best_guess);
 
   if (op_data_error || PyErr_Occurred()) {
+    if(PyErr_Occurred()) {
+      goto exception;
+    }
+
     error = 1;
     goto done;
   }
@@ -2344,7 +2363,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args) {
       status = send_pdu_request(session_ctx, &op_data);
       if((status != STAT_SUCCESS) || PyErr_Occurred()) {
 
-        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d) or PyError Occurred",
+        if(PyErr_Occurred()) {
+          goto exception;
+        }
+
+        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d)",
           op_data.op_name, status);
         error = 1;
         goto done;
@@ -2516,6 +2539,10 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args) {
   op_data_error = snmp_op_data_load(&op_data, session_ctx->best_guess);
 
   if (op_data_error || PyErr_Occurred()) {
+    if(PyErr_Occurred()) {
+      goto exception;
+    }
+
     error = 1;
     goto done;
   }
@@ -2552,7 +2579,11 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args) {
       status = send_pdu_request(session_ctx, &op_data);
       if((status != STAT_SUCCESS) || PyErr_Occurred()) {
 
-        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d) or PyError Occurred",
+        if(PyErr_Occurred()) {
+          goto exception;
+        }
+
+        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d)",
           op_data.op_name, status);
         error = 1;
         goto done;
@@ -2715,6 +2746,10 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
   op_data_error = snmp_op_data_load(&op_data, session_ctx->best_guess);
 
   if (op_data_error || PyErr_Occurred()) {
+    if(PyErr_Occurred()) {
+      goto exception;
+    }
+
     error = 1;
     goto done;
   }
@@ -2751,7 +2786,11 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
       status = send_pdu_request(session_ctx, &op_data);
       if((status != STAT_SUCCESS) || PyErr_Occurred()) {
 
-        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d) or PyError Occurred",
+        if(PyErr_Occurred()) {
+          goto exception;
+        }
+
+        py_log_msg(ERROR, "%s: PDU req resulted in error Request Status(%d)",
           op_data.op_name, status);
         error = 1;
         goto done;
