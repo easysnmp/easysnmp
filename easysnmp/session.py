@@ -74,6 +74,7 @@ def validate_results(varlist):
         if variable.oid_index:
             varstr += ' with index {0}'.format(variable.oid_index)
 
+        print variable.snmp_type;
         if variable.snmp_type == 'NOSUCHOBJECT':
             raise EasySNMPNoSuchObjectError(
                 'no such object {0} could be found'.format(varstr)
@@ -312,14 +313,14 @@ class Session(object):
         varlist, is_list = build_varlist(oids)
 
         # Perform the SNMP GET operation
-        interface.get(self, varlist)
+        responsevars = interface.get(self, varlist)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
-            validate_results(varlist)
+            validate_results(responsevars)
 
         # Return a list or single item depending on what was passed in
-        return list(varlist) if is_list else varlist[0]
+        return responsevars if is_list else responsevars[0]
 
     def set(self, oid, value, snmp_type=None):
         """
@@ -401,14 +402,14 @@ class Session(object):
         varlist, is_list = build_varlist(oids)
 
         # Perform the SNMP GET operation
-        interface.getnext(self, varlist)
+        responsevars = interface.getnext(self, varlist)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
-            validate_results(varlist)
+            validate_results(responsevars)
 
         # Return a list or single item depending on what was passed in
-        return list(varlist) if is_list else varlist[0]
+        return list(responsevars) if is_list else responsevars[0]
 
     def get_bulk(self, oids, non_repeaters=0, max_repetitions=10):
         """
@@ -437,14 +438,14 @@ class Session(object):
         # Build our variable bindings for the C interface
         varlist, _ = build_varlist(oids)
 
-        interface.getbulk(self, non_repeaters, max_repetitions, varlist)
+        responsevars = interface.getbulk(self, varlist, non_repeaters, max_repetitions)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
-            validate_results(varlist)
+            validate_results(responsevars)
 
         # Return a list of variables
-        return varlist
+        return responsevars
 
     def walk(self, oids='.1.3.6.1.2.1'):
         """
@@ -464,14 +465,14 @@ class Session(object):
         varlist, _ = build_varlist(oids)
 
         # Perform the SNMP walk using GETNEXT operations
-        interface.walk(self, varlist)
+        responsevars = interface.walk(self, varlist)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
-            validate_results(varlist)
+            validate_results(responsevars)
 
         # Return a list of variables
-        return list(varlist)
+        return responsevars
 
     def bulkwalk(
         self, oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10
@@ -503,11 +504,11 @@ class Session(object):
         varlist, _ = build_varlist(oids)
 
         # Perform the SNMP walk using GETNEXT operations
-        interface.bulkwalk(self, non_repeaters, max_repetitions, varlist)
+        responsevars = interface.bulkwalk(self, varlist, non_repeaters, max_repetitions)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
-            validate_results(varlist)
+            validate_results(responsevars)
 
         # Return a list of variables
-        return varlist
+        return responsevars

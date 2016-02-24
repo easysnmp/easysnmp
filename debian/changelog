@@ -1,3 +1,11 @@
+python-easysnmp (3.0) stable; urgency=medium
+
+  * Deprecating SNMPv1 support
+  * Full Pycapsule support, so no more support for Python < 2.7
+  * Refactored hundreds if not thousands of lines by identifying patterns.
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 24 Feb 2016 00:00:00 -0800
+
 python-easysnmp (2.0) stable; urgency=medium
 
   * Added Python Capsules support to c extension

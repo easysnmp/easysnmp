@@ -39,10 +39,11 @@ class SNMPVariable(object):
     def __repr__(self):
         printable_value = strip_non_printable(self.value)
         return (
-            "<{0} value={1} (oid={2}, oid_index={3}, snmp_type={4})>".format(
+            "<{0} value={1} (oid={2}, oid_index={3}, snmp_type={4}, root_oid={5})>".format(
                 self.__class__.__name__,
                 urepr(printable_value), urepr(self.oid),
-                urepr(self.oid_index), urepr(self.snmp_type)
+                urepr(self.oid_index), urepr(self.snmp_type),
+                urepr(self.root_oid)
             )
         )
 
