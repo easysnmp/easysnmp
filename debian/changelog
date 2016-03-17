@@ -1,0 +1,29 @@
+python-easysnmp (3.0) stable; urgency=medium
+
+  * Deprecating SNMPv1 support
+  * Full Pycapsule support, so no more support for Python < 2.7
+  * Refactored hundreds if not thousands of lines by identifying patterns.
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 24 Feb 2016 00:00:00 -0800
+
+python-easysnmp (2.0) stable; urgency=medium
+
+  * Added Python Capsules support to c extension
+  * Memory leak bashing!
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 21 Feb 2016 17:23:00 -0800
+
+python-easysnmp (1.0) stable; urgency=medium
+
+  * Implemented bulk walk for up to 30X faster walk
+  * bulkwalk and walk support list of oids
+  * Matching bulkwalk and walk code, which fixes memory leak and simplifies code.
+  * Added/changed logging code in interface.c for easier debug
+
+ -- Norman Ovenseri <norman@uber.com>  Sun, 24 Jan 2016 18:25:00 -0800
+
+python-easysnmp (0.2.4) stable; urgency=medium
+
+  * First stable commit
+
+ -- Norman Ovenseri <norman@uber.com>  Tue, 1 Dec 2015 18:55:00 -0800

@@ -39,7 +39,6 @@ else:
     libdirs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-L')]  # noqa
     incdirs = []
 
-
 # Setup the py.test class for use with the test command
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
@@ -70,7 +69,7 @@ except IOError:
 
 setup(
     name='easysnmp',
-    version='0.2.5-dev',
+    version='3.0',
     description='A blazingly fast and Pythonic SNMP library based on the '
                 'official Net-SNMP bindings',
     long_description=long_description,

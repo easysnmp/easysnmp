@@ -5,7 +5,7 @@ import platform
 import pytest
 from easysnmp.easy import (
     snmp_get, snmp_set, snmp_set_multiple, snmp_get_next, snmp_get_bulk,
-    snmp_walk
+    snmp_walk, snmp_bulkwalk
 )
 from easysnmp.exceptions import (
     EasySNMPError, EasySNMPUnknownObjectIDError, EasySNMPNoSuchObjectError,
@@ -506,3 +506,53 @@ def test_snmp_walk_res(sess_args):
 def test_snmp_walk_unknown(sess_args):
     with pytest.raises(EasySNMPUnknownObjectIDError):
         snmp_walk('systemo', **sess_args)
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_bulkwalk(sess_args):
+    res = snmp_bulkwalk('system', **sess_args)
+    assert len(res) >= 7
+
+    assert platform.version() in res[0].value
+    assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[4].value == platform.node()
+    assert res[5].value == 'my original location'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_bulkwalk_res(sess_args):
+    res = snmp_bulkwalk('system', **sess_args)
+
+    assert len(res) >= 7
+
+    assert res[0].oid == 'sysDescr'
+    assert res[0].oid_index == '0'
+    assert platform.version() in res[0].value
+    assert res[0].snmp_type == 'OCTETSTR'
+
+    assert res[3].oid == 'sysContact'
+    assert res[3].oid_index == '0'
+    assert res[3].value == 'G. S. Marzot <gmarzot@marzot.net>'
+    assert res[3].snmp_type == 'OCTETSTR'
+
+    assert res[4].oid == 'sysName'
+    assert res[4].oid_index == '0'
+    assert res[4].value == platform.node()
+    assert res[4].snmp_type == 'OCTETSTR'
+
+    assert res[5].oid == 'sysLocation'
+    assert res[5].oid_index == '0'
+    assert res[5].value == 'my original location'
+    assert res[5].snmp_type == 'OCTETSTR'
+
+
+@pytest.mark.parametrize(
+    'sess_args', [sess_v2_args(), sess_v3_args()]
+)
+def test_snmp_bulkwalk_unknown(sess_args):
+    with pytest.raises(EasySNMPUnknownObjectIDError):
+        snmp_bulkwalk('systemo', **sess_args)
