@@ -19,7 +19,7 @@ OID_INDEX_RE = re.compile(
 
 def normalize_oid(oid, oid_index=None):
     """
-    Ensures that the index is set correctly given an OID definition
+    Ensures that the index is set correctly given an OID definition.
 
     :param oid: the OID to normalize
     :param oid_index: the OID index to normalize

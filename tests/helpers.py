@@ -5,11 +5,12 @@ import subprocess
 
 
 class SNMPSetCLIError(Exception):
-    """An exception raised when an SNMP SET fails via the CLI"""
+    """An exception raised when an SNMP SET fails via the CLI."""
 
 
 def snmp_set_via_cli(oid, value, type):
-    """Sets an SNMP variable using the snmpset command
+    """
+    Sets an SNMP variable using the snmpset command.
 
     :param oid: the OID to update
     :param value: the new value to set the OID to

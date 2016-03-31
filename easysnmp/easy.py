@@ -6,7 +6,7 @@ from .session import Session
 def snmp_get(oids, **session_kargs):
     """
     Perform an SNMP GET operation to retrieve a particular piece of
-    information
+    information.
 
     :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
@@ -25,7 +25,7 @@ def snmp_get(oids, **session_kargs):
 def snmp_set(oid, value, type=None, **session_kargs):
     """
     Perform an SNMP SET operation to update a particular piece of
-    information
+    information.
 
     :param oid: the OID that you wish to set which may be a string
                 representing the entire OID (e.g. 'sysDescr.0') or may
@@ -46,7 +46,7 @@ def snmp_set(oid, value, type=None, **session_kargs):
 def snmp_set_multiple(oid_values, **session_kargs):
     """
     Perform multiple SNMP SET operations to update various pieces of
-    information at the same time
+    information at the same time.
 
     :param oid_values: a list of tuples whereby each tuple contains a
                        (oid, value) or an (oid, value, snmp_type)
@@ -62,7 +62,7 @@ def snmp_set_multiple(oid_values, **session_kargs):
 def snmp_get_next(oids, **session_kargs):
     """
     Uses an SNMP GETNEXT operation to retrieve the next variable after
-    the chosen item
+    the chosen item.
 
     :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
@@ -81,7 +81,7 @@ def snmp_get_next(oids, **session_kargs):
 def snmp_get_bulk(oids, non_repeaters, max_repetitions, **session_kargs):
     """
     Performs a bulk SNMP GET operation to retrieve multiple pieces of
-    information in a single packet
+    information in a single packet.
 
     :param oids: you may pass in a list of OIDs or single item; each item
                  may be a string representing the entire OID
@@ -105,7 +105,7 @@ def snmp_get_bulk(oids, non_repeaters, max_repetitions, **session_kargs):
 def snmp_walk(oids='.1.3.6.1.2.1', **session_kargs):
     """
     Uses SNMP GETNEXT operation to automatically retrieve multiple
-    pieces of information in an OID for you
+    pieces of information in an OID for you.
 
     :param oids: you may pass in a single item (multiple values currently
                  experimental) which may be a string representing the

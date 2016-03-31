@@ -28,7 +28,7 @@ SECURITY_LEVEL_MAPPING = {
 def build_varlist(oids):
     """
     Prepare the variable binding list which will be used by the
-    C interface
+    C interface.
 
     :param oids: an individual or list of strings or tuples representing
                  one or more OIDs
@@ -62,7 +62,7 @@ def build_varlist(oids):
 def validate_results(varlist):
     """
     Validates a list of SNMPVariable objects and raises any appropriate
-    exceptions where necessary
+    exceptions where necessary.
 
     :param varlist: a variable list containing SNMPVariable objects to be
                     processed
@@ -296,7 +296,7 @@ class Session(object):
     def get(self, oids):
         """
         Perform an SNMP GET operation using the prepared session to
-        retrieve a particular piece of information
+        retrieve a particular piece of information.
 
         :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
@@ -323,7 +323,7 @@ class Session(object):
 
     def set(self, oid, value, snmp_type=None):
         """
-        Perform an SNMP SET operation using the prepared session
+        Perform an SNMP SET operation using the prepared session.
 
         :param oid: the OID that you wish to set which may be a string
                     representing the entire OID (e.g. 'sysDescr.0') or may
@@ -351,7 +351,7 @@ class Session(object):
     def set_multiple(self, oid_values):
         """
         Perform an SNMP SET operation on multiple OIDs with multiple
-        values using the prepared session
+        values using the prepared session.
 
         :param oid_values: a list of tuples whereby each tuple contains a
                            (oid, value) or an (oid, value, snmp_type)
@@ -385,7 +385,7 @@ class Session(object):
     def get_next(self, oids):
         """
         Uses an SNMP GETNEXT operation using the prepared session to
-        retrieve the next variable after the chosen item
+        retrieve the next variable after the chosen item.
 
         :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
@@ -413,7 +413,7 @@ class Session(object):
     def get_bulk(self, oids, non_repeaters, max_repetitions):
         """
         Performs a bulk SNMP GET operation using the prepared session to
-        retrieve multiple pieces of information in a single packet
+        retrieve multiple pieces of information in a single packet.
 
         :param oids: you may pass in a list of OIDs or single item; each item
                      may be a string representing the entire OID
@@ -449,7 +449,7 @@ class Session(object):
     def walk(self, oids='.1.3.6.1.2.1'):
         """
         Uses SNMP GETNEXT operation using the prepared session to
-        automatically retrieve multiple pieces of information in an OID
+        automatically retrieve multiple pieces of information in an OID.
 
         :param oids: you may pass in a single item (multiple values currently
                      experimental) which may be a string representing the
@@ -474,5 +474,5 @@ class Session(object):
         return list(varlist)
 
     def __del__(self):
-        """Deletes the session and frees up memory"""
+        """Deletes the session and frees up memory."""
         return interface.delete_session(self)

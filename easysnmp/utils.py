@@ -8,7 +8,7 @@ from .compat import ub, text_type
 def strip_non_printable(value):
     """
     Removes any non-printable characters and adds an indicator to the string
-    when binary characters are fonud
+    when binary characters are fonud.
 
     :param value: the value that you wish to strip
     """
@@ -32,7 +32,7 @@ def tostr(value):
     """
     Converts any variable to a string or returns None if the variable
     contained None to begin with; this function currently supports None,
-    unicode strings, byte strings and numbers
+    unicode strings, byte strings and numbers.
 
     :param value: the value you wish to convert to a string
     """
