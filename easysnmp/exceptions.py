@@ -17,7 +17,7 @@ class EasySNMPTimeoutError(EasySNMPConnectionError):
 
 
 class EasySNMPUnknownObjectIDError(EasySNMPError):
-    """Raised when an inexisted OID is requested."""
+    """Raised when a nonexistent OID is requested."""
     pass
 
 
@@ -32,7 +32,7 @@ class EasySNMPNoSuchNameError(EasySNMPError):
 class EasySNMPNoSuchObjectError(EasySNMPError):
     """
     Raised when an OID is requested which may have some form of existence but
-    an invalid object name.
+    is an invalid object name.
     """
     pass
 
@@ -46,6 +46,6 @@ class EasySNMPNoSuchInstanceError(EasySNMPError):
 
 class EasySNMPUndeterminedTypeError(EasySNMPError):
     """
-    Raised when the type cannot be determine when setting the value of an OID.
+    Raised when the type cannot be determined when setting the value of an OID.
     """
     pass
