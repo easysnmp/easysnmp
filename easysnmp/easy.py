@@ -78,7 +78,7 @@ def snmp_get_next(oids, **session_kargs):
     return session.get_next(oids)
 
 
-def snmp_get_bulk(oids, non_repeaters, max_repetitions, **session_kargs):
+def snmp_get_bulk(oids, non_repeaters=0, max_repetitions=10, **session_kargs):
     """
     Performs a bulk SNMP GET operation to retrieve multiple pieces of
     information in a single packet.
@@ -119,3 +119,29 @@ def snmp_walk(oids='.1.3.6.1.2.1', **session_kargs):
 
     session = Session(**session_kargs)
     return session.walk(oids)
+
+
+def snmp_bulkwalk(
+    oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10,
+    **session_kargs
+):
+    """
+    Uses SNMP GETBULK operation using the prepared session to
+    automatically retrieve multiple pieces of information in an OID
+
+    :param oids: you may pass in a single item
+                 * string representing the
+                 entire OID (e.g. 'sysDescr.0')
+                 * tuple (name, index) (e.g. ('sysDescr', 0))
+                 * list of OIDs
+    :param non_repeaters: the number of objects that are only expected to
+                          return a single GETNEXT instance, not multiple
+                          instances
+    :param max_repetitions: the number of objects that should be returned
+                            for all the repeating OIDs
+    :return: a list of SNMPVariable objects containing the values that
+             were retrieved via SNMP
+    """
+
+    session = Session(**session_kargs)
+    return session.bulkwalk(oids, non_repeaters, max_repetitions)
