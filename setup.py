@@ -60,12 +60,9 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-# Read the long description from readme.rst
-try:
-    with open('setup.rst') as f:
-        long_description = f.read()
-except IOError:
-    long_description = None
+# Read the long description from README.rst
+with open('README.rst') as f:
+    long_description = f.read()
 
 
 setup(
