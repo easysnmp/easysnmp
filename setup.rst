@@ -1,17 +1,16 @@
 .. image:: http://easysnmp.readthedocs.org/en/latest/_static/easysnmp.png
+    :alt: Easy SNMP Logo
 
 Introduction
 ------------
 
-This is a fork of the official `Net-SNMP Python Bindings`_ but attempts to
-bring a more Pythonic interface to the library.   Check out the
-`Net-SNMP website`_ for more information about SNMP.
+This is a fork of the official
+`Net-SNMP Python Bindings <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
+but attempts to bring a more Pythonic interface to the library.  Check out the
+`Net-SNMP website <http://www.net-snmp.org/>`_ for more information about SNMP.
 
 This module provides a full featured SNMP client API supporting all dialects
 of the SNMP protocol.
-
-.. _Net-SNMP Python Bindings: http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings
-.. _Net-SNMP website: http://www.net-snmp.org/
 
 Why Another Library?
 --------------------
@@ -92,7 +91,6 @@ one-off operations where you wish to specify all details in the request:
 Documentation
 -------------
 
-Please check out the `Easy SNMP documentation at Read the Docs`_.
+Please check out the
+`Easy SNMP documentation at Read the Docs <http://easysnmp.readthedocs.org/>`_.
 This includes install instructions for various operating systems.
-
-.. _Easy SNMP documentation at Read the Docs: http://easysnmp.readthedocs.org/
