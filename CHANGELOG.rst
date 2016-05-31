@@ -100,7 +100,7 @@ Changelog
   (`PR#2 <https://github.com/fgimian/easysnmp/pull/2>`_,
   `b2018587 <https://github.com/fgimian/easysnmp/commit/b20185875feae252b7f912f693156fca1d88b3d0>`_)
 - Implement ``compat_netsnmp_memdup()`` to fix C interface to compile
-  against Net-SNMP 5.7.2. ([PR#2])
+  against Net-SNMP 5.7.2. (`PR#2 <https://github.com/fgimian/easysnmp/pull/2>`_)
 - Import and overhaul of the original Net-SNMP Python bindings:
     - Wrote a README that provides an overview and quickstart of the
       project
