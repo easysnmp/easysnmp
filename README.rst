@@ -14,15 +14,15 @@ Easy SNMP
     :alt: Easy SNMP Logo
 
 Awesome artwork provided courtesy of `Open Clip Art
-Library <https://openclipart.org/detail/154453/network>`__
+Library <https://openclipart.org/detail/154453/network>`_
 
 Introduction
 ------------
 
 Easy SNMP is a fork of the official `Net-SNMP Python
-Bindings <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`__
+Bindings <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
 but attempts to bring a more Pythonic interface to the library. Check
-out the `Net-SNMP website <http://www.net-snmp.org/>`__ for more
+out the `Net-SNMP website <http://www.net-snmp.org/>`_ for more
 information about SNMP.
 
 This module provides a full featured SNMP client API supporting all
@@ -32,16 +32,16 @@ Why Another Library?
 --------------------
 
 - The `original Net-SNMP Python
-  library <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`__
+  library <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
   is a great starting point but is quite un-Pythonic and lacks proper
   unit tests and documentation.
-- `PySNMP <http://pysnmp.sourceforge.net/>`__ is written in pure Python
+- `PySNMP <http://pysnmp.sourceforge.net/>`_ is written in pure Python
   and therefore has a huge performance hit. In some brief tests, I
   estimate that both the Net-SNMP Python bindings and Easy SNMP are
   more than 4 times faster. Further to this, PySNMP has an even less
   Pythonic interface than the official Net-SNMP bindings.
 - Many other libraries like
-  `Snimpy <https://snimpy.readthedocs.org/en/latest/>`__ are sadly
+  `Snimpy <https://snimpy.readthedocs.org/en/latest/>`_ are sadly
   based on PySNMP and so they suffer the same performance penalty.
 
 Quick Start
@@ -111,7 +111,7 @@ Documentation
 -------------
 
 Please check out the `Easy SNMP documentation at Read the
-Docs <http://easysnmp.readthedocs.org/>`__. This includes install
+Docs <http://easysnmp.readthedocs.org/>`_. This includes install
 instructions for various operating systems.
 
 You may generate the documentation as follows:
@@ -145,7 +145,7 @@ License
 -------
 
 Easy SNMP is released under the BSD license. Please see the
-`LICENSE <https://github.com/fgimian/easysnmp/blob/master/LICENSE>`__
+`LICENSE <https://github.com/fgimian/easysnmp/blob/master/LICENSE>`_
 file for more details.
 
 Copyright
