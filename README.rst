@@ -155,7 +155,7 @@ You may run the unit tests as follows:
 License
 -------
 
-Easy SNMP is released under the BSD license. Please see the
+Easy SNMP is released under the **BSD** license. Please see the
 `LICENSE <https://github.com/fgimian/easysnmp/blob/master/LICENSE>`_
 file for more details.
 
