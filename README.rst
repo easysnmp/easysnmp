@@ -10,10 +10,10 @@ Easy SNMP
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/fgimian/easysnmp/blob/master/LICENSE
 
-.. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/docs/_static/easysnmp.png
+.. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/images/easysnmp-logo.png
     :alt: Easy SNMP Logo
 
-Awesome artwork provided courtesy of `Open Clip Art
+Artwork courtesy of `Open Clip Art
 Library <https://openclipart.org/detail/154453/network>`_
 
 Introduction
