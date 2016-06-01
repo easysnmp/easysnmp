@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-`Unreleased <https://github.com/fgimian/easysnmp/tree/HEAD>`_
+`Unreleased <https://github.com/fgimian/easysnmp/tree/master>`_
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Allow ``snmp_type`` parameter in ``set(...)`` to support snmpset(1)
@@ -14,16 +14,16 @@ Changelog
 - Remove printf debug statements when making SNMPv1 fixes from interface.c.
   (`320df28 <https://github.com/fgimian/easysnmp/commit/320df2882bbc5e3f57a7e71164497b063baa855e>`_)
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.2.4...HEAD>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.2.4...master>`_
 
-`0.2.4 <https://github.com/fgimian/easysnmp/tree/0.2.4>`_ (2015-07-09)
+`0.2.4 <https://github.com/fgimian/easysnmp/releases/tag/0.2.4>`_ (2015-07-09)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Ensured that the simple bitarray header is correctly referenced.
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.2.3...0.2.4>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.2.3...0.2.4>`_
 
-`0.2.3 <https://github.com/fgimian/easysnmp/tree/0.2.3>`_ (2015-06-30)
+`0.2.3 <https://github.com/fgimian/easysnmp/releases/tag/0.2.3>`_ (2015-06-30)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Introduce this changelog.
@@ -45,17 +45,17 @@ Changelog
   root privilege and not clash with a local running instance of snmpd.
   (`5604a4bb <https://github.com/fgimian/easysnmp/commit/5604a4bbe72844295e966af270469aeccad19e98>`_)
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.2.2...0.2.3>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.2.2...0.2.3>`_
 
-`0.2.2 <https://github.com/fgimian/easysnmp/tree/0.2.2>`_ (2015-06-03)
+`0.2.2 <https://github.com/fgimian/easysnmp/releases/tag/0.2.2>`_ (2015-06-03)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Cosmetic fixes to the codebase.
 - Fixes for Python 3.x/unicode support.
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.2.1...0.2.2>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.2.1...0.2.2>`_
 
-`0.2.1 <https://github.com/fgimian/easysnmp/tree/0.2.1>`_ (2015-06-02)
+`0.2.1 <https://github.com/fgimian/easysnmp/releases/tag/0.2.1>`_ (2015-06-02)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Various fixes to the C interface including better exception handling
@@ -63,16 +63,16 @@ Changelog
 - Use pytest-sugar for bling-bling test output.
   (`71c567f9 <https://github.com/fgimian/easysnmp/commit/71c567f9ae0cabe8eee970ed0b102956b8c73565>`_)
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.2...0.2.1>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.2...0.2.1>`_
 
-`0.2 <https://github.com/fgimian/easysnmp/tree/0.2>`_ (2015-06-02)
+`0.2 <https://github.com/fgimian/easysnmp/releases/tag/0.2>`_ (2015-06-02)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Introduced support for Python 3.x.
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.1.1...0.2>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.1.1...0.2>`_
 
-`0.1.1 <https://github.com/fgimian/easysnmp/tree/0.1.1>`_ (2015-06-02)
+`0.1.1 <https://github.com/fgimian/easysnmp/releases/tag/0.1.1>`_ (2015-06-02)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Added PyPI documentation.
@@ -84,9 +84,9 @@ Changelog
   versions of SNMP (v1/v2/v3).
   (`427a9dfd <https://github.com/fgimian/easysnmp/commit/427a9dfd4740ce22f2af6bee617fe7a78a7bbcae>`_)
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/0.1...0.1.1>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/0.1...0.1.1>`_
 
-`0.1 <https://github.com/fgimian/easysnmp/tree/0.1>`_ (2015-05-30)
+`0.1 <https://github.com/fgimian/easysnmp/releases/tag/0.1>`_ (2015-05-30)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - Raise Python exceptions in the C interface where necessary.
@@ -112,4 +112,4 @@ Changelog
       Net-SNMP CLI client utilities.
     - Python package uploaded to PyPI
 
-`Full Changelog <https://github.com/fgimian/easysnmp/compare/6c0f8c32709fc240f57934ed50e31bf05af04e20...0.1>`_
+`Full Source Code Changelog <https://github.com/fgimian/easysnmp/compare/6c0f8c32709fc240f57934ed50e31bf05af04e20...0.1>`_

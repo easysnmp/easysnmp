@@ -7,7 +7,7 @@ Easy SNMP
    :target: https://travis-ci.org/fgimian/easysnmp
 .. |Coverage Status| image:: https://coveralls.io/repos/fgimian/easysnmp/badge.svg
    :target: https://coveralls.io/r/fgimian/easysnmp
-.. |License| image:: https://img.shields.io/badge/license-BSD-brightgreen.svg
+.. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/fgimian/easysnmp/blob/master/LICENSE
 
 .. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/docs/_static/easysnmp.png
@@ -140,6 +140,17 @@ possible:
    module
 -  **Wes Hardaker and the net-snmp-coders**: for their hard work and
    dedication
+
+Running Tests
+-------------
+
+You may run the unit tests as follows:
+
+.. code:: bash
+
+    git clone https://github.com/fgimian/painter.git
+    cd painter
+    python setup.py test
 
 License
 -------
