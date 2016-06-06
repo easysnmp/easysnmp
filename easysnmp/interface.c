@@ -1879,23 +1879,6 @@ done:
     return NULL;
 
 }
-/* //Will remove in future commit; PyCapsules should eliminate the need to call 
-static PyObject *netsnmp_delete_session(PyObject *self, PyObject *args)
-{
-    PyObject *session;
-    SnmpSession *ss = NULL;
-
-    if (!PyArg_ParseTuple(args, "O", &session))
-    {
-        return NULL;
-    }
-
-    ss = (SnmpSession *)py_netsnmp_attr_void_ptr(session, "sess_ptr");
-
-    snmp_sess_close(ss);
-    return (Py_BuildValue(""));
-}
-*/
 
 static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 {
@@ -2242,7 +2225,6 @@ done:
     {
         return NULL;
     }
-
     return Py_None;
 }
 
@@ -2586,10 +2568,7 @@ done:
     {
         return NULL;
     }
-    else
-    {
-        return Py_None;
-    }
+    return Py_None;
 }
 
 static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
@@ -3007,10 +2986,7 @@ done:
     {
         return NULL;
     }
-    else
-    {
-        return Py_None;
-    }
+    return Py_None;
 }
 
 static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
@@ -3139,6 +3115,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                     goto done;
                 }
                 /* release reference when done */
+                //Is object now handled by Python? Remove line?
                 Py_DECREF(varbind);
             }
 
@@ -3305,10 +3282,7 @@ done:
     {
         return NULL;
     }
-    else
-    {
-        return Py_None;
-    }
+    return Py_None;
 }
 
 static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
@@ -3413,7 +3387,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     varlist_len = 0;
     while (varlist_iter && (varbind = PyIter_Next(varlist_iter))) {
       varlist_len++;
-      Py_DECREF(varbind);
+      //Py_DECREF(varbind);
     }
     Py_DECREF(varlist_iter);
 
@@ -3672,7 +3646,6 @@ done:
   if (error) {
     return NULL;
   }
-
   return Py_None;
 }
 
@@ -3869,10 +3842,7 @@ done:
     {
         return NULL;
     }
-    else
-    {
-        return (ret ? ret : Py_BuildValue(""));
-    }
+    return (ret ? ret : Py_BuildValue(""));
 }
 
 /**
