@@ -2586,11 +2586,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     netsnmp_pdu *pdu, *response;
     netsnmp_pdu *newpdu;
     /*
-    Variable `oldvars` does not appear to fufill any immediate purpose and
-    causes segfaults in some cases, especially when running against OID '.1'
-    For legacy reasons, however, we will only leave it commented out, should
-    we find that it was only partially implemented or actually served a purpose
-    somewhere in the Net-SNMP library
+    ** Variable `oldvars` does not appear to fufill any immediate purpose and
+    ** causes segfaults in some cases, especially when running against OID '.1'
+    ** For legacy reasons, however, we will only leave it commented out, should
+    ** we find that it was only partially implemented or actually served a purpose
+    ** somewhere in the Net-SNMP library
     */
     netsnmp_variable_list *vars;//, *oldvars;
     struct tree *tp;
@@ -2683,6 +2683,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
         {
             varlist_len++;
+            Py_DECREF(varbind);
         }
         Py_DECREF(varlist_iter);
 
@@ -2754,13 +2755,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             goto done;
         }
 
-        if (PyErr_Occurred())
-        {
-            error = 1;
-            snmp_free_pdu(pdu);
-            goto done;
-        }
-
         /*
         ** Set up for numeric or full OID's, if necessary.  Save the old
         ** output format so that it can be restored when we finish -- this
@@ -2779,10 +2773,12 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                NETSNMP_OID_OUTPUT_FULL);
         }
 
-        /* Setting use_numeric forces use_long_names on so check for
-           use_numeric after use_long_names (above) to make sure the final
-           outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
-           NETSNMP_OID_OUTPUT_NUMERIC */
+        /*
+        ** Setting use_numeric forces use_long_names on so check for
+        ** use_numeric after use_long_names (above) to make sure the final
+        ** outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
+        ** NETSNMP_OID_OUTPUT_NUMERIC
+        */
         if (py_netsnmp_attr_long(session, "use_numeric"))
         {
             getlabel_flag |= USE_LONG_NAMES;
@@ -2809,8 +2805,9 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
              vars != NULL;
              vars = vars->next_variable, varlist_ind++)
         {
-            oid_arr_broken_check[varlist_ind] =
-                calloc(MAX_OID_LEN, sizeof(oid));
+            /* `calloc` was already called in first for-loop. Removing. */
+            //oid_arr_broken_check[varlist_ind] =
+            //    calloc(MAX_OID_LEN, sizeof(oid));
 
             oid_arr_broken_check_len[varlist_ind] = vars->name_length;
             memcpy(oid_arr_broken_check[varlist_ind],
@@ -2825,6 +2822,10 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             if (status != 0)
             {
                 error = 1;
+                if (pdu)
+                {
+                    snmp_free_pdu(pdu);
+                }
                 goto done;
             }
 
@@ -2836,6 +2837,10 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             }
             else
             {
+                /*
+                   Valgrind was reporting a lost block due to `calloc` here.
+                   We're now calling `snmp_free_pdu` at label `done` to fix this
+                 */
                 newpdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
                 for (vars = (response ? response->variables : NULL),
@@ -2865,10 +2870,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                          oid_arr_broken_check[varlist_ind],
                                          oid_arr_broken_check_len[varlist_ind]) <= 0)
                     {
-                        /* The agent responded with an illegal response
-                           as the returning OID was lexogragically less
+                        /*
+                           The agent responded with an illegal response
+                           as the returning OID was lexograghically less
                            then or equal to the requested OID...
-                           We need to give up here because an infite
+                           We need to give up here because an infinite
                            loop will result otherwise.
 
                            XXX: this really should be an option to
@@ -2982,6 +2988,10 @@ done:
     }
     SAFE_FREE(oid_arr);
     SAFE_FREE(oid_arr_broken_check);
+    if (pdu)
+    {
+        snmp_free_pdu(pdu);
+    }
     if (error)
     {
         return NULL;
@@ -3115,7 +3125,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                     goto done;
                 }
                 /* release reference when done */
-                //Is object now handled by Python? Remove line?
                 Py_DECREF(varbind);
             }
 
@@ -3139,11 +3148,11 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
             }
 
             /*
-            ** Set up for numeric or full OID's, if necessary.  Save the old
-            ** output format so that it can be restored when we finish -- this
-            ** is a library-wide global, and has to be set/restored for each
-            ** session.
-            */
+             * Set up for numeric or full OID's, if necessary.  Save the old
+             * output format so that it can be restored when we finish -- this
+             * is a library-wide global, and has to be set/restored for each
+             * session.
+             */
             old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                             NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
@@ -3155,10 +3164,12 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                    NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                                    NETSNMP_OID_OUTPUT_FULL);
             }
-            /* Setting use_numeric forces use_long_names on so check for
-               use_numeric after use_long_names (above) to make sure the final
-               outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
-               NETSNMP_OID_OUTPUT_NUMERIC */
+            /*
+             * Setting use_numeric forces use_long_names on so check for
+             * use_numeric after use_long_names (above) to make sure the final
+             * outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
+             *  NETSNMP_OID_OUTPUT_NUMERIC
+             */
             if (py_netsnmp_attr_long(session, "use_numeric"))
             {
                 getlabel_flag |= USE_LONG_NAMES;
@@ -3248,7 +3259,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                     else
                     {
                         PyObject *none = Py_BuildValue(""); /* new ref */
-                        /* not sure why making vabind failed - should not happen*/
+                        /* not sure why making vabind failed - should not happen */
                         PyList_Append(varbinds, none); /* increments ref */
                         /* Return None for this variable. */
                         Py_XDECREF(varbind);
@@ -3387,6 +3398,10 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     varlist_len = 0;
     while (varlist_iter && (varbind = PyIter_Next(varlist_iter))) {
       varlist_len++;
+      /*
+       * Valgrind displays "Invalid read of size 1" when Py_DECREF is in use.
+       * It appears that the data is already free'd when attempting to access.
+       */
       //Py_DECREF(varbind);
     }
     Py_DECREF(varlist_iter);
@@ -3447,11 +3462,11 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     }
 
     /*
-    ** Set up for numeric or full OID's, if necessary.  Save the old
-    ** output format so that it can be restored when we finish -- this
-    ** is a library-wide global, and has to be set/restored for each
-    ** session.
-    */
+     * Set up for numeric or full OID's, if necessary.  Save the old
+     * output format so that it can be restored when we finish -- this
+     * is a library-wide global, and has to be set/restored for each
+     * session.
+     */
     old_format = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID,
                                     NETSNMP_DS_LIB_OID_OUTPUT_FORMAT);
 
@@ -3463,10 +3478,12 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                          NETSNMP_OID_OUTPUT_FULL);
     }
 
-    /* Setting use_numeric forces use_long_names on so check for
-       use_numeric after use_long_names (above) to make sure the final
-       outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
-       NETSNMP_OID_OUTPUT_NUMERIC */
+     /*
+      * Setting use_numeric forces use_long_names on so check for
+      * use_numeric after use_long_names (above) to make sure the final
+      * outcome of NETSNMP_DS_LIB_OID_OUTPUT_FORMAT is
+      * NETSNMP_OID_OUTPUT_NUMERIC
+      */
     if (py_netsnmp_attr_long(session, "use_numeric")) {
       getlabel_flag |= USE_LONG_NAMES;
       getlabel_flag |= USE_NUMERIC_OIDS;
@@ -3734,6 +3751,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                                  (tag ? tag : "<null>"));
                     error = 1;
                     snmp_free_pdu(pdu);
+                    /* Py_XDECREF is called at the end; no need to DECREF here */
                     // Py_DECREF(varbind);
                     Py_DECREF(varlist_iter);
                     goto done;
@@ -3870,7 +3888,6 @@ static PyObject *py_get_logger(char *logger_name)
      *
      * However NullHandler doesn't come with python <2.6 and <3.1, so we need
      * to improvise by using an identical copy in easysnmp.compat.
-     *
      */
 
     null_handler = PyObject_CallMethod(easysnmp_compat_import, "NullHandler", NULL);
