@@ -1358,9 +1358,12 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
                                                              "surrogateescape");
             if (!attr_bytes)
             {
+                /* Needs decrement? */
+                Py_XDECREF(attr);
                 return -1;
             }
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
+            //Py_DECREF(attr_bytes);
 #else
             retval = PyString_AsStringAndSize(attr, val, len);
 #endif
@@ -1524,10 +1527,8 @@ done:
     {
         free(ctx);
     }
-    if (capsule)
-    {
-        Py_XDECREF(capsule);
-    }
+
+    Py_XDECREF(capsule);
     return NULL;
 }
 
@@ -2024,7 +2025,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
         Py_DECREF(varbind);
     }
 
-    Py_DECREF(varlist_iter);
+    Py_XDECREF(varlist_iter);
 
     if (PyErr_Occurred())
     {
@@ -2686,7 +2687,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             varlist_len++;
             Py_DECREF(varbind);
         }
-        Py_DECREF(varlist_iter);
+        Py_XDECREF(varlist_iter);
 
         oid_arr_len              = calloc(varlist_len, sizeof(int));
         oid_arr_broken_check_len = calloc(varlist_len, sizeof(int));
@@ -2745,10 +2746,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             varlist_ind++;
         }
 
-        if (varlist_iter)
-        {
-            Py_DECREF(varlist_iter);
-        }
+        Py_XDECREF(varlist_iter);
 
         if (PyErr_Occurred())
         {
@@ -3058,6 +3056,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             if (!session_ctx)
             {
+                Py_DECREF(varbinds);
                 goto done;
             }
 
@@ -3065,6 +3064,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
             {
+                Py_DECREF(varbinds);
                 goto done;
             }
             memcpy(&err_str, tmpstr, tmplen);
@@ -3128,7 +3128,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 Py_DECREF(varbind);
             }
 
-            Py_DECREF(varbinds_iter);
+            Py_XDECREF(varbinds_iter);
 
             if (PyErr_Occurred())
             {
@@ -3275,6 +3275,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
             if (response)
             {
                 snmp_free_pdu(response);
+                response = NULL;
             }
 
             Py_DECREF(varbinds);
@@ -3316,7 +3317,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     int len;
     oid **oid_arr = NULL;
     int *oid_arr_len = NULL;
-    char **initial_oid_str_arr = NULL;
+    //char **initial_oid_str_arr = NULL;
     char **oid_str_arr = NULL;
     char **oid_idx_str_arr = NULL;
     int type;
@@ -3409,18 +3410,13 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
         while (varlist_iter && (varbind = PyIter_Next(varlist_iter)))
         {
             varlist_len++;
-            /*
-             * Valgrind displays "Invalid read of size 1" when Py_DECREF is in
-             * use. It appears that the data is already free'd when attempting
-             * to access it.
-             */
-            //Py_DECREF(varbind);
+            Py_DECREF(varbind);
         }
         Py_DECREF(varlist_iter);
 
         oid_arr_len = calloc(varlist_len, sizeof(int));
         oid_arr = calloc(varlist_len, sizeof(oid *));
-        initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
+        //initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
         oid_str_arr = calloc(varlist_len, sizeof(char *));
         oid_idx_str_arr = calloc(varlist_len, sizeof(char *));
 
@@ -3445,7 +3441,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
             )
             {
 
-                initial_oid_str_arr[varlist_ind] = oid_str_arr[varlist_ind];
+                //initial_oid_str_arr[varlist_ind] = oid_str_arr[varlist_ind];
 
                 py_log_msg(DEBUG,
                            "netsnmp_bulkwalk: Initial oid(%s) oid_idx(%s)",
@@ -3535,14 +3531,6 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
             pdu->max_repetitions = maxrepetitions;
             snmp_add_null_var(pdu, oid_arr[varlist_ind], oid_arr_len[varlist_ind]);
 
-            py_log_msg(DEBUG,
-                       "netsnmp_bulkwalk: filling request: oid(%s) "
-                       "oid_idx(%s) oid_arr_len(%d) best_guess(%d)",
-                       oid_str_arr[varlist_ind],
-                       oid_idx_str_arr[varlist_ind],
-                       oid_arr_len[varlist_ind],
-                       best_guess);
-
             notdone = 1;
             while (notdone)
             {
@@ -3629,9 +3617,15 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                             py_log_msg(DEBUG, "netsnmp_bulkwalk: str_buf: %s",
                                        str_buf);
 
-                            py_netsnmp_attr_set_string(varbind, "root_oid",
-                                                       initial_oid_str_arr[varlist_ind],
-                                                       STRLEN(initial_oid_str_arr[varlist_ind]));
+                            /*
+                             * Part of adopted code. SNMPVariable does not have
+                             * a root_oid attribute. Maybe this could be added
+                             * in a future update; will not implement now in
+                             * case it breaks someone else's code
+                             */
+                            // py_netsnmp_attr_set_string(varbind, "root_oid",
+                            //                            initial_oid_str_arr[varlist_ind],
+                            //                           STRLEN(initial_oid_str_arr[varlist_ind]));
 
                             __get_label_iid((char *)str_buf,
                                             &oid_str_arr[varlist_ind],
@@ -3715,7 +3709,7 @@ done:
     py_log_msg(DEBUG, "netsnmp_bulkwalk: Starting cleanup");
     Py_XDECREF(varbinds);
     Py_XDECREF(sess_ptr);
-    SAFE_FREE(initial_oid_str_arr);
+    //SAFE_FREE(initial_oid_str_arr);
     SAFE_FREE(oid_arr_len);
 
     for (varlist_ind = 0; varlist_ind < varlist_len; varlist_ind++)
