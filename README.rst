@@ -1,7 +1,7 @@
 Easy SNMP
 =========
 
-|Build Status| |Coverage Status| |License|
+|Build Status| |Coverage Status| |Gitter| |License|
 
 .. |Build Status| image:: https://travis-ci.org/fgimian/easysnmp.svg?branch=master
    :target: https://travis-ci.org/fgimian/easysnmp
@@ -9,6 +9,9 @@ Easy SNMP
    :target: https://coveralls.io/r/fgimian/easysnmp
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/fgimian/easysnmp/blob/master/LICENSE
+.. |Gitter| image:: https://badges.gitter.im/easysnmp/Lobby.svg
+   :alt: Join the chat at https://gitter.im/easysnmp/Lobby
+   :target: https://gitter.im/easysnmp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 .. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/images/easysnmp-logo.png
     :alt: Easy SNMP Logo
