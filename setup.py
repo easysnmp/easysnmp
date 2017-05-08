@@ -6,6 +6,7 @@ from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
 
 # Determine if a base directory has been provided with the --basedir option
+basedir = None
 in_tree = False
 # Add compiler flags if debug is set
 compile_args = ['-Wno-unused-function']
@@ -39,17 +40,18 @@ else:
     libdirs = [flag[2:] for flag in shlex.split(netsnmp_libs) if flag.startswith('-L')]  # noqa
     incdirs = []
 
-    if sys.platform == 'darwin': # OS X
+    if sys.platform == 'darwin':  # OS X
         brew = os.popen('brew info net-snmp').read()
-        if not 'command not found' in brew and not 'error' in brew:
-            # /usr/local/opt is the default brew `opt` prefix, however the user may have installed it elsewhere
-            # The `brew info <pkg>` includes an apostrophe, which breaks shlex. We'll simply replace it
-            libdirs = [flag[2:] for flag in shlex.split(brew.replace('\'','')) if flag.startswith('-L')]    # noqa
-            incdirs = [flag[2:] for flag in shlex.split(brew.replace('\'','')) if flag.startswith('-I')]    # noqa
+        if 'command not found' not in brew and 'error' not in brew:
+            # /usr/local/opt is the default brew `opt` prefix, however the user
+            # may have installed it elsewhere. The `brew info <pkg>` includes
+            # an apostrophe, which breaks shlex. We'll simply replace it
+            libdirs = [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-L')]    # noqa
+            incdirs = [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-I')]    # noqa
             # The homebrew version also depends on the Openssl keg
             brew = os.popen('brew info openssl').read()
-            libdirs += [flag[2:] for flag in shlex.split(brew.replace('\'','')) if flag.startswith('-L')]    # noqa
-            incdirs += [flag[2:] for flag in shlex.split(brew.replace('\'','')) if flag.startswith('-I')]    # noqa
+            libdirs += [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-L')]    # noqa
+            incdirs += [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-I')]    # noqa
 
 
 # Setup the py.test class for use with the test command
