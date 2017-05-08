@@ -1253,6 +1253,7 @@ retry:
                         if (*response)
                         {
                             snmp_free_pdu(*response);
+                            *response = NULL;
                         }
 
                         retry_num++;
@@ -2583,8 +2584,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     int varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
-    netsnmp_pdu *pdu, *response;
-    netsnmp_pdu *newpdu;
+    netsnmp_pdu *pdu = NULL;
+    netsnmp_pdu *response = NULL;
     /*
     ** Variable `oldvars` does not appear to fufill any immediate purpose and
     ** causes segfaults in some cases, especially when running against OID '.1'
@@ -2735,6 +2736,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                              (tag ? tag : "<null>"));
                 error = 1;
                 snmp_free_pdu(pdu);
+                pdu = NULL;
                 Py_DECREF(varbind);
                 goto done;
             }
@@ -2752,6 +2754,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         {
             error = 1;
             snmp_free_pdu(pdu);
+            pdu = NULL;
             goto done;
         }
 
@@ -2796,6 +2799,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         {
             error = 1;
             snmp_free_pdu(pdu);
+            pdu = NULL;
             goto done;
         }
 
@@ -2805,9 +2809,6 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
              vars != NULL;
              vars = vars->next_variable, varlist_ind++)
         {
-            /* `calloc` was already called in first for-loop. Removing. */
-            //oid_arr_broken_check[varlist_ind] =
-            //    calloc(MAX_OID_LEN, sizeof(oid));
 
             oid_arr_broken_check_len[varlist_ind] = vars->name_length;
             memcpy(oid_arr_broken_check[varlist_ind],
@@ -2822,10 +2823,12 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             if (status != 0)
             {
                 error = 1;
-                if (pdu)
-                {
-                    snmp_free_pdu(pdu);
-                }
+                /*
+                 * pdu is released in __send_sync_pdu if an error occurs during
+                 * the snmp_sess_synch_response function. It does not, however,
+                 * appear to be set to NULL afterwards.
+                 */
+                pdu = NULL;
                 goto done;
             }
 
@@ -2837,18 +2840,13 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             }
             else
             {
-                /*
-                   Valgrind was reporting a lost block due to `calloc` here.
-                   We're now calling `snmp_free_pdu` at label `done` to fix this
-                 */
-                newpdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
+
+                pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
                 for (vars = (response ? response->variables : NULL),
-                     varlist_ind = 0; //,
-                     //oldvars = (pdu ? pdu->variables : NULL);
+                     varlist_ind = 0;
                      vars && (varlist_ind < varlist_len);
-                     vars = vars->next_variable, varlist_ind++)//,
-                     //oldvars = (oldvars ? oldvars->next_variable : NULL))
+                     vars = vars->next_variable, varlist_ind++)
                 {
                     if ((vars->name_length < oid_arr_len[varlist_ind]) ||
                         (memcmp(oid_arr[varlist_ind], vars->name,
@@ -2954,17 +2952,18 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                            sizeof(oid) * vars->name_length);
                     oid_arr_broken_check_len[varlist_ind] = vars->name_length;
 
-                    snmp_add_null_var(newpdu, vars->name, vars->name_length);
+                    snmp_add_null_var(pdu, vars->name, vars->name_length);
                 }
-                pdu = newpdu;
+
             }
             if (response)
             {
                 snmp_free_pdu(response);
+                response = NULL;
             }
         }
 
-        /* Reset the library's behavior for numeric/symbolic OID's. */
+        /* Reset the library's behavior for numeric/symbolic OIDs. */
         netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
                            NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                            old_format);
@@ -2991,6 +2990,7 @@ done:
     if (pdu)
     {
         snmp_free_pdu(pdu);
+        pdu = NULL;
     }
     if (error)
     {
