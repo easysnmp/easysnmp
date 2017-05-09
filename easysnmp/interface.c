@@ -2216,12 +2216,13 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
                        NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                        old_format);
 
+done:
+    Py_XDECREF(sess_ptr);
     if (response)
     {
         snmp_free_pdu(response);
+        response = NULL;
     }
-
-done:
 
     if (error)
     {
@@ -2240,7 +2241,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     int varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
-    netsnmp_pdu *pdu, *response;
+    netsnmp_pdu *pdu = NULL;
+    netsnmp_pdu *response = NULL;
     netsnmp_variable_list *vars;
     struct tree *tp;
     int len;
@@ -2356,6 +2358,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                     error = 1;
                     snmp_free_pdu(pdu);
                     Py_DECREF(varbind);
+                    Py_DECREF(varlist_iter);
                     goto done;
                 }
                 /* release reference when done */
@@ -2509,8 +2512,6 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
                 py_netsnmp_attr_set_string(varbind, "value", (char *) str_buf,
                                            len);
-
-                Py_DECREF(varbind);
             }
             else if (no_such_name)
             {
@@ -2518,7 +2519,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 {
                     py_log_msg(DEBUG, "netsnmp_get: bad varbind (%d)",
                                varlist_ind);
-                    Py_XDECREF(varbind);
+                    //Py_XDECREF(varbind); /* Double decref? */
                 }
 
                 py_netsnmp_attr_set_string(varbind, "snmp_type", "NOSUCHNAME",
@@ -2526,16 +2527,13 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
 
                 py_netsnmp_attr_set_string(varbind, "value",
                                            "NOSUCHNAME", strlen("NOSUCHNAME"));
-
-                Py_DECREF(varbind);
             }
             else
             {
                 py_log_msg(DEBUG, "netsnmp_getnext: bad varbind (%d)",
                            varlist_ind);
-                Py_XDECREF(varbind);
             }
-
+            Py_XDECREF(varbind);
             /*
              * in v1 this will only advance if the varbind index is valid;
              * in v2/v3 no_such_name is always set to 0.
@@ -2550,15 +2548,10 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
         netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
                            NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                            old_format);
-
-        if (response)
-        {
-            snmp_free_pdu(response);
-        }
     }
 
 done:
-
+    Py_XDECREF(sess_ptr);
     /* the pointers will be equal if we didn't allocate additional space */
     if (invalid_oids != snmpv1_invalid_oids)
     {
@@ -2566,6 +2559,11 @@ done:
     }
 
     SAFE_FREE(oid_arr);
+    if (response)
+    {
+        snmp_free_pdu(response);
+        response = NULL;
+    }
     if (error)
     {
         return NULL;
@@ -2738,6 +2736,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                 error = 1;
                 snmp_free_pdu(pdu);
                 pdu = NULL;
+                Py_DECREF(varlist_iter);
                 Py_DECREF(varbind);
                 goto done;
             }
@@ -2827,6 +2826,11 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                  * appear to be set to NULL afterwards.
                  */
                 pdu = NULL;
+                if (response)
+                {
+                    snmp_free_pdu(response);
+                    response = NULL;
+                }
                 goto done;
             }
 
@@ -2974,7 +2978,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     }
 
 done:
-
+    Py_XDECREF(sess_ptr);
     Py_XDECREF(varbinds);
     SAFE_FREE(oid_arr_len);
     SAFE_FREE(oid_arr_broken_check_len);
@@ -3004,13 +3008,14 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     PyObject *session = NULL;
     PyObject *sess_ptr = NULL;
     PyObject *varlist;
-    PyObject *varbinds;
+    PyObject *varbinds = NULL;
     PyObject *varbind;
     PyObject *varbinds_iter;
     int varbind_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
-    netsnmp_pdu *pdu, *response;
+    netsnmp_pdu *pdu = NULL;
+    netsnmp_pdu *response = NULL;
     netsnmp_variable_list *vars;
     struct tree *tp;
     int len;
@@ -3056,7 +3061,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             if (!session_ctx)
             {
-                Py_DECREF(varbinds);
                 goto done;
             }
 
@@ -3064,7 +3068,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
             if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
             {
-                Py_DECREF(varbinds);
                 goto done;
             }
             memcpy(&err_str, tmpstr, tmplen);
@@ -3122,6 +3125,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                     error = 1;
                     snmp_free_pdu(pdu);
                     Py_DECREF(varbind);
+                    Py_DECREF(varbinds_iter);
                     goto done;
                 }
                 /* release reference when done */
@@ -3134,6 +3138,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
             {
                 error = 1;
                 snmp_free_pdu(pdu);
+                pdu = NULL;
                 goto done;
             }
 
@@ -3189,6 +3194,12 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 {
                     error = 1;
                     snmp_free_pdu(pdu);
+                    pdu = NULL;
+                    if (response)
+                    {
+                        snmp_free_pdu(response);
+                        response = NULL;
+                    }
                     goto done;
                 }
 
@@ -3253,8 +3264,6 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
 
                         /* push varbind onto varbinds */
                         PyList_Append(varbinds, varbind);
-
-                        Py_DECREF(varbind);
                     }
                     else
                     {
@@ -3262,8 +3271,10 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                         /* not sure why making vabind failed - should not happen */
                         PyList_Append(varbinds, none); /* increments ref */
                         /* Return None for this variable. */
-                        Py_XDECREF(varbind);
+                        Py_DECREF(none);
                     }
+
+                    Py_XDECREF(varbind);
                 }
             }
 
@@ -3278,7 +3289,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 response = NULL;
             }
 
-            Py_DECREF(varbinds);
+            //Py_DECREF(varbinds);
         }
 
         if (PyErr_Occurred())
@@ -3288,7 +3299,8 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     }
 
 done:
-
+    Py_XDECREF(varbinds);
+    Py_XDECREF(sess_ptr);
     SAFE_FREE(oid_arr);
     if (error)
     {
@@ -3466,6 +3478,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                              (oid_str_arr[varlist_ind] ? oid_str_arr[varlist_ind] : "<null>"));
                 error = 1;
                 Py_DECREF(varbind);
+                Py_DECREF(varlist_iter);
                 goto done;
             }
 
@@ -3542,6 +3555,11 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                                                    err_ind);
                 if (status != 0) {
                     error = 1;
+                    if (response)
+                    {
+                        snmp_free_pdu(response);
+                        response = NULL;
+                    }
                     goto done;
                 }
 
@@ -3552,8 +3570,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                 {
                     notdone = 0;
                 }
-
-                if (notdone)
+                else
                 {
                     vars = (response ? response->variables : NULL);
                     while (vars)
@@ -3689,6 +3706,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                 if (response)
                 {
                     snmp_free_pdu(response);
+                    response = NULL;
                 }
             }
         }
@@ -3814,8 +3832,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                                  (tag ? tag : "<null>"));
                     error = 1;
                     snmp_free_pdu(pdu);
-                    /* Py_XDECREF is called at the end; no need to DECREF here */
-                    // Py_DECREF(varbind);
+                    pdu = NULL;
+                    Py_DECREF(varbind);
                     Py_DECREF(varlist_iter);
                     goto done;
                 }
@@ -3825,7 +3843,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                     if (py_netsnmp_attr_string(varbind, "snmp_type", &type_str, NULL) < 0)
                     {
                         snmp_free_pdu(pdu);
-                        // Py_DECREF(varbind);
+                        Py_DECREF(varbind);
                         Py_DECREF(varlist_iter);
                         goto done;
                     }
@@ -3837,7 +3855,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                                         "the object");
                         error = 1;
                         snmp_free_pdu(pdu);
-                        // Py_DECREF(varbind);
+                        pdu = NULL;
+                        Py_DECREF(varbind);
                         Py_DECREF(varlist_iter);
                         goto done;
                     }
@@ -3846,7 +3865,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                 if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
                     snmp_free_pdu(pdu);
-                    // Py_DECREF(varbind);
+                    pdu = NULL;
+                    Py_DECREF(varbind);
                     Py_DECREF(varlist_iter);
                     goto done;
                 }
@@ -3887,6 +3907,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
             {
                 error = 1;
                 snmp_free_pdu(pdu);
+                pdu = NULL;
                 goto done;
             }
         }
@@ -3894,15 +3915,17 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
         status = __send_sync_pdu(ss, pdu, &response, NO_RETRY_NOSUCH,
                                  err_str, &err_num, &err_ind, NULL);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
-        if (status != 0)
-        {
-            error = 1;
-            goto done;
-        }
 
         if (response)
         {
             snmp_free_pdu(response);
+            response = NULL;
+        }
+
+        if (status != 0)
+        {
+            error = 1;
+            goto done;
         }
 
         if (status == STAT_SUCCESS)
@@ -3917,7 +3940,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
 done:
     Py_XDECREF(sess_ptr);
-    Py_XDECREF(varbind);
     SAFE_FREE(oid_arr);
     if (error)
     {
