@@ -3149,6 +3149,11 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
             if (status != 0)
             {
                 error = 1;
+                if (response)
+                {
+                    snmp_free_pdu(response);
+                    response = NULL;
+                }
                 goto done;
             }
 
@@ -3424,7 +3429,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
             varlist_len++;
             Py_DECREF(varbind);
         }
-        Py_DECREF(varlist_iter);
+        Py_XDECREF(varlist_iter);
 
         oid_arr_len = calloc(varlist_len, sizeof(int));
         oid_arr = calloc(varlist_len, sizeof(oid *));
