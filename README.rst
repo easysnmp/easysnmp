@@ -3,12 +3,12 @@ Easy SNMP
 
 |Build Status| |Coverage Status| |Gitter| |License|
 
-.. |Build Status| image:: https://travis-ci.org/fgimian/easysnmp.svg?branch=master
-   :target: https://travis-ci.org/fgimian/easysnmp
-.. |Coverage Status| image:: https://coveralls.io/repos/fgimian/easysnmp/badge.svg
-   :target: https://coveralls.io/r/fgimian/easysnmp
+.. |Build Status| image:: https://travis-ci.org/kamakazikamikaze/easysnmp.svg?branch=master
+   :target: https://travis-ci.org/kamakazikamikaze/easysnmp
+.. |Coverage Status| image:: https://coveralls.io/repos/kamakazikamikaze/easysnmp/badge.svg
+   :target: https://coveralls.io/r/kamakazikamikaze/easysnmp
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
-   :target: https://github.com/fgimian/easysnmp/blob/master/LICENSE
+   :target: https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE
 .. |Gitter| image:: https://badges.gitter.im/easysnmp/Lobby.svg
    :alt: Join the chat at https://gitter.im/easysnmp/Lobby
    :target: https://gitter.im/easysnmp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
@@ -159,7 +159,7 @@ License
 -------
 
 Easy SNMP is released under the **BSD** license. Please see the
-`LICENSE <https://github.com/fgimian/easysnmp/blob/master/LICENSE>`_
+`LICENSE <https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE>`_
 file for more details.
 
 Copyright
