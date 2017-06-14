@@ -3830,7 +3830,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                                    best_guess);
                 }
 
-                if (oid_arr_len==0)
+                if (oid_arr_len == 0)
                 {
                     PyErr_Format(EasySNMPUnknownObjectIDError,
                                  "unknown object id (%s)",
@@ -3847,7 +3847,17 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                 {
                     if (py_netsnmp_attr_string(varbind, "snmp_type", &type_str, NULL) < 0)
                     {
+                        /**
+                         * NoneType error returned if this is not included.
+                         * Not sure why original author did not raise an error
+                         * here before. Keep an eye out for edge cases!
+                         */
+                        PyErr_SetString(EasySNMPUndeterminedTypeError,
+                                        "a type could not be determine for "
+                                        "the object");
+                        error = 1;
                         snmp_free_pdu(pdu);
+                        pdu = NULL;
                         Py_DECREF(varbind);
                         Py_DECREF(varlist_iter);
                         goto done;

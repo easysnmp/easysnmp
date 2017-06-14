@@ -9,3 +9,4 @@ Easy API
 .. autofunction:: snmp_get_next
 .. autofunction:: snmp_get_bulk
 .. autofunction:: snmp_walk
+.. autofunction:: snmp_bulkwalk
