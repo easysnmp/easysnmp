@@ -81,13 +81,13 @@ with open('README.rst') as f:
 
 setup(
     name='easysnmp',
-    version='0.2.5-dev',
+    version='0.2.5',
     description='A blazingly fast and Pythonic SNMP library based on the '
                 'official Net-SNMP bindings',
     long_description=long_description,
-    author='Fotis Gimian',
-    author_email='fgimiansoftware@gmail.com',
-    url='https://github.com/fgimian/easysnmp',
+    author='Kent Coble',
+    author_email='coblekent@gmail.com',
+    url='https://github.com/kamakazikamikaze/easysnmp',
     license='BSD',
     packages=['easysnmp'],
     tests_require=['pytest-cov', 'pytest-flake8', 'pytest-sugar', 'pytest'],
@@ -109,6 +109,8 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: System :: Networking',
         'Topic :: System :: Networking :: Monitoring'
     ]
