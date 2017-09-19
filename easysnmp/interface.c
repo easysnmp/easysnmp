@@ -1351,7 +1351,6 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
         {
             int retval;
 
-#if PY_MAJOR_VERSION >= 3
             // Encode the provided attribute using latin-1 into bytes and
             // retrieve its value and length
             PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1",
@@ -1364,9 +1363,6 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             }
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
             //Py_DECREF(attr_bytes);
-#else
-            retval = PyString_AsStringAndSize(attr, val, len);
-#endif
 
             Py_DECREF(attr);
             return retval;
