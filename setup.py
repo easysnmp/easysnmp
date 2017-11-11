@@ -9,7 +9,7 @@ from setuptools.command.test import test as TestCommand
 basedir = None
 in_tree = False
 # Add compiler flags if debug is set
-compile_args = ['-Wno-unused-function']
+compile_args = []
 for arg in sys.argv:
     if arg.startswith('--debug'):
         # Note from GCC manual:
