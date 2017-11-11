@@ -52,7 +52,7 @@ def build_varlist(oids):
         # OID . is specified (which we convert to iso)
         elif oid == '.':
             varlist.append(SNMPVariable('iso'))
-        # OIDs specefied as a string (e.g. 'sysContact.0')
+        # OIDs specified as a string (e.g. 'sysContact.0')
         else:
             varlist.append(SNMPVariable(oid))
 
