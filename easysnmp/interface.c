@@ -1365,10 +1365,26 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
             //Py_DECREF(attr_bytes);
 #else
+            /* safely convert unicode to string object */
+            if (PyUnicode_Check(attr)) {
+                Py_UNICODE * uniptr = PyUnicode_AS_UNICODE(attr);
+                Py_ssize_t l = PyUnicode_GET_SIZE(attr);
+                char * string = malloc(l);
+                int i;
+                for (i = 0; i < l; ++i)
+                {
+                    string[i] = (char) uniptr[i];
+                }
+                Py_DECREF(attr);
+                attr = PyString_FromStringAndSize(string, l);
+                free(string);
+                if (attr == NULL)
+                    return -1;
+            }
+
             retval = PyString_AsStringAndSize(attr, val, len);
 #endif
 
-            Py_DECREF(attr);
             return retval;
         }
     }
