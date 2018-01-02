@@ -1385,7 +1385,6 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             retval = PyString_AsStringAndSize(attr, val, len);
 #endif
 
-            Py_DECREF(attr);
             return retval;
         }
     }
