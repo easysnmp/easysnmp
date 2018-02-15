@@ -2578,7 +2578,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     PyObject *varlist = NULL;
     PyObject *varlist_iter;
     PyObject *varbind;
-    PyObject *varbinds  = NULL;
+    PyObject *varbinds = NULL;
+    PyObject *ignore_order = NULL;
     int varlist_len = 0;
     int varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
@@ -2624,7 +2625,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
     if (args)
     {
-        if (!PyArg_ParseTuple(args, "OO", &session, &varlist))
+        if (!PyArg_ParseTuple(args, "OOO", &session, &varlist, &ignore_order))
         {
             goto done;
         }
@@ -2871,18 +2872,18 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                          oid_arr_broken_check_len[varlist_ind]) <= 0)
                     {
                         /*
-                           The agent responded with an illegal response
-                           as the returning OID was lexograghically less
-                           then or equal to the requested OID...
-                           We need to give up here because an infinite
-                           loop will result otherwise.
-
-                           XXX: this really should be an option to
-                           continue like the -Cc option to the snmpwalk
-                           application.
+                        ** The agent responded with an illegal response
+                        ** as the returning OID was lexograghically less
+                        ** then or equal to the requested OID...
+                        ** If not explicitly set with "ignore_order", we
+                        ** will give up here because an infinite loop
+                        ** can result otherwise.
                         */
-                        notdone = 0;
-                        break;
+                        if (!PyObject_IsTrue(ignore_order))
+                        {
+                            notdone = 0;
+                            break;
+                        }
                     }
 
                     varbind = py_netsnmp_construct_varbind();

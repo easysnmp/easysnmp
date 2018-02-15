@@ -446,7 +446,7 @@ class Session(object):
         # Return a list of variables
         return varlist
 
-    def walk(self, oids='.1.3.6.1.2.1'):
+    def walk(self, oids='.1.3.6.1.2.1', ignore_order=False):
         """
         Uses SNMP GETNEXT operation using the prepared session to
         automatically retrieve multiple pieces of information in an OID.
@@ -456,6 +456,9 @@ class Session(object):
                      entire OID (e.g. 'sysDescr.0') or may be a tuple
                      containing the name as its first item and index as its
                      second (e.g. ('sysDescr', 0))
+        :param ignore_order: disables the check if the last oid was
+                             lexograghically lower the one before. use with
+                             caution, this can cause infinite loops.
         :return: a list of SNMPVariable objects containing the values that
                  were retrieved via SNMP
         """
@@ -464,7 +467,7 @@ class Session(object):
         varlist, _ = build_varlist(oids)
 
         # Perform the SNMP walk using GETNEXT operations
-        interface.walk(self, varlist)
+        interface.walk(self, varlist, ignore_order)
 
         # Validate the variable list returned
         if self.abort_on_nonexistent:
