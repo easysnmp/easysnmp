@@ -22,13 +22,13 @@ Library <https://openclipart.org/detail/154453/network>`_
 Introduction
 ------------
 
-Easy SNMP is a fork of the official `Net-SNMP Python
+Easy SNMP is a fork of `Net-SNMP Python
 Bindings <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
-but attempts to bring a more Pythonic interface to the library. Check
+that attempts to bring a more Pythonic interface to the library. Check
 out the `Net-SNMP website <http://www.net-snmp.org/>`_ for more
 information about SNMP.
 
-This module provides a full featured SNMP client API supporting all
+This module provides a full featured SNMP client API and supports all
 dialects of the SNMP protocol.
 
 Why Another Library?
@@ -38,23 +38,23 @@ Why Another Library?
   library <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
   is a great starting point but is quite un-Pythonic and lacks proper
   unit tests and documentation.
-- `PySNMP <http://pysnmp.sourceforge.net/>`_ is written in pure Python
+- `PySNMP <http://pysnmp.sourceforge.net/>`_ is entirely written in Python
   and therefore has a huge performance hit. In some brief tests, I
   estimate that both the Net-SNMP Python bindings and Easy SNMP are
-  more than 4 times faster. Further to this, PySNMP has an even less
+  more than 4 times faster than PySNMP. Further to this, PySNMP has an even less
   Pythonic interface than the official Net-SNMP bindings.
 - Many other libraries like
   `Snimpy <https://snimpy.readthedocs.org/en/latest/>`_ are sadly
-  based on PySNMP and so they suffer the same performance penalty.
+  based on PySNMP, so they also suffer performance penalty.
 
 Quick Start
 -----------
 
-There are primarily two ways you can use the Easy SNMP library.
+There are primarily two ways you can use the Easy SNMP library:
 
-The first is with the use of a Session object which is most suitable
-when you are planning on requesting multiple pieces of SNMP data from a
-source.
+1. By using a Session object which is most suitable
+when you want to request multiple pieces of SNMP data from a
+source:
 
 .. code:: python
 
@@ -90,9 +90,9 @@ source.
             value=item.value
         )
 
-You may also use Easy SNMP via its simple interface which is intended
-for one-off operations where you wish to specify all details in the
-request:
+2. By using Easy SNMP via its simple interface which is intended
+for one-off operations (where you wish to specify all details in the
+request):
 
 .. code:: python
 
