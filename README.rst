@@ -19,6 +19,17 @@ Easy SNMP
 Artwork courtesy of `Open Clip Art
 Library <https://openclipart.org/detail/154453/network>`_
 
+### Table of contents
+
+1. [Introdcution](#introduction)
+2. [Why Another Library?](#why-another-library-?)
+3. [Quick Start](#quick-start)
+4. [Documentation](#documentation)
+5. [Acknowledgments](#acknowledgments)
+6. [Running Tests](#running-tests)
+7. [License](#license)
+8. [Copyright](#copyright)
+
 Introduction
 ------------
 
@@ -114,7 +125,7 @@ Documentation
 -------------
 
 Please check out the `Easy SNMP documentation at Read the
-Docs <http://easysnmp.readthedocs.org/>`_. This includes install
+Docs <http://easysnmp.readthedocs.org/>`_. This includes installation
 instructions for various operating systems.
 
 You may generate the documentation as follows:
