@@ -19,16 +19,6 @@ Easy SNMP
 Artwork courtesy of `Open Clip Art
 Library <https://openclipart.org/detail/154453/network>`_
 
-### Table of contents
-
-1. [Introdcution](#introduction)
-2. [Why Another Library?](#why-another-library-?)
-3. [Quick Start](#quick-start)
-4. [Documentation](#documentation)
-5. [Acknowledgments](#acknowledgments)
-6. [Running Tests](#running-tests)
-7. [License](#license)
-8. [Copyright](#copyright)
 
 Introduction
 ------------
@@ -39,7 +29,7 @@ that attempts to bring a more Pythonic interface to the library. Check
 out the `Net-SNMP website <http://www.net-snmp.org/>`_ for more
 information about SNMP.
 
-This module provides a full featured SNMP client API and supports all
+This module provides a full-featured SNMP client API and supports all
 dialects of the SNMP protocol.
 
 Why Another Library?
@@ -47,16 +37,11 @@ Why Another Library?
 
 - The `original Net-SNMP Python
   library <http://net-snmp.sourceforge.net/wiki/index.php/Python_Bindings>`_
-  is a great starting point but is quite un-Pythonic and lacks proper
-  unit tests and documentation.
+  is a great starting point but is quite un-Pythonic and lacks proper unit tests and documentation.
 - `PySNMP <http://pysnmp.sourceforge.net/>`_ is entirely written in Python
   and therefore has a huge performance hit. In some brief tests, I
-  estimate that both the Net-SNMP Python bindings and Easy SNMP are
-  more than 4 times faster than PySNMP. Further to this, PySNMP has an even less
-  Pythonic interface than the official Net-SNMP bindings.
-- Many other libraries like
-  `Snimpy <https://snimpy.readthedocs.org/en/latest/>`_ are sadly
-  based on PySNMP, so they also suffer performance penalty.
+  estimate that both the Net-SNMP Python bindings and Easy SNMP are more than 4 times faster than PySNMP. Further to this, PySNMP has an even less Pythonic interface than the official Net-SNMP bindings.
+- Many other libraries like `Snimpy <https://snimpy.readthedocs.org/en/latest/>`_ are sadly based on PySNMP, so they also suffer performance penalty.
 
 Quick Start
 -----------
