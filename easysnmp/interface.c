@@ -1376,6 +1376,38 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
     return -1;
 }
 
+static int py_netsnmp_attr_string_str(PyObject *obj, char *attr_name, char **val,
+				      Py_ssize_t *len)
+{
+    *val = NULL;
+    if (obj && attr_name && PyObject_HasAttrString(obj, attr_name))
+    {
+        PyObject *attr = PyObject_GetAttrString(obj, attr_name);
+        if (attr)
+        {
+            int retval;
+
+            // Encode the provided attribute using latin-1 into bytes and
+            // retrieve its value and length
+            PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1",
+                                                             "surrogateescape");
+            if (!attr_bytes)
+            {
+                /* Needs decrement? */
+                Py_XDECREF(attr);
+                return -1;
+            }
+            retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
+            //Py_DECREF(attr_bytes);
+
+            Py_DECREF(attr);
+            return retval;
+        }
+    }
+
+    return -1;
+}
+
 static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
 {
     long long val = -1;
@@ -3877,7 +3909,14 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                     }
                 }
 
-                if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
+		int attr_string_status = -1;
+		if (type == TYPE_OCTETSTR) {
+		  attr_string_status = py_netsnmp_attr_string_str(varbind, "value", &val, &tmplen);
+		} else {
+		  attr_string_status = py_netsnmp_attr_string(varbind, "value", &val, &tmplen);
+		}
+
+                if (attr_string_status < 0)
                 {
                     snmp_free_pdu(pdu);
                     pdu = NULL;
