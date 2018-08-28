@@ -1,7 +1,5 @@
 #include <Python.h>
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "openssl.lib")
-#pragma comment(lib, "libcrypto.lib")
+
 /*
  * Old versions of Python use CObject API instead of Capsules.
  * Both are similar, so we just use a bit of preprocessor magic
@@ -25,6 +23,9 @@
 
 //#define WIN32_LEAN_AND_MEAN
 #ifdef _MSC_VER
+#pragma comment(lib, "ws2_32")
+//#pragma comment(lib, "openssl.lib")
+//#pragma comment(lib, "libcrypto.lib")
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
@@ -36,16 +37,16 @@ typedef int node_t;
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
-
 #include <net-snmp/snmpv3_api.h>
 #include <sys/types.h>
+
 #ifdef _WIN32
 #include <windows.h>
-//#include <io.h>
 #else
 #include <arpa/inet.h>
 #include <netdb.h>
 #endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -1059,49 +1060,16 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
         case TYPE_GAUGE:
         case TYPE_UNSIGNED32:
             vars->type = ASN_GAUGE;
-			vars->val.integer = malloc(sizeof(long));
-			if (val)
-			{
-				sscanf(val, "%lu", vars->val.integer);
-			}
-			else
-			{
-				ret = FAILURE;
-				*(vars->val.integer) = 0;
-			}
-			vars->val_len = sizeof(long);
-			break;
+            goto UINT;
         case TYPE_COUNTER:
             vars->type = ASN_COUNTER;
-			vars->val.integer = malloc(sizeof(long));
-			if (val)
-			{
-				sscanf(val, "%lu", vars->val.integer);
-			}
-			else
-			{
-				ret = FAILURE;
-				*(vars->val.integer) = 0;
-			}
-			vars->val_len = sizeof(long);
-			break;
+            goto UINT;
         case TYPE_TIMETICKS:
             vars->type = ASN_TIMETICKS;
-			vars->val.integer = malloc(sizeof(long));
-			if (val)
-			{
-				sscanf(val, "%lu", vars->val.integer);
-			}
-			else
-			{
-				ret = FAILURE;
-				*(vars->val.integer) = 0;
-			}
-			vars->val_len = sizeof(long);
-			break;
+            goto UINT;
         case TYPE_UINTEGER:
             vars->type = ASN_UINTEGER;
-/*
+
 UINT:
 
             vars->val.integer = malloc(sizeof(long));
@@ -1116,42 +1084,18 @@ UINT:
             }
             vars->val_len = sizeof(long);
             break;
-			*/
+
         case TYPE_OCTETSTR:
             vars->type = ASN_OCTET_STR;
-			vars->val.string = malloc(len);
-			vars->val_len = len;
-			if (val && len)
-			{
-				memcpy((char *)vars->val.string, val, len);
-			}
-			else
-			{
-				ret = FAILURE;
-				vars->val.string = (u_char *)strdup("");
-				vars->val_len = 0;
-			}
-			break;
+            goto OCT;
 
         case TYPE_BITSTRING:
             vars->type = ASN_OCTET_STR;
-			vars->val.string = malloc(len);
-			vars->val_len = len;
-			if (val && len)
-			{
-				memcpy((char *)vars->val.string, val, len);
-			}
-			else
-			{
-				ret = FAILURE;
-				vars->val.string = (u_char *)strdup("");
-				vars->val_len = 0;
-			}
-			break;
+            goto OCT;
 
         case TYPE_OPAQUE:
             vars->type = ASN_OCTET_STR;
-/*
+
 OCT:
 
             vars->val.string = malloc(len);
@@ -1167,7 +1111,7 @@ OCT:
                 vars->val_len = 0;
             }
             break;
-			*/
+
         case TYPE_IPADDR:
             vars->type = ASN_IPADDRESS;
             {
@@ -2350,8 +2294,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     Py_ssize_t tmplen;
     int error = 0;
     unsigned long snmp_version = 0;
-    const char *err_msg;
-
+	const char *err_msg;
     BITARRAY_DECLARE(snmpv1_invalid_oids, DEFAULT_NUM_BAD_OIDS);
     bitarray *invalid_oids = snmpv1_invalid_oids;
 
