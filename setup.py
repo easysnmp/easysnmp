@@ -56,11 +56,14 @@ if platform.system() == 'Windows':
 
     vcincpath = os.path.join(vcpythonpath, "VC", "include")
     vclibpath = os.path.join(vcpythonpath, "VC", "lib")
+    sdkpath = os.path.join(vcpythonpath, "WinSDK")
+    sdklib = os.path.join(sdkpath, "lib")
+    sdkinc = os.path.join(sdkpath, "include")
 
     compile_args = ["/MD", "/O2", "/Zi", "/W3", "/WX-", "/Oy-", "/DWIN32",  "/D_WINDOWS", "/D_USRDLL", "/DEASYSNMP_EXPORTS", "/D_WINDLL", "/Gm-", "/EHsc", "/GS", "/TC"]
 
-    incdirs = [vcincpath, pypath] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "include")]
-    libdirs = [vclibpath] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "libs")]
+    incdirs = [vcincpath, pypath, sdkinc] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "include")]
+    libdirs = [vclibpath, sdklib] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "libs")]
     libs = ["python27", "Ws2_32", "netsnmp"]
     setup = du_setup
     Extension = du_Extension
@@ -73,7 +76,7 @@ else:
     # Add compiler flags if debug is set
     compile_args = []
     for arg in sys.argv:
-        if arg.startswith('--debug'):
+        if arg.startswith('--debug'
             # Note from GCC manual:
             #       If you use multiple -O options, with or without level numbers,
             #       the last such option is the one that is effective.
