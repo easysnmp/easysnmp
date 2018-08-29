@@ -24,8 +24,6 @@
 //#define WIN32_LEAN_AND_MEAN
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32")
-//#pragma comment(lib, "openssl.lib")
-//#pragma comment(lib, "libcrypto.lib")
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
@@ -41,7 +39,10 @@ typedef int node_t;
 #include <sys/types.h>
 
 #ifdef _WIN32
-#include <windows.h>
+#undef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#include <winsock2.h>
+//#include <windows.h>
 #else
 #include <arpa/inet.h>
 #include <netdb.h>
