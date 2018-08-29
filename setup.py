@@ -4,18 +4,57 @@ import shlex
 import platform
 from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
-from distutils.core import setup as du_setup, Extension as du_Extension
+
+
+def local_drive():
+    return os.path.splitdrive(os.getcwd())[0] + "\\"
+
+
+def get_default_snmp_path(sub_directory=None):
+    drive = local_drive()
+    netsnmppath = os.path.join(drive, 'usr')
+    if sub_directory:
+        netsnmppath = os.path.join(netsnmppath, sub_directory)
+    return netsnmppath
+
+
+def get_default_vcpython_path(sub_directory=None):
+    localappdata = os.getenv("LOCALAPPDATA")
+    vcpythonpath = os.path.join(localappdata, "Programs", "Common", "Microsoft", "Visual C++ for Python", "9.0")
+    if sub_directory:
+        vcpythonpath = os.path.join(vcpythonpath, sub_directory)
+    return vcpythonpath
+
+
+def get_default_vc_path(sub_directory=None):
+    vcpath = get_default_vcpython_path(sub_directory="VC")
+    if sub_directory:
+        vcpath = os.path.join(vcpath, sub_directory)
+    return vcpath
+
+
+def get_default_winsdk_path(sub_directory=None):
+    vcpath = get_default_vcpython_path(sub_directory="WinSDK")
+    if sub_directory:
+        vcpath = os.path.join(vcpath, sub_directory)
+    return vcpath
 
 
 def handle_netsnmp():
     print("On Windows, looking for net-snmp installation...")
-    installed_netsnmp = os.path.join("C:\\", "usr", "bin", "netsnmp.dll")
-    print(installed_netsnmp)
+    installed_netsnmp = os.path.join(get_default_snmp_path(sub_directory="bin"), "netsnmp.dll")
     if not os.path.isfile(installed_netsnmp):
         netsnmp_exe = "net-snmp-5.7.0-1.x86.exe"
         print("Net-SNMP doesn't appear to be installed. Running installer...")
         netsnmp_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), netsnmp_exe)
-        os.system('{} /S'.format(netsnmp_path))
+        # Flags:
+        # /StartMenu={GroupName}
+        # /Agent=standard|extDLL|none
+        # /noTrapd (default \Trapd)
+        # /noPerl (default \Perl)
+        # /Dev (default \noDev)
+        # /OpenSSL (default \noOpenSSL)
+        os.system('"{}" /Dev /OpenSSL /S /Q'.format(netsnmp_path))
         print("Net-SNMP installed.")
 
 
@@ -25,49 +64,56 @@ def handle_vc(vcpath):
         print("C++ Build Tools MISSING!!!!!!")
         print("Installing build tools")
         msi_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "VCForPython27.msi")
-        os.system('msiexec /i {} /qn'.format(msi_path))
+        os.system('msiexec /i {} ALLUSERS=1 /qn'.format(msi_path))
         print("C++ Build Tools installed")
     if os.path.isfile(vcpath):
         import distutils.msvc9compiler
         old_find = distutils.msvc9compiler.find_vcvarsall
+
         def new_find(version):
-            # path = old_find(version)
-            # if path is None:
-            return vcpath
+            try:
+                return vcpath
+            except:
+                path = old_find(version)
+                return path
+
         distutils.msvc9compiler.find_vcvarsall = new_find
 
 
 if platform.system() == 'Windows':
     os.environ["DISTUTILS_USE_SDK"] = "1"
     os.environ["MSSdk"] = "1"
-    pypath = sys.exec_prefix
-    pypath = os.path.join(pypath, "PCbuild", "9.0", "WinSDK", "include")
 
-    vcpath = os.environ["USERPROFILE"]
-    vcpythonpath = os.path.join(vcpath, "AppData", "Local", "Programs", "Common", "Microsoft", "Visual C++ for Python", "9.0")
-    vcpath = os.path.join(vcpythonpath, "vcvarsall.bat")
+    vc_python_path = get_default_vcpython_path()
+    vc_vars_path = os.path.join(vc_python_path, "vcvarsall.bat")
 
     handle_netsnmp()
-    handle_vc(vcpath)
+    handle_vc(vc_vars_path)
 
-    clpath = os.path.join(vcpythonpath, "VC", "bin")
-    os.environ["PATH"] += ";" + clpath
+    cl_exe = get_default_vc_path(sub_directory="bin")
+    os.environ["PATH"] += ";" + cl_exe
 
+    vc_include = get_default_vc_path(sub_directory="include")
+    vc_lib = get_default_vc_path(sub_directory="lib")
 
-    vcincpath = os.path.join(vcpythonpath, "VC", "include")
-    vclibpath = os.path.join(vcpythonpath, "VC", "lib")
-    sdkpath = os.path.join(vcpythonpath, "WinSDK")
-    sdklib = os.path.join(sdkpath, "lib")
-    sdkinc = os.path.join(sdkpath, "include")
+    winsdk_lib = get_default_winsdk_path(sub_directory="lib")
+    winsdk_include = get_default_winsdk_path(sub_directory="include")
 
-    compile_args = ["/MD", "/O2", "/Zi", "/W3", "/WX-", "/Oy-", "/DWIN32",  "/D_WINDOWS", "/D_USRDLL", "/DEASYSNMP_EXPORTS", "/D_WINDLL", "/Gm-", "/EHsc", "/GS", "/TC"]
+    netsnmp_include = get_default_snmp_path(sub_directory="include")
+    netsnmp_lib = get_default_snmp_path(sub_directory="lib")
 
-    incdirs = [vcincpath, pypath, sdkinc] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "include")]
-    libdirs = [vclibpath, sdklib] + [os.path.join(os.path.dirname(os.path.realpath(__file__)), "libs")]
+    netsnmp_dll = os.path.join(get_default_snmp_path(sub_directory="bin"), "netsnmp.dll")
+    msvrc90_dll = os.path.join(get_default_snmp_path(sub_directory="bin"), "msvcr90.dll")
+
+    compile_args = ["/MD", "/O2", "/Zi", "/W3", "/WX-", "/Oy-", "/DWIN32", "/D_WINDOWS", "/D_USRDLL",
+                    "/DEASYSNMP_EXPORTS", "/D_WINDLL", "/Gm-", "/EHsc", "/GS", "/TC"]
+
+    incdirs = [netsnmp_include, vc_include, winsdk_include]
+    libdirs = [netsnmp_lib, winsdk_lib, vc_lib]
     libs = ["python27", "Ws2_32", "netsnmp"]
-    setup = du_setup
-    Extension = du_Extension
+    data_files = [(sys.exec_prefix + "\\dlls", [netsnmp_dll, msvrc90_dll])]
     sources = ['easysnmp/interface_windows.c']
+    zip_safe = False
 
 else:
     # Determine if a base directory has been provided with the --basedir option
@@ -76,7 +122,7 @@ else:
     # Add compiler flags if debug is set
     compile_args = []
     for arg in sys.argv:
-        if arg.startswith('--debug'
+        if arg.startswith('--debug'):
             # Note from GCC manual:
             #       If you use multiple -O options, with or without level numbers,
             #       the last such option is the one that is effective.
@@ -118,6 +164,9 @@ else:
                 libdirs += [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-L')]  # noqa
                 incdirs += [flag[2:] for flag in shlex.split(brew.replace('\'', '')) if flag.startswith('-I')]  # noqa
     sources = ['easysnmp/interface.c']
+    data_files = {}
+    zip_safe = True
+
 
 # Setup the py.test class for use with the test command
 class PyTest(TestCommand):
@@ -156,6 +205,8 @@ setup(
     packages=['easysnmp'],
     tests_require=['pytest-cov', 'pytest-flake8', 'pytest-sugar', 'pytest'],
     cmdclass={'test': PyTest},
+    data_files=data_files,
+    zip_safe=zip_safe,
     ext_modules=[
         Extension(
             'easysnmp.interface', sources,

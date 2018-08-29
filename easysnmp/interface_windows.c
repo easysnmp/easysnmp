@@ -21,9 +21,8 @@
 
 #endif /* PY_VERSION_HEX */
 
-//#define WIN32_LEAN_AND_MEAN
+
 #ifdef _MSC_VER
-#pragma comment(lib, "ws2_32")
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
@@ -39,9 +38,8 @@ typedef int node_t;
 #include <sys/types.h>
 
 #ifdef _WIN32
-#undef _WINSOCKAPI_
-#define _WINSOCKAPI_
-#include <winsock2.h>
+#pragma comment(lib, "Ws2_32")
+//#include <winsock2.h>
 //#include <windows.h>
 #else
 #include <arpa/inet.h>
