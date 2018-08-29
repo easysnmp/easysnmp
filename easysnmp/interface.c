@@ -21,11 +21,26 @@
 
 #endif /* PY_VERSION_HEX */
 
+#ifdef _MSC_VER
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+typedef int node_t;
+#endif
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/snmpv3_api.h>
 #include <sys/types.h>
+
+#ifdef _WIN32
+#pragma comment(lib, "Ws2_32")
+#else
 #include <arpa/inet.h>
+#include <netdb.h>
+#endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -33,7 +48,7 @@
 #ifdef I_SYS_TIME
 #include <sys/time.h>
 #endif
-#include <netdb.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -152,6 +167,14 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
 static void py_log_msg(int log_level, char *printf_fmt, ...);
+
+#ifdef _WIN32
+#undef INFO
+#undef WARNING
+#undef ERROR
+#undef DEBUG
+#undef EXCEPTION
+#endif
 
 enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
@@ -2270,7 +2293,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     Py_ssize_t tmplen;
     int error = 0;
     unsigned long snmp_version = 0;
-
+	const char* err_msg;
     BITARRAY_DECLARE(snmpv1_invalid_oids, DEFAULT_NUM_BAD_OIDS);
     bitarray *invalid_oids = snmpv1_invalid_oids;
 
@@ -2384,7 +2407,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
             {
                 error = 1;
                 snmp_free_pdu(pdu);
-                const char *err_msg = "failed to call bitarray_calloc";
+                err_msg = "failed to call bitarray_calloc";
                 PyErr_SetString(PyExc_RuntimeError, err_msg);
                 goto done;
             }
