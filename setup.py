@@ -112,7 +112,7 @@ if platform.system() == 'Windows':
     libdirs = [netsnmp_lib, winsdk_lib, vc_lib]
     libs = ["python27", "Ws2_32", "netsnmp"]
     data_files = [(sys.exec_prefix + "\\dlls", [netsnmp_dll, msvrc90_dll])]
-    sources = ['easysnmp/interface_windows.c']
+    sources = ['easysnmp/interface.c']
     zip_safe = False
 
 else:
