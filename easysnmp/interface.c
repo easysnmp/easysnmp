@@ -1414,6 +1414,7 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
                                       char *val, size_t len)
 {
     int ret = -1;
+
     if (obj && attr_name)
     {
         PyObject* val_obj = PyUnicode_Decode(val, len, "latin-1",
@@ -1458,12 +1459,16 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
 {
     PyObject *tmp_for_conversion;
 
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+
     py_netsnmp_attr_set_string(session, "error_string", err_str,
                                STRLEN(err_str));
 
     tmp_for_conversion = PyLong_FromLong(err_num);
     if (!tmp_for_conversion)
     {
+        PyErr_Restore(type, value, traceback);
         return; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
@@ -1472,10 +1477,13 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     tmp_for_conversion = PyLong_FromLong(err_ind);
     if (!tmp_for_conversion)
     {
+        PyErr_Restore(type, value, traceback);
         return; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_index", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
+
+    PyErr_Restore(type, value, traceback);
 }
 
 /*
@@ -4021,7 +4029,10 @@ done:
 static void py_log_msg(int log_level, char *printf_fmt, ...)
 {
     PyObject *log_msg = NULL;
+    PyObject *type, *value, *traceback;
     va_list fmt_args;
+
+    PyErr_Fetch(&type, &value, &traceback);
 
     va_start(fmt_args, printf_fmt);
     log_msg = PyUnicode_FromFormatV(printf_fmt, fmt_args);
@@ -4030,6 +4041,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
     if (log_msg == NULL)
     {
         /* fail silently. */
+        PyErr_Restore(type, value, traceback);
         return;
     }
 
@@ -4061,6 +4073,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
     }
 
     Py_DECREF(log_msg);
+    PyErr_Restore(type, value, traceback);
 }
 
 /*
