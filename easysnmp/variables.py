@@ -26,7 +26,7 @@ class SNMPVariable(object):
         self.snmp_type = snmp_type
 
     def __repr__(self):
-        printable_value = strip_non_printable(self.value)
+        printable_value = strip_non_printable(tostr(self.value))
         return (
             "<{0} value={1} (oid={2}, oid_index={3}, snmp_type={4})>".format(
                 self.__class__.__name__,
@@ -36,7 +36,7 @@ class SNMPVariable(object):
         )
 
     def __setattr__(self, name, value):
-        self.__dict__[name] = tostr(value)
+        self.__dict__[name] = value
 
 
 class SNMPVariableList(list):
