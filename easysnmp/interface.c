@@ -1517,7 +1517,14 @@ static PyObject *create_session_capsule(SnmpSession *session)
     ctx->handle = handle;
     ctx->invalid_oids = (bitarray *) ctx->invalid_oids_buf;
     bitarray_buf_init(ctx->invalid_oids, sizeof(ctx->invalid_oids_buf));
-    return (capsule);
+    if(capsule == NULL)
+    {
+        Py_RETURN_NONE;
+    }else
+    {
+        return capsule;
+    }
+
 done:
     if (handle)
     {
@@ -1529,7 +1536,7 @@ done:
     }
 
     Py_XDECREF(capsule);
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 static void *get_session_handle_from_capsule(PyObject *session_capsule)
@@ -1623,7 +1630,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     return create_session_capsule(&session);
 
 done:
-    return NULL;
+    Py_RETURN_NONE;
 
 }
 
@@ -1655,7 +1662,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
                           &priv_proto, &priv_pass,
                           &eng_boots, &eng_time))
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
 
     snmp_sess_init(&session);
@@ -1787,7 +1794,7 @@ done:
     SAFE_FREE(session.securityEngineID);
     SAFE_FREE(session.contextEngineID);
 
-    return NULL;
+    Py_RETURN_NONE;
 
 }
 
@@ -1878,7 +1885,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
     return create_session_capsule(&session);
 
 done:
-    return NULL;
+    Py_RETURN_NONE;
 
 }
 
@@ -2226,9 +2233,9 @@ done:
 
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
@@ -2566,9 +2573,9 @@ done:
     }
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
@@ -2996,9 +3003,9 @@ done:
     }
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
@@ -3309,9 +3316,9 @@ done:
     SAFE_FREE(oid_arr);
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
@@ -3747,9 +3754,9 @@ done:
 
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_set(PyObject *self, PyObject *args)
@@ -3958,7 +3965,7 @@ done:
     SAFE_FREE(oid_arr);
     if (error)
     {
-        return NULL;
+        Py_RETURN_NONE;
     }
     return (ret ? ret : Py_BuildValue(""));
 }
@@ -4015,7 +4022,7 @@ done:
     Py_XDECREF(logger);
     Py_XDECREF(null_handler);
 
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 static void py_log_msg(int log_level, char *printf_fmt, ...)
