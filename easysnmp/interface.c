@@ -1517,13 +1517,12 @@ static PyObject *create_session_capsule(SnmpSession *session)
     ctx->handle = handle;
     ctx->invalid_oids = (bitarray *) ctx->invalid_oids_buf;
     bitarray_buf_init(ctx->invalid_oids, sizeof(ctx->invalid_oids_buf));
-    if(capsule == NULL)
+
+    if (capsule == NULL)
     {
         Py_RETURN_NONE;
-    }else
-    {
-        return capsule;
-    }
+	}
+    return capsule;
 
 done:
     if (handle)
