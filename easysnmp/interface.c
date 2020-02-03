@@ -1352,12 +1352,25 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             int retval;
 
 #if PY_MAJOR_VERSION >= 3
-            // Encode the provided attribute using latin-1 into bytes and
-            // retrieve its value and length
-            PyObject *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1",
-                                                             "surrogateescape");
+
+            PyObject *attr_bytes;
+            if(PyBytes_CheckExact(attr))
+            {
+                // If attribute is already bytes then convert not required;
+                attr_bytes = attr;
+            }else
+            {
+                // Encode the provided attribute using latin-1 into bytes and
+                // retrieve its value and length
+                attr_bytes = PyUnicode_AsEncodedString(
+                        attr, "latin-1", "surrogateescape");
+            }
+
             if (!attr_bytes)
             {
+                PyErr_SetString(PyExc_TypeError,
+                        "Failed to convert provided attribute to bytes");
+
                 /* Needs decrement? */
                 Py_XDECREF(attr);
                 return -1;
@@ -1370,7 +1383,18 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
 
             Py_DECREF(attr);
             return retval;
+        }else
+        {
+            PyErr_Format(PyExc_KeyError,
+                         "Failed to get '%s' attribute",
+                         attr_name);
         }
+    }else
+    {
+        PyErr_Format(PyExc_TypeError,
+                     "Object has not '%s' property "
+                     "or property have bad name",
+                     attr_name);
     }
 
     return -1;
