@@ -174,15 +174,23 @@ class Session(object):
         retry_no_such=False, abort_on_nonexistent=False
     ):
         # Validate and extract the remote port
-        if ':' in hostname:
-            if remote_port:
-                raise ValueError(
-                    'a remote port was specified yet the hostname appears '
-                    'to have a port defined too'
-                )
-            else:
-                hostname, remote_port = hostname.split(':')
-                remote_port = int(remote_port)
+        remote_port_from_hostname = None
+        if ":" in hostname:
+            if re.match(r"[^:]*:\d+$", hostname):
+                hostname, remote_port_from_hostname = hostname.split(':')
+                remote_port_from_hostname = int(remote_port_from_hostname)
+            elif re.match(r"tcp:.*:\d+$", hostname):
+                hostname_parts = hostname.split(':')
+                hostname = ":".join(hostname_parts[:-1])
+                remote_port_from_hostname = int(hostname_parts[-1])
+
+        if remote_port and remote_port_from_hostname:
+            raise ValueError(
+                'a remote port was specified yet the hostname appears '
+                'to have a port defined too'
+            )
+        if remote_port_from_hostname:
+            remote_port = remote_port_from_hostname
 
         self.hostname = hostname
         self.version = version

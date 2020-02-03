@@ -25,3 +25,6 @@ docs/_build/
 
 # vim stuff
 .ropeproject
+
+# virtualenv
+.venv
