@@ -1326,6 +1326,10 @@ retry:
     }
 
 done:
+    if(status != 0)
+    {
+        PyErr_SetString(EasySNMPError, tmp_err_str);
+    }
 
     if (tmp_err_str)
     {
