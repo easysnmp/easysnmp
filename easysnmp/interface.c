@@ -1372,13 +1372,15 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
 
             if (!attr_bytes)
             {
-                PyErr_SetString(PyExc_TypeError,
-                        "Failed to convert provided attribute to bytes");
+                PyErr_Format(PyExc_TypeError,
+                        "Failed to convert SNMPVariable.%s to bytes",
+                        attr_name);
 
                 /* Needs decrement? */
                 Py_XDECREF(attr);
                 return -1;
             }
+
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
             //Py_DECREF(attr_bytes);
 #else
@@ -3913,6 +3915,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
+                    error = 1;
                     snmp_free_pdu(pdu);
                     pdu = NULL;
                     Py_DECREF(varbind);
@@ -3992,7 +3995,7 @@ done:
     SAFE_FREE(oid_arr);
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
     return (ret ? ret : Py_BuildValue(""));
 }
