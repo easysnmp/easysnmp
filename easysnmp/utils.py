@@ -16,7 +16,11 @@ def strip_non_printable(value):
         return None
 
     # Filter all non-printable characters
-    printable_value = ''.join(str(c) for c in value if str(c) in string.printable)
+    try:
+        # Filter all non-printable characters
+        printable_value = ''.join(str(c) for c in value if str(c) in string.printable)
+    except TypeError:
+        printable_value = value
 
     if printable_value != value:
         if printable_value:
