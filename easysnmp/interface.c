@@ -3919,6 +3919,8 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
+                    PyErr_SetString(PyExc_KeyError, "value");
+                    error = 1;
                     snmp_free_pdu(pdu);
                     pdu = NULL;
                     Py_DECREF(varbind);
