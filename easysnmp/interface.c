@@ -146,8 +146,8 @@ static int __get_type_str(int type, char *str, int log_error);
 static int __get_label_iid(char *name, char **last_label, char **iid,
                            int flag);
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
-                              int *oid_arr_len, int *type, int best_guess);
-static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
+                              size_t *oid_arr_len, int *type, int best_guess);
+static int __concat_oid_str(oid *doid_arr, size_t *doid_arr_len, char *soid_str);
 static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
@@ -405,7 +405,7 @@ static int __snprint_value(char *buf, size_t buf_len,
                            netsnmp_variable_list *var,
                            struct tree *tp, int type, int flag)
 {
-    int len = 0;
+    size_t len = 0;
     u_char *ip;
     struct enum_list *ep;
 
@@ -444,7 +444,7 @@ static int __snprint_value(char *buf, size_t buf_len,
             case ASN_TIMETICKS:
             case ASN_UINTEGER:
                 snprintf(buf, buf_len, "%lu",
-                         (unsigned long) *var->val.integer);
+                         (ulong) *var->val.integer);
                 len = STRLEN(buf);
                 break;
 
@@ -795,7 +795,7 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
 /* Convert a tag (string) to an OID array              */
 /* Tag can be either a symbolic name, or an OID string */
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
-                              int *oid_arr_len, int *type, int best_guess)
+                              size_t *oid_arr_len, int *type, int best_guess)
 {
     struct tree *tp = NULL;
     struct tree *rtp = NULL;
@@ -954,7 +954,7 @@ done:
  *
  * returns : SUCCESS, FAILURE
  */
-static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str)
+static int __concat_oid_str(oid *doid_arr, size_t *doid_arr_len, char *soid_str)
 {
     char *soid_buf;
     char *cp;
@@ -1142,12 +1142,12 @@ static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
                            bitarray *invalid_oids)
 {
     int status = 0;
-    long command = pdu->command;
+    int command = pdu->command;
     char *tmp_err_str;
     size_t retry_num = 0;
 
     /* Note: SNMP uses 1-based indexing with OIDs, so 0 is unused */
-    unsigned long last_errindex = 0;
+    long last_errindex = 0;
 
     *err_num = 0;
     *err_ind = 0;
@@ -1356,14 +1356,20 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             PyObject *attr_bytes;
             if(PyBytes_CheckExact(attr))
             {
-                // If attribute is already bytes then convert not required;
+                // Don't convert if `attr` is already in bytes.
                 attr_bytes = attr;
-            }else
+            }else if(PyUnicode_CheckExact(attr))
             {
                 // Encode the provided attribute using latin-1 into bytes and
                 // retrieve its value and length
                 attr_bytes = PyUnicode_AsEncodedString(
                         attr, "latin-1", "surrogateescape");
+            }else
+            {
+                PyErr_Format(PyExc_TypeError,
+                        "Unknown type for '%s' attribute", attr_name);
+                Py_XDECREF(attr);
+                return -1;
             }
 
             if (!attr_bytes)
@@ -1385,15 +1391,14 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             return retval;
         }else
         {
-            PyErr_Format(PyExc_KeyError,
+            PyErr_Format(PyExc_AttributeError,
                          "Failed to get '%s' attribute",
                          attr_name);
         }
     }else
     {
-        PyErr_Format(PyExc_TypeError,
-                     "Object has not '%s' property "
-                     "or property have bad name",
+        PyErr_Format(PyExc_AttributeError,
+                     "Object has no attribute '%s'",
                      attr_name);
     }
 
@@ -1417,7 +1422,7 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
     return val;
 }
 
-static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
+/*static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
 {
     void *val = NULL;
 
@@ -1432,7 +1437,7 @@ static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
     }
 
     return val;
-}
+}*/
 
 static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
                                       char *val, size_t len)
@@ -1510,7 +1515,7 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
  */
 static PyObject *create_session_capsule(SnmpSession *session)
 {
-    void *handle = NULL;
+    netsnmp_session *handle = NULL;
     struct session_capsule_ctx *ctx = NULL;
     PyObject *capsule = NULL;
     /* create a long lived handle from throwaway session object */
@@ -1542,10 +1547,6 @@ static PyObject *create_session_capsule(SnmpSession *session)
     ctx->invalid_oids = (bitarray *) ctx->invalid_oids_buf;
     bitarray_buf_init(ctx->invalid_oids, sizeof(ctx->invalid_oids_buf));
 
-    if (capsule == NULL)
-    {
-        Py_RETURN_NONE;
-	}
     return capsule;
 
 done:
@@ -1559,7 +1560,7 @@ done:
     }
 
     Py_XDECREF(capsule);
-    Py_RETURN_NONE;
+    return NULL;
 }
 
 static void *get_session_handle_from_capsule(PyObject *session_capsule)
@@ -1653,7 +1654,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
     return create_session_capsule(&session);
 
 done:
-    Py_RETURN_NONE;
+    return NULL;
 
 }
 
@@ -1685,7 +1686,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
                           &priv_proto, &priv_pass,
                           &eng_boots, &eng_time))
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
 
     snmp_sess_init(&session);
@@ -1926,7 +1927,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss = NULL;
     oid *oid_arr = NULL;
-    int oid_arr_len = 0;
+    size_t oid_arr_len = 0;
     u_char *str_buf = NULL;
     u_char *str_bufp = NULL;
     char *err_str = NULL;
@@ -1953,7 +1954,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     char *tmpstr = NULL;
     Py_ssize_t tmplen;
     int error = 0;
-    unsigned long snmp_version = 0;
+    ulong snmp_version = 0;
 
     if (!args)
     {
@@ -2076,6 +2077,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     if (status != 0)
     {
         error = 1;
+        PyErr_SetString(EasySNMPError, err_str);
         goto done;
     }
 
@@ -2256,9 +2258,9 @@ done:
 
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
-    Py_RETURN_NONE;
+    return Py_None;
 }
 
 static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
@@ -2267,8 +2269,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     PyObject *sess_ptr = NULL;
     PyObject *varlist;
     PyObject *varbind;
-    int varlist_len = 0;
-    int varlist_ind;
+    uint varlist_len = 0;
+    uint varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
     netsnmp_pdu *pdu = NULL;
@@ -2277,7 +2279,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid *oid_arr;
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
@@ -2299,7 +2301,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     char *tmpstr;
     Py_ssize_t tmplen;
     int error = 0;
-    unsigned long snmp_version = 0;
+    long snmp_version = 0;
 
     BITARRAY_DECLARE(snmpv1_invalid_oids, DEFAULT_NUM_BAD_OIDS);
     bitarray *invalid_oids = snmpv1_invalid_oids;
@@ -2626,7 +2628,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid **oid_arr = NULL;
-    int *oid_arr_len = NULL;
+    size_t *oid_arr_len = NULL;
     oid **oid_arr_broken_check = NULL;
     int *oid_arr_broken_check_len = NULL;
     int type;
@@ -2850,6 +2852,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
             if (status != 0)
             {
                 error = 1;
+                PyErr_SetString(EasySNMPConnectionError, err_str);
                 /*
                  * pdu is released in __send_sync_pdu if an error occurs during
                  * the snmp_sess_synch_response function. It does not, however,
@@ -3026,9 +3029,9 @@ done:
     }
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
-    Py_RETURN_NONE;
+    return Py_None;
 }
 
 static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
@@ -3050,7 +3053,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid *oid_arr;
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
@@ -3184,6 +3187,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                     snmp_free_pdu(response);
                     response = NULL;
                 }
+                PyErr_SetString(EasySNMPError, err_str);
                 goto done;
             }
 
@@ -3339,9 +3343,9 @@ done:
     SAFE_FREE(oid_arr);
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
-    Py_RETURN_NONE;
+    return Py_None;
 }
 
 static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
@@ -3363,7 +3367,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
     struct tree *tp = NULL;
     int len;
     oid **oid_arr = NULL;
-    int *oid_arr_len = NULL;
+    size_t *oid_arr_len = NULL;
     //char **initial_oid_str_arr = NULL;
     char **oid_str_arr = NULL;
     char **oid_idx_str_arr = NULL;
@@ -3595,6 +3599,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                         snmp_free_pdu(response);
                         response = NULL;
                     }
+                    PyErr_SetString(EasySNMPError, err_str);
                     goto done;
                 }
 
@@ -3777,9 +3782,9 @@ done:
 
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
-    Py_RETURN_NONE;
+    return Py_None;
 }
 
 static PyObject *netsnmp_set(PyObject *self, PyObject *args)
@@ -3800,7 +3805,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
     char *type_str;
     int len;
     oid *oid_arr = calloc(MAX_OID_LEN, sizeof(oid));
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     u_char tmp_val_str[STR_BUF_SIZE];
     int use_enums;
@@ -3818,6 +3823,10 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
     {
         if (!PyArg_ParseTuple(args, "OO", &session, &varlist))
         {
+            error = 1;
+            PyErr_SetString(PyExc_ValueError,
+                    "missing 2 required arguments: "
+                    "'session' and 'varlist'");
             goto done;
         }
 
@@ -3826,6 +3835,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
         if (!session_ctx)
         {
+            error = 1;
             goto done;
         }
 
@@ -3970,6 +3980,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
         if (status != 0)
         {
             error = 1;
+            PyErr_SetString(EasySNMPError, err_str);
             goto done;
         }
 
@@ -3988,7 +3999,7 @@ done:
     SAFE_FREE(oid_arr);
     if (error)
     {
-        Py_RETURN_NONE;
+        return NULL;
     }
     return (ret ? ret : Py_BuildValue(""));
 }
@@ -4045,7 +4056,7 @@ done:
     Py_XDECREF(logger);
     Py_XDECREF(null_handler);
 
-    Py_RETURN_NONE;
+    return NULL;
 }
 
 static void py_log_msg(int log_level, char *printf_fmt, ...)
