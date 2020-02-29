@@ -1358,13 +1358,15 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             {
                 // Don't convert if `attr` is already in bytes.
                 attr_bytes = attr;
-            }else if(PyUnicode_CheckExact(attr))
+            }
+            else if(PyUnicode_CheckExact(attr))
             {
                 // Encode the provided attribute using latin-1 into bytes and
                 // retrieve its value and length
                 attr_bytes = PyUnicode_AsEncodedString(
                         attr, "latin-1", "surrogateescape");
-            }else
+            }
+            else
             {
                 PyErr_Format(PyExc_TypeError,
                         "Unknown type for '%s' attribute", attr_name);
@@ -1389,13 +1391,15 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
 
             Py_DECREF(attr);
             return retval;
-        }else
+        }
+        else
         {
             PyErr_Format(PyExc_AttributeError,
                          "Failed to get '%s' attribute",
                          attr_name);
         }
-    }else
+    }
+    else
     {
         PyErr_Format(PyExc_AttributeError,
                      "Object has no attribute '%s'",
