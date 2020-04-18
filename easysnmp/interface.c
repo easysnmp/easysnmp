@@ -1326,6 +1326,10 @@ retry:
     }
 
 done:
+    if(status != 0)
+    {
+        PyErr_SetString(EasySNMPError, tmp_err_str);
+    }
 
     if (tmp_err_str)
     {
@@ -1376,13 +1380,15 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
 
             if (!attr_bytes)
             {
-                PyErr_SetString(PyExc_TypeError,
-                        "Failed to convert provided attribute to bytes");
+                PyErr_Format(PyExc_TypeError,
+                        "Failed to convert SNMPVariable.%s to bytes",
+                        attr_name);
 
                 /* Needs decrement? */
                 Py_XDECREF(attr);
                 return -1;
             }
+
             retval = PyBytes_AsStringAndSize(attr_bytes, val, len);
             //Py_DECREF(attr_bytes);
 #else
