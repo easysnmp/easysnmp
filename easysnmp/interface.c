@@ -444,7 +444,7 @@ static int __snprint_value(char *buf, size_t buf_len,
             case ASN_TIMETICKS:
             case ASN_UINTEGER:
                 snprintf(buf, buf_len, "%lu",
-                         (ulong) *var->val.integer);
+                         (unsigned long) *var->val.integer);
                 len = STRLEN(buf);
                 break;
 
@@ -1432,7 +1432,8 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
     return val;
 }
 
-/*static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
+#if 0
+static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
 {
     void *val = NULL;
 
@@ -1447,7 +1448,9 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
     }
 
     return val;
-}*/
+}
+#endif
+
 
 static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
                                       char *val, size_t len)
@@ -1964,7 +1967,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     char *tmpstr = NULL;
     Py_ssize_t tmplen;
     int error = 0;
-    ulong snmp_version = 0;
+    unsigned long snmp_version = 0;
 
     if (!args)
     {
@@ -2279,8 +2282,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     PyObject *sess_ptr = NULL;
     PyObject *varlist;
     PyObject *varbind;
-    uint varlist_len = 0;
-    uint varlist_ind;
+    unsigned int varlist_len = 0;
+    unsigned int varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
     netsnmp_pdu *pdu = NULL;
@@ -3834,9 +3837,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
         if (!PyArg_ParseTuple(args, "OO", &session, &varlist))
         {
             error = 1;
-            PyErr_SetString(PyExc_ValueError,
-                    "missing 2 required arguments: "
-                    "'session' and 'varlist'");
+            PyErr_SetString(PyExc_ValueError, "missing 2 required arguments: 'session' and 'varlist'");
             goto done;
         }
 
