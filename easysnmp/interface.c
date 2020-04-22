@@ -1142,7 +1142,7 @@ static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
                            bitarray *invalid_oids)
 {
     int status = 0;
-    int command = pdu->command;
+    long command = pdu->command;
     char *tmp_err_str;
     size_t retry_num = 0;
 
