@@ -1370,6 +1370,11 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
                 attr_bytes = PyUnicode_AsEncodedString(
                         attr, "latin-1", "surrogateescape");
             }
+            else if(PyLong_CheckExact(attr))
+            {
+                printf("Attr is long: %ld\n", PyLong_AsLong(attr));
+                attr_bytes = PyBytes_FromFormat("%ld", PyLong_AsLong(attr));
+            }
             else
             {
                 PyErr_Format(PyExc_TypeError,
@@ -3987,7 +3992,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
-                    PyErr_SetString(PyExc_KeyError, "value");
                     error = 1;
                     snmp_free_pdu(pdu);
                     pdu = NULL;
