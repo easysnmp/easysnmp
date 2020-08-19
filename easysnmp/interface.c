@@ -1372,7 +1372,6 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             }
             else if(PyLong_CheckExact(attr))
             {
-                printf("Attr is long: %ld\n", PyLong_AsLong(attr));
                 attr_bytes = PyBytes_FromFormat("%ld", PyLong_AsLong(attr));
             }
             else
