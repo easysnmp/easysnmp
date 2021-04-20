@@ -1142,7 +1142,7 @@ static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
                            bitarray *invalid_oids)
 {
     int status = 0;
-    int command = pdu->command;
+    long command = pdu->command;
     char *tmp_err_str;
     size_t retry_num = 0;
 
@@ -1369,6 +1369,10 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
                 // retrieve its value and length
                 attr_bytes = PyUnicode_AsEncodedString(
                         attr, "latin-1", "surrogateescape");
+            }
+            else if(PyLong_CheckExact(attr))
+            {
+                attr_bytes = PyBytes_FromFormat("%ld", PyLong_AsLong(attr));
             }
             else
             {
@@ -3930,7 +3934,6 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
                 if (py_netsnmp_attr_string(varbind, "value", &val, &tmplen) < 0)
                 {
-                    PyErr_SetString(PyExc_KeyError, "value");
                     error = 1;
                     snmp_free_pdu(pdu);
                     pdu = NULL;
