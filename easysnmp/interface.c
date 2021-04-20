@@ -1462,8 +1462,7 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
     int ret = -1;
     if (obj && attr_name)
     {
-        PyObject* val_obj = PyUnicode_Decode(val, len, "latin-1",
-                                             "surrogateescape");
+        PyObject* val_obj = PyUnicode_DecodeLatin1(val, len, "surrogateescape");
         if (!val_obj)
         {
             return -1;
@@ -1473,6 +1472,64 @@ static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
     }
     return ret;
 }
+
+static int py_netsnmp_attr_set_none(PyObject *obj, const char *attr_name)
+{
+    int ret = -1;
+    if (obj && attr_name)
+    {
+        ret = PyObject_SetAttrString(obj, attr_name, Py_None);
+    }
+    return ret;
+}
+
+static int py_netsnmp_attr_set_by_type(PyObject *obj, const char *attr_name, const char *val, int type, size_t len)
+{
+    int ret = -1;
+    if (obj && attr_name)
+    {
+        PyObject* val_obj = NULL;
+        switch(type)
+        {
+            case TYPE_OCTETSTR:
+            case TYPE_OPAQUE:
+                val_obj = PyBytes_FromStringAndSize(val, len);
+                break;
+//            case TYPE_IPADDR:
+//            case TYPE_NETADDR:
+//            case TYPE_BITSTRING:
+//                break;
+            case TYPE_INTEGER32:
+            case TYPE_UNSIGNED32:
+            case TYPE_COUNTER:
+            case TYPE_INTEGER:
+            case TYPE_TIMETICKS:
+            case TYPE_COUNTER64:
+            case TYPE_UINTEGER:
+            case TYPE_GAUGE:
+                val_obj = PyLong_FromLong(atol(val));
+                break;
+            case SNMP_NOSUCHOBJECT:
+            case SNMP_NOSUCHINSTANCE:
+            case TYPE_NULL:
+                val_obj = Py_None;
+                break;
+            default:
+                val_obj = PyUnicode_DecodeLatin1(val, len, "surrogateescape");
+                break;
+
+        }
+        if (!val_obj)
+        {
+            return -1;
+        }
+        ret = PyObject_SetAttrString(obj, attr_name, val_obj);
+        Py_DECREF(val_obj);
+    }
+    return ret;
+}
+
+
 
 /**
  * Update python session object error attributes.
@@ -2186,8 +2243,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             py_netsnmp_attr_set_string(varbind, "snmp_type", "NOSUCHNAME",
                                        strlen("NOSUCHNAME"));
 
-            py_netsnmp_attr_set_string(varbind, "value",
-                                       "NOSUCHNAME", strlen("NOSUCHNAME"));
+            py_netsnmp_attr_set_none(varbind, "value");
 
             Py_DECREF(varbind);
         }
@@ -2239,8 +2295,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             len = __snprint_value((char *) str_buf, sizeof(session_ctx->buf),
                                   vars, tp, type, sprintval_flag);
             str_buf[len] = '\0';
-            py_netsnmp_attr_set_string(varbind, "value",
-                                       (char *) str_buf, len);
+            py_netsnmp_attr_set_by_type(varbind, "value",
+                                       (const char *) str_buf, type, len);
 
             Py_DECREF(varbind);
         }
@@ -2559,8 +2615,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                                       vars, tp, type, sprintval_flag);
                 str_buf[len] = '\0';
 
-                py_netsnmp_attr_set_string(varbind, "value", (char *) str_buf,
-                                           len);
+                py_netsnmp_attr_set_by_type(varbind, "value", (const char *) str_buf,
+                                            type, len);
             }
             else if (no_such_name)
             {
@@ -2574,8 +2630,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
                 py_netsnmp_attr_set_string(varbind, "snmp_type", "NOSUCHNAME",
                                            strlen("NOSUCHNAME"));
 
-                py_netsnmp_attr_set_string(varbind, "value",
-                                           "NOSUCHNAME", strlen("NOSUCHNAME"));
+                py_netsnmp_attr_set_none(varbind, "value");
             }
             else
             {
@@ -2987,8 +3042,8 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
                                               type, sprintval_flag);
                         str_buf[len] = '\0';
 
-                        py_netsnmp_attr_set_string(varbind, "value",
-                                                   (char *) str_buf, len);
+                        py_netsnmp_attr_set_by_type(varbind, "value",
+                                                   (const char *) str_buf, type, len);
 
                         /* push the varbind onto the return varbinds */
                         PyList_Append(varbinds, varbind);
@@ -3315,8 +3370,9 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                                               sprintval_flag);
                         str_buf[len] = '\0';
 
-                        py_netsnmp_attr_set_string(varbind, "value",
-                                                   (char *) str_buf, len);
+                        py_netsnmp_attr_set_by_type(varbind, "value",
+                                                    (const char *) str_buf,
+                                                    type, len);
 
                         /* push varbind onto varbinds */
                         PyList_Append(varbinds, varbind);
@@ -3730,8 +3786,9 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
                                                   type, sprintval_flag);
                             str_buf[len] = '\0';
 
-                            py_netsnmp_attr_set_string(varbind, "value",
-                                                       (char *)str_buf, len);
+                            py_netsnmp_attr_set_by_type(varbind, "value",
+                                                        (const char *)str_buf,
+                                                        type, len);
 
                             /* push the varbind onto the return varbinds */
                             PyList_Append(varbinds, varbind);
