@@ -18,7 +18,7 @@ termcolor==1.1.0
 
 # Sphinx
 alabaster==0.7.4
-Babel==1.3
+Babel==2.9.1
 docutils==0.12
 Jinja2==2.7.3
 MarkupSafe==0.23
