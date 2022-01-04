@@ -1457,6 +1457,9 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
                                                int err_ind)
 {
     PyObject *tmp_for_conversion;
+    PyObject *type, *value, *traceback;
+
+    PyErr_Fetch(&type, &value, &traceback);
 
     py_netsnmp_attr_set_string(session, "error_string", err_str,
                                STRLEN(err_str));
@@ -1464,7 +1467,7 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     tmp_for_conversion = PyLong_FromLong(err_num);
     if (!tmp_for_conversion)
     {
-        return; /* nothing better to do? */
+        goto done; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
@@ -1472,10 +1475,15 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     tmp_for_conversion = PyLong_FromLong(err_ind);
     if (!tmp_for_conversion)
     {
-        return; /* nothing better to do? */
+        goto done; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_index", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
+
+done:
+    PyErr_Restore(type, value, traceback);
+
+    return;
 }
 
 /*
