@@ -12,20 +12,7 @@ from easysnmp.exceptions import (
     EasySNMPNoSuchInstanceError, EasySNMPNoSuchNameError
 )
 
-from .fixtures import sess_v1_args, sess_v2_args, sess_v3_args
-from .helpers import snmp_set_via_cli
 
-
-@pytest.yield_fixture(autouse=True)
-def reset_values():
-    snmp_set_via_cli('sysLocation.0', 'my original location', 's')
-    snmp_set_via_cli('nsCacheTimeout.1.3.6.1.2.1.2.2', '0', 'i')
-    yield
-
-
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_regular(sess_args):
     res = snmp_get('sysDescr.0', **sess_args)
 
@@ -35,9 +22,6 @@ def test_snmp_get_regular(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_tuple(sess_args):
     res = snmp_get(('sysDescr', '0'), **sess_args)
 
@@ -47,9 +31,6 @@ def test_snmp_get_tuple(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_fully_qualified(sess_args):
     res = snmp_get(
         '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr.0', **sess_args
@@ -61,9 +42,6 @@ def test_snmp_get_fully_qualified(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_fully_qualified_tuple(sess_args):
     res = snmp_get(
         ('.iso.org.dod.internet.mgmt.mib-2.system.sysDescr', '0'), **sess_args
@@ -75,9 +53,6 @@ def test_snmp_get_fully_qualified_tuple(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_numeric(sess_args):
     res = snmp_get('.1.3.6.1.2.1.1.1.0', **sess_args)
 
@@ -87,9 +62,6 @@ def test_snmp_get_numeric(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_numeric_no_leading_dot(sess_args):
     res = snmp_get('1.3.6.1.2.1.1.1.0', **sess_args)
 
@@ -99,9 +71,6 @@ def test_snmp_get_numeric_no_leading_dot(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_numeric_tuple(sess_args):
     res = snmp_get(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
@@ -111,23 +80,23 @@ def test_snmp_get_numeric_tuple(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_unknown(sess_args):
     with pytest.raises(EasySNMPUnknownObjectIDError):
         snmp_get('sysDescripto.0', **sess_args)
 
 
-@pytest.mark.parametrize('sess_args', [sess_v1_args()])
 def test_snmp_v1_get_with_retry_no_such(sess_args):
-    sess_args['retry_no_such'] = True
-
-    res = snmp_get(['iso', 'sysDescr.0', 'iso'], **sess_args)
+    res = snmp_get(
+        ['iso', 'sysDescr.0', 'iso'],
+        retry_no_such=True,
+        **sess_args)
 
     assert res[0]
-    assert res[0].oid == 'iso'
-    assert res[0].snmp_type == 'NOSUCHNAME'
+    if sess_args['version'] == 1:
+        assert res[0].oid == 'iso'
+        assert res[0].snmp_type == 'NOSUCHNAME'
+    else:
+        assert res[0].snmp_type == 'NOSUCHOBJECT'
 
     assert res[1]
     assert platform.version() in res[1].value
@@ -136,13 +105,13 @@ def test_snmp_v1_get_with_retry_no_such(sess_args):
     assert res[1].snmp_type == 'OCTETSTR'
 
     assert res[2]
-    assert res[2].oid == 'iso'
-    assert res[2].snmp_type == 'NOSUCHNAME'
+    if sess_args['version'] == 1:
+        assert res[2].oid == 'iso'
+        assert res[2].snmp_type == 'NOSUCHNAME'
+    else:
+        assert res[2].snmp_type == 'NOSUCHOBJECT'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_invalid_instance(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
     # invalid object ID, instead it excepts with noSuchName
@@ -154,9 +123,6 @@ def test_snmp_get_invalid_instance(sess_args):
         assert res.snmp_type == 'NOSUCHINSTANCE'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
     # Sadly, SNMP v1 doesn't distuingish between an invalid instance and an
     # invalid object ID, so it raises the same exception for both
@@ -168,9 +134,6 @@ def test_snmp_get_invalid_instance_with_abort_enabled(sess_args):
             snmp_get('sysContact.1', abort_on_nonexistent=True, **sess_args)
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_invalid_object(sess_args):
     if sess_args['version'] == 1:
         with pytest.raises(EasySNMPNoSuchNameError):
@@ -180,9 +143,6 @@ def test_snmp_get_invalid_object(sess_args):
         assert res.snmp_type == 'NOSUCHOBJECT'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_invalid_object_with_abort_enabled(sess_args):
     if sess_args['version'] == 1:
         with pytest.raises(EasySNMPNoSuchNameError):
@@ -192,9 +152,6 @@ def test_snmp_get_invalid_object_with_abort_enabled(sess_args):
             snmp_get('iso', abort_on_nonexistent=True, **sess_args)
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_next(sess_args):
     res = snmp_get_next('nsCacheEntry', **sess_args)
 
@@ -204,9 +161,6 @@ def test_snmp_get_next(sess_args):
     assert res.snmp_type == 'INTEGER'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_next_numeric(sess_args):
     res = snmp_get_next(('.1.3.6.1.2.1.1.1', '0'), **sess_args)
 
@@ -216,19 +170,20 @@ def test_snmp_get_next_numeric(sess_args):
     assert res.snmp_type == 'OBJECTID'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args()]
-)
-def test_snmp_v1_get_next_with_retry_no_such(sess_args):
-    sess_args['retry_no_such'] = True
-
-    res = snmp_get(['iso.9', 'sysDescr.0', 'iso.9'], **sess_args)
+def test_snmp_get_next_with_retry_no_such(sess_args):
+    res = snmp_get(
+        ['iso.9', 'sysDescr.0', 'iso.9'],
+        retry_no_such=True,
+        **sess_args)
 
     assert res[0]
-    assert res[0].value == 'NOSUCHNAME'
-    assert res[0].oid == 'iso'
-    assert res[0].oid_index == '9'
-    assert res[0].snmp_type == 'NOSUCHNAME'
+    if sess_args['version'] == 1:
+        assert res[0].value == 'NOSUCHNAME'
+        assert res[0].oid == 'iso'
+        assert res[0].oid_index == '9'
+        assert res[0].snmp_type == 'NOSUCHNAME'
+    else:
+        assert res[0].snmp_type == 'NOSUCHOBJECT'
 
     assert res[1]
     assert platform.version() in res[1].value
@@ -237,15 +192,15 @@ def test_snmp_v1_get_next_with_retry_no_such(sess_args):
     assert res[1].snmp_type == 'OCTETSTR'
 
     assert res[2]
-    assert res[2].value == 'NOSUCHNAME'
-    assert res[2].oid == 'iso'
-    assert res[2].oid_index == '9'
-    assert res[2].snmp_type == 'NOSUCHNAME'
+    if sess_args['version'] == 1:
+        assert res[2].value == 'NOSUCHNAME'
+        assert res[2].oid == 'iso'
+        assert res[2].oid_index == '9'
+        assert res[2].snmp_type == 'NOSUCHNAME'
+    else:
+        assert res[2].snmp_type == 'NOSUCHOBJECT'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_next_end_of_mib_view(sess_args):
     if sess_args['version'] == 1:
         with pytest.raises(EasySNMPNoSuchNameError):
@@ -270,18 +225,12 @@ def test_snmp_get_next_end_of_mib_view(sess_args):
         assert res[2].snmp_type == 'ENDOFMIBVIEW'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_next_unknown(sess_args):
     with pytest.raises(EasySNMPUnknownObjectIDError):
         snmp_get_next('sysDescripto.0', **sess_args)
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_string(sess_args):
+def test_snmp_set_string(sess_args, request, reset_values):
     res = snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
@@ -300,10 +249,7 @@ def test_snmp_set_string(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_string_long_type(sess_args):
+def test_snmp_set_string_long_type(sess_args, reset_values):
     res = snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
@@ -322,10 +268,7 @@ def test_snmp_set_string_long_type(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_string_short_type(sess_args):
+def test_snmp_set_string_short_type(sess_args, reset_values):
     res = snmp_get(('sysLocation', '0'), **sess_args)
     assert res.oid == 'sysLocation'
     assert res.oid_index == '0'
@@ -344,10 +287,7 @@ def test_snmp_set_string_short_type(sess_args):
     assert res.snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_integer(sess_args):
+def test_snmp_set_integer(sess_args, reset_values):
     success = snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, **sess_args
     )
@@ -362,10 +302,7 @@ def test_snmp_set_integer(sess_args):
     assert res.snmp_type == 'INTEGER'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_integer_long_type(sess_args):
+def test_snmp_set_integer_long_type(sess_args, reset_values):
     success = snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, 'INTEGER', **sess_args
     )
@@ -380,10 +317,7 @@ def test_snmp_set_integer_long_type(sess_args):
     assert res.snmp_type == 'INTEGER'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_integer_short_type(sess_args):
+def test_snmp_set_integer_short_type(sess_args, reset_values):
     success = snmp_set(
         ('nsCacheTimeout', '.1.3.6.1.2.1.2.2'), 65, 'i', **sess_args
     )
@@ -398,18 +332,12 @@ def test_snmp_set_integer_short_type(sess_args):
     assert res.snmp_type == 'INTEGER'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_set_unknown(sess_args):
     with pytest.raises(EasySNMPUnknownObjectIDError):
         snmp_set('nsCacheTimeoooout', 1234, **sess_args)
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
-def test_snmp_set_multiple(sess_args):
+def test_snmp_set_multiple(sess_args, reset_values):
     res = snmp_get(
         ['sysLocation.0', 'nsCacheTimeout.1.3.6.1.2.1.2.2'], **sess_args
     )
@@ -429,9 +357,6 @@ def test_snmp_set_multiple(sess_args):
     assert res[1].value == '162'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_get_bulk(sess_args):
     if sess_args['version'] == 1:
         with pytest.raises(EasySNMPError):
@@ -458,9 +383,6 @@ def test_snmp_get_bulk(sess_args):
         assert res[4].snmp_type == 'TICKS'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_walk(sess_args):
     res = snmp_walk('system', **sess_args)
     assert len(res) >= 7
@@ -471,9 +393,6 @@ def test_snmp_walk(sess_args):
     assert res[5].value == 'my original location'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_walk_res(sess_args):
     res = snmp_walk('system', **sess_args)
 
@@ -500,9 +419,6 @@ def test_snmp_walk_res(sess_args):
     assert res[5].snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_bulkwalk_res(sess_args):
     if sess_args['version'] == 1:
         with pytest.raises(EasySNMPError):
@@ -533,9 +449,6 @@ def test_snmp_bulkwalk_res(sess_args):
         assert res[5].snmp_type == 'OCTETSTR'
 
 
-@pytest.mark.parametrize(
-    'sess_args', [sess_v1_args(), sess_v2_args(), sess_v3_args()]
-)
 def test_snmp_walk_unknown(sess_args):
     with pytest.raises(EasySNMPUnknownObjectIDError):
         snmp_walk('systemo', **sess_args)
