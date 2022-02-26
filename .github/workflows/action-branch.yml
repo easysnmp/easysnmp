@@ -1,0 +1,81 @@
+name: action-build
+on:
+  push:
+    branches:
+      - 'actions'
+      - 'actions-test'
+  pull_request:
+    branches:
+      - 'actions'
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+    steps:
+      - name: Setup dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            sudo apt-get install snmpd libsnmp-dev libperl-dev snmp-mibs-downloader
+            sudo systemctl stop snmpd
+            sudo download-mibs
+          elif [ "$RUNNER_OS" == "macOS" ]
+          then
+            brew install net-snmp
+            echo 'export PATH="/usr/local/opt/net-snmp/bin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/bin:$PATH"
+          else
+            echo "$RUNNER_OS not currently supported"
+            exit 1
+          fi
+          net-snmp-config --default-mibdirs
+          mkdir -m 0755 ~/.snmp
+          echo 'mibs +ALL' > ~/.snmp/snmp.conf
+        shell: bash
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-flake8 pytest-cov wheel
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build source
+        run: pip install -e .
+      - name: Start SNMP daemon
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            mibdir="-M +/var/lib/snmp/mibs"
+          elif [ "$RUNNER_OS" == "macOS" ]
+          then
+            mibdir=""
+          else
+            mibdir=""
+          fi
+          snmpd -C -c tests/snmpd.conf -r -Le $mibdir -m ALL
+      - name: Lint with flake8
+        uses: py-actions/flake8@v2
+        continue-on-error: true
+      - name: Run tests
+        run: python -m pytest --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results_${{ matrix.os }}_${{ matrix.python-version }}
+          path: test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+        if: ${{ always() }}
+      - name: Generate wheel
+        run: python setup.py bdist_wheel
+      - name: Upload wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist_${{ matrix.os }}_${{ matrix.python-version}}
+          path: dist/
