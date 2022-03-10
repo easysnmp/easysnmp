@@ -2629,6 +2629,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     char *tmpstr;
     Py_ssize_t tmplen;
     int error = 0;
+    bitarray *invalid_oids = NULL;
 
     if (args)
     {
@@ -2655,6 +2656,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
 
         ss = session_ctx->handle;
+        invalid_oids = session_ctx->invalid_oids;
 
         if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
@@ -2822,7 +2824,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         while (notdone) {
             status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
-                                     err_str, &err_num, &err_ind, NULL);
+                                     err_str, &err_num, &err_ind, invalid_oids);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
             if (status != 0)
@@ -2997,10 +2999,10 @@ done:
     }
     SAFE_FREE(oid_arr);
     SAFE_FREE(oid_arr_broken_check);
-    if (pdu)
+    if (response)
     {
-        snmp_free_pdu(pdu);
-        pdu = NULL;
+        snmp_free_pdu(response);
+        response = NULL;
     }
     if (error)
     {
