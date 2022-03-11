@@ -45,7 +45,12 @@ jobs:
       - name: Install pip dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-flake8 pytest-cov wheel
+          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
+          then
+            pip install pytest wheel six
+          else
+            pip install flake8 pytest pytest-flake8 pytest-cov wheel
+          fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build source
         run: pip install -e .
@@ -65,7 +70,13 @@ jobs:
         uses: py-actions/flake8@v2
         continue-on-error: true
       - name: Run tests
-        run: python -m pytest --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+        run: |
+          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
+          then
+            python -m pytest -c ./setup-py2.7.cfg
+          else
+            python -m pytest --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+          fi
       - name: Upload test results
         uses: actions/upload-artifact@v2
         with:
