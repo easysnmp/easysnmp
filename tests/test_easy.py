@@ -166,7 +166,8 @@ def test_snmp_get_next_numeric(sess_args):
 
     assert res.oid == 'sysObjectID'
     assert res.oid_index == '0'
-    assert res.value == '.1.3.6.1.4.1.8072.3.2.10'
+    # .10 == Linux, .16 == macosx, .13 == win32, .255 == UNKNOWN
+    assert res.value.rsplit('.', 1)[0] == '.1.3.6.1.4.1.8072.3.2'
     assert res.snmp_type == 'OBJECTID'
 
 

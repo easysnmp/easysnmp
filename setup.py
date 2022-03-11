@@ -1,18 +1,19 @@
 from subprocess import check_output
-from sys import argv, platform
+from sys import argv, platform, exit
 from shlex import split as s_split
 
 from distutils import sysconfig
+from distutils.command import build
 from setuptools import setup, Extension
 from setuptools.command.test import test as TestCommand
 from setuptools import dist
-from distutils.command import build
 
 # Determine if a base directory has been provided with the --basedir option
 basedir = None
 in_tree = False
 # Add compiler flags if debug is set
 compile_args = []
+link_args = []
 for arg in argv:
     if arg.startswith('--debug'):
         # Note from GCC manual:
@@ -37,7 +38,6 @@ if in_tree:
     libs = [flag[2:] for flag in s_split(netsnmp_libs) if flag[:2] == '-l']
     libdirs = [flag[2:] for flag in s_split(libdirs) if flag[:2] == '-L']
     incdirs = [flag[2:] for flag in s_split(incdirs) if flag[:2] == '-I']
-    link_args = []
 
 # Otherwise, we use the system-installed SNMP libraries
 else:
@@ -49,14 +49,14 @@ else:
         if pass_next:
             link_args.append(flag)
             pass_next = False
-        elif flag in has_arg:
+        elif flag in has_arg:  # -framework CoreFoundation
             link_args.append(flag)
             pass_next = True
-        elif flag[:2] == '-f':
+        elif flag[:2] == '-f':  # -flat_namespace
             link_args.append(flag)
             pass_next = False
 
-    link_args = [flag for flag in s_split(netsnmp_libs) if flag[:2] == '-f']
+    # link_args += [flag for flag in s_split(netsnmp_libs) if flag[:2] == '-f']
     libs = [flag[2:] for flag in s_split(netsnmp_libs) if flag[:2] == '-l']
     libdirs = [flag[2:] for flag in s_split(netsnmp_libs) if flag[:2] == '-L']
     incdirs = []
@@ -75,7 +75,8 @@ else:
             # The homebrew version also depends on the Openssl keg
             openssl_ver = list(filter(lambda o: 'openssl' in o, *map(str.split,
                                filter(lambda l: 'openssl' in l,
-                                      brew.replace('\'', '').split('\n')))))[0]
+                                      str(brew.replace('\'', '')).split('\n')
+                                      ))))[0]
             brew = check_output(
                 'brew info {0}'.format(openssl_ver),
                 shell=True
@@ -104,7 +105,7 @@ class PyTest(TestCommand):
         # Import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args)
-        sys.exit(errno)
+        exit(errno)
 
 
 # Read the long description from README.rst
@@ -152,20 +153,27 @@ setup(
 if platform == 'darwin':  # Newer Net-SNMP dylib may not be linked to properly
     b = build.build(dist.Distribution())  # Dynamically determine build path
     b.finalize_options()
+    ext = sysconfig.get_config_var('EXT_SUFFIX') or '.so'  # None for Python 2
     linked = check_output((
         "otool -L {0}/easysnmp/interface{1} | "
         r"egrep 'libnetsnmp\.' | "
         "tr -s '\t' ' ' | "
         "cut -d' ' -f2").format(
             b.build_platlib,
-            sysconfig.get_config_var('EXT_SUFFIX')
+            ext
         ),
         shell=True).decode().strip()
-    target_lib = check_output(
+    target_libs = check_output(
         "find {0} -name libnetsnmp.*.dylib".format(' '.join(libdirs)),
+        shell=True).decode().strip().split()
+    prefix = check_output(
+        "net-snmp-config --prefix",
         shell=True).decode().strip()
+    for lib in target_libs:
+        if prefix in lib:
+            target_lib = lib
+            break
     _ = check_output(
         'install_name_tool -change {0} {1} {2}/easysnmp/interface{3}'.format(
-            linked, target_lib, b.build_platlib,
-            sysconfig.get_config_var('EXT_SUFFIX')),
+            linked, target_lib, b.build_platlib, ext),
         shell=True)
