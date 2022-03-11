@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
     steps:
-      - name: Setup dependencies
+      - name: Set up dependencies
         run: |
           if [ "$RUNNER_OS" == "Linux" ]
           then
@@ -26,14 +26,16 @@ jobs:
             sudo download-mibs
           elif [ "$RUNNER_OS" == "macOS" ]
           then
-            brew install net-snmp
+            wget https://gist.githubusercontent.com/kamakazikamikaze/277d49fa26a6449dd12dfc92a9191896/raw/de8349688d8cda499f61e2912018d159061e39f7/net-snmp.rb
+            brew install net-snmp --build-from-source --formula ./net-snmp.rb && rm ./net-snmp.rb
             echo 'export PATH="/usr/local/opt/net-snmp/bin:$PATH"' >> /Users/runner/.bash_profile
             export PATH="/usr/local/opt/net-snmp/bin:$PATH"
+            echo 'export PATH="/usr/local/opt/net-snmp/sbin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/sbin:$PATH"
           else
             echo "$RUNNER_OS not currently supported"
             exit 1
           fi
-          net-snmp-config --default-mibdirs
           mkdir -m 0755 ~/.snmp
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
         shell: bash
@@ -53,19 +55,24 @@ jobs:
           fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build source
-        run: pip install -e .
+        run: |
+          python setup.py build
+          pip install -e .
       - name: Start SNMP daemon
         run: |
           if [ "$RUNNER_OS" == "Linux" ]
           then
             mibdir="-M +/var/lib/snmp/mibs"
+            SNMPD=$(which snmpd)
           elif [ "$RUNNER_OS" == "macOS" ]
           then
             mibdir=""
+            SNMPD=/usr/local/opt/net-snmp/sbin/snmpd
           else
             mibdir=""
+            SNMPD=$(which.exe snmpd)
           fi
-          snmpd -C -c tests/snmpd.conf -r -Le $mibdir -m ALL
+          $SNMPD -C -c tests/snmpd.conf -r -Le $mibdir -m ALL
       - name: Lint with flake8
         uses: py-actions/flake8@v2
         continue-on-error: true
