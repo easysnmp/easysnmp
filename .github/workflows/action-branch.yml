@@ -82,23 +82,50 @@ jobs:
           then
             PYTEST_ARGS=( '-c' './setup-py2.7.cfg' )
           fi
-          python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./pytest-coverage_${{ matrix.os }}_${{ matrix.python-version }}.txt
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
+          python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./test-outputs_${{ matrix.os }}_${{ matrix.python-version }}.log
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
         with:
-          pytest-coverage-path: ./pytest-coverage_${{ matrix.os }}_${{ matrix.python-version }}.txt
-          title: Pytest Coverage Report for ${{ matrix.os }} - ${{ matrix.python-version }}
-          badge-title: ${{ matrix.os }} - ${{ matrix.python-version }}
-          hide-badge: true
-          hide-report: true
-          create-new-comment: false
-          hide-comment: false
-          report-only-changed-files: false
-          junitxml-path: ./test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
-          junitxml-title: Coverage Status for ${{ matrix.os }} - ${{ matrix.python-version }}
+          name: pytest-results
+          path: |
+            test-results_*.xml
+            test-outputs_*.log
       - name: Generate wheel
         run: python setup.py bdist_wheel
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
+          name: wheels
           path: dist/*.whl
+
+  comment-coverage:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Download pytest artifacts
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          path: ./pytest-results
+          name: pytest-results
+      - name: Create mutli-file output listing
+        run: |
+          echo 'pytest_multiple_files<<EOF' >> $GITHUB_ENV
+          export test_xml=($(ls -d ${{ steps.download.outputs.download-path }}/*.xml | sort ))
+          export test_log=($(ls -d ${{ steps.download.outputs.download-path }}/*.log | sort ))
+          for i in "${!test_log[@]}"
+          do
+            echo "$(echo ${test_log[$i]} | cut -d_ -f2) - $(echo ${test_log[$i]%.*} | cut -d_ -f3), ${test_log[$i]}, ${test_xml[$i]}" >> $GITHUB_ENV
+          done
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          title: Pytest Coverage Report
+          hide-badge: true
+          hide-report: true
+          create-new-comment: false
+          hide-comment: false
+          report-only-changed-files: false
+          multiple-files: |
+            ${{ env.pytest_multiple_files }}
