@@ -26,8 +26,7 @@ jobs:
             sudo download-mibs
           elif [ "$RUNNER_OS" == "macOS" ]
           then
-            wget https://gist.githubusercontent.com/kamakazikamikaze/277d49fa26a6449dd12dfc92a9191896/raw/de8349688d8cda499f61e2912018d159061e39f7/net-snmp.rb
-            brew install net-snmp --build-from-source --formula ./net-snmp.rb && rm ./net-snmp.rb
+            brew install easysnmp/netsnmp-easysnmp/net-snmp
             echo 'export PATH="/usr/local/opt/net-snmp/bin:$PATH"' >> /Users/runner/.bash_profile
             export PATH="/usr/local/opt/net-snmp/bin:$PATH"
             echo 'export PATH="/usr/local/opt/net-snmp/sbin:$PATH"' >> /Users/runner/.bash_profile
