@@ -2,10 +2,11 @@ name: action-build
 on:
   push:
     branches:
-      - 'actions'
+      - 'master'
       - 'actions-test'
   pull_request:
     branches:
+      - 'master'
       - 'actions'
 
 jobs:
@@ -79,20 +80,25 @@ jobs:
         run: |
           if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
           then
-            python -m pytest -c ./setup-py2.7.cfg
-          else
-            python -m pytest --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+            PYTEST_ARGS=( '-c' './setup-py2.7.cfg' )
           fi
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
+          python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./pytest-coverage_${{ matrix.os }}_${{ matrix.python-version }}.txt
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
         with:
-          name: test-results_${{ matrix.os }}_${{ matrix.python-version }}
-          path: test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
-        if: ${{ always() }}
+          pytest-coverage-path: ./pytest-coverage_${{ matrix.os }}_${{ matrix.python-version }}.txt
+          title: Pytest Coverage Report for ${{ matrix.os }} - ${{ matrix.python-version }}
+          badge-title: ${{ matrix.os }} - ${{ matrix.python-version }}
+          hide-badge: true
+          hide-report: true
+          create-new-comment: false
+          hide-comment: false
+          report-only-changed-files: false
+          junitxml-path: ./test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml
+          junitxml-title: Coverage Status for ${{ matrix.os }} - ${{ matrix.python-version }}
       - name: Generate wheel
         run: python setup.py bdist_wheel
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: dist_${{ matrix.os }}_${{ matrix.python-version}}
-          path: dist/
+          path: dist/*.whl
