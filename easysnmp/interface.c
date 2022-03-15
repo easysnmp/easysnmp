@@ -1560,6 +1560,9 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
                                                int err_ind)
 {
     PyObject *tmp_for_conversion;
+    PyObject *type, *value, *traceback;
+
+    PyErr_Fetch(&type, &value, &traceback);
 
     py_netsnmp_attr_set_string(session, "error_string", err_str,
                                STRLEN(err_str));
@@ -1567,7 +1570,7 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     tmp_for_conversion = PyLong_FromLong(err_num);
     if (!tmp_for_conversion)
     {
-        return; /* nothing better to do? */
+        goto done; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_number", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
@@ -1575,10 +1578,15 @@ static void __py_netsnmp_update_session_errors(PyObject *session,
     tmp_for_conversion = PyLong_FromLong(err_ind);
     if (!tmp_for_conversion)
     {
-        return; /* nothing better to do? */
+        goto done; /* nothing better to do? */
     }
     PyObject_SetAttrString(session, "error_index", tmp_for_conversion);
     Py_DECREF(tmp_for_conversion);
+
+done:
+    PyErr_Restore(type, value, traceback);
+
+    return;
 }
 
 /*
@@ -2725,6 +2733,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     char *tmpstr;
     Py_ssize_t tmplen;
     int error = 0;
+    bitarray *invalid_oids = NULL;
 
     if (args)
     {
@@ -2751,6 +2760,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
 
         ss = session_ctx->handle;
+        invalid_oids = session_ctx->invalid_oids;
 
         if (py_netsnmp_attr_string(session, "error_string", &tmpstr, &tmplen) < 0)
         {
@@ -2918,7 +2928,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         while (notdone) {
             status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
-                                     err_str, &err_num, &err_ind, NULL);
+                                     err_str, &err_num, &err_ind, invalid_oids);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
             if (status != 0)
@@ -3094,10 +3104,10 @@ done:
     }
     SAFE_FREE(oid_arr);
     SAFE_FREE(oid_arr_broken_check);
-    if (pdu)
+    if (response)
     {
-        snmp_free_pdu(pdu);
-        pdu = NULL;
+        snmp_free_pdu(response);
+        response = NULL;
     }
     if (error)
     {

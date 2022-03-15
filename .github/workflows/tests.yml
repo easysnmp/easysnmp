@@ -1,0 +1,187 @@
+name: tests
+on:
+  push:
+    branches:
+      - 'actions-test'
+  pull_request:
+    branches:
+      - 'master'
+      - 'actions'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+    steps:
+      - name: Set up dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            sudo apt-get update
+            sudo apt-get install -y snmpd libsnmp-dev libperl-dev snmp-mibs-downloader valgrind
+            sudo systemctl stop snmpd
+            sudo download-mibs
+          elif [ "$RUNNER_OS" == "macOS" ]
+          then
+            brew install easysnmp/netsnmp-easysnmp/net-snmp
+            echo 'export PATH="/usr/local/opt/net-snmp/bin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/bin:$PATH"
+            echo 'export PATH="/usr/local/opt/net-snmp/sbin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/sbin:$PATH"
+          else
+            echo "$RUNNER_OS not currently supported"
+            exit 1
+          fi
+          mkdir -m 0755 ~/.snmp
+          echo 'mibs +ALL' > ~/.snmp/snmp.conf
+        shell: bash
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
+          then
+            pip install pytest wheel six
+          else
+            pip install flake8 pytest pytest-flake8 pytest-cov wheel
+          fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build source
+        run: |
+          python setup.py build
+          pip install -e .
+      - name: Start SNMP daemon
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            mibdir="-M +/var/lib/snmp/mibs"
+            SNMPD=$(which snmpd)
+          elif [ "$RUNNER_OS" == "macOS" ]
+          then
+            mibdir=""
+            SNMPD=/usr/local/opt/net-snmp/sbin/snmpd
+          else
+            mibdir=""
+            SNMPD=$(which.exe snmpd)
+          fi
+          $SNMPD -C -c tests/snmpd.conf -r -Le $mibdir -m ALL
+      - name: Lint with flake8
+        uses: py-actions/flake8@v2
+        continue-on-error: true
+      - name: Run tests
+        run: |
+          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
+          then
+            PYTEST_ARGS=( '-c' './setup-py2.7.cfg' )
+          fi
+          if [[ "${{ matrix.python-version }}" =~ "3.10" ]] && [ "$RUNNER_OS" == "Linux" ]
+          then
+            VALGRIND="valgrind --leak-check=full --show-reachable=no --log-file=./valgrind.out"
+            echo 'PYTHONMALLOC=malloc' >> $GITHUB_ENV
+          fi
+          ${VALGRIND[@]} python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./test-outputs_${{ matrix.os }}_${{ matrix.python-version }}.log
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-results
+          path: |
+            test-results_*.xml
+            test-outputs_*.log
+      - name: Upload valgrind report
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
+        with:
+          name: valgrind-report
+          path: ./valgrind.out
+      - name: Generate wheel
+        run: python setup.py bdist_wheel
+      - name: Upload wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: dist/*.whl
+
+  comment-coverage:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Download pytest artifacts
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          path: ./pytest-results
+          name: pytest-results
+      - name: Create mutli-file output listing
+        run: |
+          echo 'pytest_multiple_files<<EOF' >> $GITHUB_ENV
+          export test_xml=($(ls -d ${{ steps.download.outputs.download-path }}/*.xml | sort ))
+          export test_log=($(ls -d ${{ steps.download.outputs.download-path }}/*.log | sort ))
+          for i in "${!test_log[@]}"
+          do
+            echo "$(echo ${test_log[$i]} | cut -d_ -f2) - $(echo ${test_log[$i]%.*} | cut -d_ -f3), ${test_log[$i]}, ${test_xml[$i]}" >> $GITHUB_ENV
+          done
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          title: Pytest Coverage Report
+          hide-badge: true
+          hide-report: true
+          create-new-comment: false
+          hide-comment: false
+          report-only-changed-files: false
+          multiple-files: |
+            ${{ env.pytest_multiple_files }}
+
+  comment-valgrind:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Download valgrind artifact
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          path: ./valgrind-report
+          name: valgrind-report
+      - name: Parse valgrind report
+        run: |
+          python - << "EOF"
+          from re import split
+          with open("${{ steps.download.outputs.download-path }}/valgrind.out") as f:
+            data = f.read()
+          blocks = split(r'==[0-9]+==\s\n', data)
+          snmp = list(filter(lambda b: 'snmp' in b, blocks[1:]))
+          with open('./valgrind-stripped.log', 'w') as f:
+            f.write('```sh\n')
+            f.writelines(filter(lambda b: all(filt not in b for filt in ('invalid file descriptor', 'alternative log')), snmp))
+            f.write(blocks[-2])
+            f.write('```\n')
+          EOF
+      - id: get-comment-body
+        run: |
+          body="$(cat ./valgrind-stripped.log)"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}" 
+          echo "::set-output name=body::$body"
+      - name: Create comment for PR
+        uses: peter-evans/create-or-update-comment@v1
+        if: github.event_name == 'pull_request'
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}
+      - name: Create comment for Push
+        uses: peter-evans/commit-comment@v1
+        if: github.event_name == 'push'
+        with:
+          body: ${{ steps.get-comment-body.outputs.body }}

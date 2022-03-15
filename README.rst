@@ -1,17 +1,17 @@
 Easy SNMP
 =========
 
-|Build Status| |Coverage Status| |Gitter| |License|
+|Build Status| |Coverage Status| |Discussions| |License|
 
-.. |Build Status| image:: https://travis-ci.org/kamakazikamikaze/easysnmp.svg?branch=master
-   :target: https://travis-ci.org/kamakazikamikaze/easysnmp
+.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build-release
+   :target: https://github.com/kamakazikamikaze/easysnmp/actions
 .. |Coverage Status| image:: https://coveralls.io/repos/kamakazikamikaze/easysnmp/badge.svg
    :target: https://coveralls.io/r/kamakazikamikaze/easysnmp
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE
-.. |Gitter| image:: https://badges.gitter.im/easysnmp/Lobby.svg
-   :alt: Join the chat at https://gitter.im/easysnmp/Lobby
-   :target: https://gitter.im/easysnmp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |Discussions| image:: https://img.shields.io/github/discussions/kamakazikamikaze/easysnmp
+   :alt: Join the Discussions!
+   :target: https://github.com/kamakazikamikaze/easysnmp
 
 .. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/images/easysnmp-logo.png
     :alt: Easy SNMP Logo
@@ -139,6 +139,7 @@ possible:
    module
 -  **Wes Hardaker and the net-snmp-coders**: for their hard work and
    dedication
+- **fgimian and nnathan**: the original contributors to this codebase
 
 Running Tests
 -------------
