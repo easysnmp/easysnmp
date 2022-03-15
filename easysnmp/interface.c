@@ -3004,6 +3004,11 @@ done:
         snmp_free_pdu(response);
         response = NULL;
     }
+    if (pdu)
+    {
+        snmp_free_pdu(pdu);
+        response = NULL;
+    }
     if (error)
     {
         return NULL;
@@ -4031,7 +4036,9 @@ done:
 static void py_log_msg(int log_level, char *printf_fmt, ...)
 {
     PyObject *log_msg = NULL;
+    PyObject *type, *value, *traceback;
     va_list fmt_args;
+    PyErr_Fetch(&type, &value, &traceback);
 
     va_start(fmt_args, printf_fmt);
     log_msg = PyUnicode_FromFormatV(printf_fmt, fmt_args);
@@ -4070,6 +4077,7 @@ static void py_log_msg(int log_level, char *printf_fmt, ...)
             break;
     }
 
+    PyErr_Restore(type, value, traceback);
     Py_DECREF(log_msg);
 }
 
