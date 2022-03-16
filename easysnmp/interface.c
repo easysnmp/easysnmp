@@ -1175,12 +1175,6 @@ retry:
         status = STAT_ERROR;
     }
 
-    // SNMP v3 doesn't quite raise timeouts correctly, so we correct it
-    if (strcmp(err_str, "Timeout") && (status == STAT_ERROR))
-    {
-        status = STAT_TIMEOUT;
-    }
-
     switch (status)
     {
         case STAT_SUCCESS:
@@ -1301,20 +1295,21 @@ retry:
              break;
 
         case STAT_TIMEOUT:
-            snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
-            strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
-            py_log_msg(DEBUG, "sync PDU: %s", err_str);
-
-            PyErr_SetString(EasySNMPTimeoutError,
-                            "timed out while connecting to remote host");
-            break;
-
         case STAT_ERROR:
             snmp_sess_error(ss, err_num, err_ind, &tmp_err_str);
             strlcpy(err_str, tmp_err_str, STR_BUF_SIZE);
             py_log_msg(DEBUG, "sync PDU: %s", err_str);
 
-            PyErr_SetString(EasySNMPError, tmp_err_str);
+            // SNMP v3 doesn't quite raise timeouts correctly, so we correct it
+            if (strncmp(err_str, "Timeout", 7) == 0)
+            {
+                PyErr_SetString(EasySNMPTimeoutError,
+                                "timed out while connecting to remote host");
+            }
+            else
+            {
+                PyErr_SetString(EasySNMPError, tmp_err_str);
+            }
             break;
 
         default:
