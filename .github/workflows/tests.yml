@@ -1,12 +1,10 @@
 name: tests
 on:
   push:
-    branches:
-      - 'actions-test'
-  pull_request:
-    branches:
+    branches-ignore:
       - 'master'
       - 'actions'
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -86,7 +84,15 @@ jobs:
           fi
           if [[ "${{ matrix.python-version }}" =~ "3.10" ]] && [ "$RUNNER_OS" == "Linux" ]
           then
-            VALGRIND="valgrind --leak-check=full --show-reachable=no --log-file=./valgrind.out"
+            wget https://raw.githubusercontent.com/python/cpython/main/Misc/valgrind-python.supp
+            VALGRIND=(
+              'valgrind'
+              '--tool=memcheck'
+              '--leak-check=full'
+              '--show-leak-kinds=definite,indirect,possible'
+              '--suppressions=./valgrind-python.supp'
+              '--log-file=./valgrind.out'
+            )
             echo 'PYTHONMALLOC=malloc' >> $GITHUB_ENV
           fi
           ${VALGRIND[@]} python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./test-outputs_${{ matrix.os }}_${{ matrix.python-version }}.log
