@@ -1706,25 +1706,19 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 #ifndef DISABLE_MD5
     if (!strcmp(auth_proto, "MD5"))
     {
-        session.securityAuthProto =
-            snmp_duplicate_objid(usmHMACMD5AuthProtocol,
-                                 USM_AUTH_PROTO_MD5_LEN);
+        session.securityAuthProto = usmHMACMD5AuthProtocol;
         session.securityAuthProtoLen = USM_AUTH_PROTO_MD5_LEN;
     }
     else
 #endif
     if (!strcmp(auth_proto, "SHA"))
     {
-        session.securityAuthProto =
-            snmp_duplicate_objid(usmHMACSHA1AuthProtocol,
-                                 USM_AUTH_PROTO_SHA_LEN);
+        session.securityAuthProto = usmHMACSHA1AuthProtocol;
         session.securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
     }
     else if (!strcmp(auth_proto, "DEFAULT"))
     {
-        const oid* a = get_default_authtype(&session.securityAuthProtoLen);
-        session.securityAuthProto
-            = snmp_duplicate_objid(a, session.securityAuthProtoLen);
+        session.securityAuthProto = (oid *) get_default_authtype(&session.securityAuthProtoLen);
     }
     else
     {
@@ -1753,25 +1747,19 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 #ifndef DISABLE_DES
     if (!strcmp(priv_proto, "DES"))
     {
-        session.securityPrivProto =
-            snmp_duplicate_objid(usmDESPrivProtocol,
-                                 USM_PRIV_PROTO_DES_LEN);
+        session.securityPrivProto = usmDESPrivProtocol;
         session.securityPrivProtoLen = USM_PRIV_PROTO_DES_LEN;
     }
     else
 #endif
     if (!strncmp(priv_proto, "AES", 3))
     {
-        session.securityPrivProto =
-            snmp_duplicate_objid(usmAESPrivProtocol,
-                                 USM_PRIV_PROTO_AES_LEN);
+        session.securityPrivProto = usmAESPrivProtocol;
         session.securityPrivProtoLen = USM_PRIV_PROTO_AES_LEN;
     }
     else if (!strcmp(priv_proto, "DEFAULT"))
     {
-        const oid *p = get_default_privtype(&session.securityPrivProtoLen);
-        session.securityPrivProto =
-            snmp_duplicate_objid(p, session.securityPrivProtoLen);
+        session.securityPrivProto = (oid *) get_default_privtype(&session.securityPrivProtoLen);
     }
     else
     {
