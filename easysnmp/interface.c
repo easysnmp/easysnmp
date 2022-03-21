@@ -152,6 +152,7 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
 static void py_log_msg(int log_level, char *printf_fmt, ...);
+static int __match_algo(int is_auth, char *algo, oid **output, size_t *len);
 
 enum { INFO, WARNING, ERROR, DEBUG, EXCEPTION };
 
@@ -186,6 +187,155 @@ static void *compat_netsnmp_memdup(const void *from, size_t size)
         }
     }
     return to;
+}
+
+/*
+ * Match the user's algorithm of choice to the proper flags and length.
+ * 
+ * @param int is_auth: 1 or greater indicates we are looking for hashing algos.
+ *  0 or lower indicates we are looking for encryption (privacy) algos.
+ * 
+ * @param char algo: User's input string. Exact matches only.
+ * @param char output: Pointer to assign the matched algorithm to.
+ * @param size_t len: Pointer to assign the algorithm output size to.
+ * @returns int: 0 on success, non-zero if no match found
+ */
+static int __match_algo(int is_auth, char *algo, oid **output, size_t *len)
+{
+    int found = -1;
+    *output = NULL;
+    *len = 0;
+    if (is_auth >= 1) // Authethentication. Hashes, i.e. MD5, SHA, etc.
+    {
+#ifndef NETSNMP_DISABLE_MD5
+        if (strcmp(algo, "MD5") == 0)
+        {
+            *output = usmHMACMD5AuthProtocol;
+            *len = sizeof(usmHMACMD5AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "SHA") == 0 ||
+#else
+        if (strcmp(algo, "SHA") == 0 ||
+#endif // NETSNMP_DISABLE_MD5
+            strcmp(algo, "SHA1") == 0 ||
+            strcmp(algo, "SHA-1") == 0)
+        {
+            *output = usmHMACSHA1AuthProtocol;
+            *len = sizeof(usmHMACSHA1AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+#ifdef HAVE_EVP_SHA224
+        else if (strcmp(algo, "SHA224") == 0 ||
+                 strcmp(algo, "SHA-224") == 0)
+        {
+            *output = usmHMAC128SHA224AuthProtocol;
+            *len = sizeof(usmHMAC128SHA224AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "SHA256") == 0 ||
+                 strcmp(algo, "SHA-256") == 0)
+        {
+            *output = usmHMAC192SHA256AuthProtocol;
+            *len = sizeof(usmHMAC192SHA256AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+#endif // HAVE_EVP_SHA224
+#ifdef HAVE_EVP_SHA384
+        else if (strcmp(algo, "SHA384") == 0 ||
+                 strcmp(algo, "SHA-384") == 0)
+        {
+            *output = usmHMAC256SHA384AuthProtocol;
+            *len = sizeof(usmHMAC256SHA384AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "SHA512") == 0 ||
+                 strcmp(algo, "SHA-512") == 0)
+        {
+            *output = usmHMAC384SHA512AuthProtocol;
+            *len = sizeof(usmHMAC384SHA512AuthProtocol) / sizeof(oid);
+            found = 0;
+        }
+#endif // HAVE_EVP_SHA384
+        else if (strcmp(algo, "DEFAULT") == 0)
+        {
+            *output = (oid *) get_default_authtype(len);
+            found = 0;
+        }
+    }
+    else // Privacy. Encryption, i.e. DES, AES, etc.
+    {
+#ifndef NETSNMP_DISABLE_DES
+        if (strcmp(algo, "DES") == 0)
+        {
+            *output = usmDESPrivProtocol;
+            *len = sizeof(usmDESPrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+#endif // NETSNMP_DISABLE_DES
+#ifdef HAVE_AES
+#ifndef NETSNMP_DISABLE_AES
+        else if (strcmp(algo, "AES128") == 0 ||
+#else
+        if (strcmp(algo, "AES128") == 0 ||
+#endif // NETSNMP_DISABLE_AES
+            strcmp(algo, "AES-128") == 0 ||
+            strcmp(algo, "AES") == 0)
+        {
+            *output = usmAESPrivProtocol;
+            *len = sizeof(usmAESPrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+#endif // HAVE_AES
+#ifdef NETSNMP_DRAFT_BLUMENTHAL_AES_04
+#if defined(HAVE_AES) || !defined(NETSNMP_DISABLE_DES)
+        else if (strcmp(algo, "AES192") == 0 ||
+#else
+        if (strcmp(algo, "AES192") == 0 ||
+#endif // HAVE_AES | NETSNMP_DISABLE_DES
+            strcmp(algo, "AES-192") == 0)
+        {
+            *output = usmAES192PrivProtocol;
+            *len = sizeof(usmAES192PrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "AES256") == 0 ||
+                 strcmp(algo, "AES-256") == 0)
+        {
+            *output = usmAES256PrivProtocol;
+            *len = sizeof(usmAES256PrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "AES192C") == 0 ||
+                 strcmp(algo, "AES-192-C") == 0 ||
+                 strcmp(algo, "AES-192C") == 0 ||
+                 strcmp(algo, "AES192-C") == 0)
+        {
+            *output = usmAES192CiscoPrivProtocol;
+            *len = sizeof(usmAES192CiscoPrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+        else if (strcmp(algo, "AES256C") == 0 ||
+                 strcmp(algo, "AES-256-C") == 0 ||
+                 strcmp(algo, "AES-256C") == 0 ||
+                 strcmp(algo, "AES256-C") == 0)
+        {
+            *output = usmAES256CiscoPrivProtocol;
+            *len = sizeof(usmAES256CiscoPrivProtocol) / sizeof(oid);
+            found = 0;
+        }
+#endif // NETSNMP_DRAFT_BLUMENTHAL_AES_04
+#if !defined(NETSNMP_DISABLE_DES) || defined(HAVE_AES) || defined(NETSNMP_DRAFT_BLUMENTHAL_AES_04)
+        else if (strcmp(algo, "DEFAULT") == 0)
+#else
+    if (strcmp(algo, "DEFAULT") == 0)
+#endif
+        {
+            *output = (oid *) get_default_privtype(len);
+            found = 0;
+        }
+    }
+    return found;
 }
 
 void __libraries_init(char *appname)
@@ -1710,25 +1860,8 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
                        (char **) &session.contextEngineID);
     session.engineBoots = eng_boots;
     session.engineTime = eng_time;
-
-#ifndef DISABLE_MD5
-    if (!strcmp(auth_proto, "MD5"))
-    {
-        session.securityAuthProto = usmHMACMD5AuthProtocol;
-        session.securityAuthProtoLen = USM_AUTH_PROTO_MD5_LEN;
-    }
-    else
-#endif
-    if (!strcmp(auth_proto, "SHA"))
-    {
-        session.securityAuthProto = usmHMACSHA1AuthProtocol;
-        session.securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
-    }
-    else if (!strcmp(auth_proto, "DEFAULT"))
-    {
-        session.securityAuthProto = (oid *) get_default_authtype(&session.securityAuthProtoLen);
-    }
-    else
+    if (__match_algo(1, auth_proto, &session.securityAuthProto,
+                     &session.securityAuthProtoLen) != 0)
     {
         PyErr_Format(PyExc_ValueError,
                      "unsupported authentication protocol (%s)", auth_proto);
@@ -1752,24 +1885,8 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
             }
         }
     }
-#ifndef DISABLE_DES
-    if (!strcmp(priv_proto, "DES"))
-    {
-        session.securityPrivProto = usmDESPrivProtocol;
-        session.securityPrivProtoLen = USM_PRIV_PROTO_DES_LEN;
-    }
-    else
-#endif
-    if (!strncmp(priv_proto, "AES", 3))
-    {
-        session.securityPrivProto = usmAESPrivProtocol;
-        session.securityPrivProtoLen = USM_PRIV_PROTO_AES_LEN;
-    }
-    else if (!strcmp(priv_proto, "DEFAULT"))
-    {
-        session.securityPrivProto = (oid *) get_default_privtype(&session.securityPrivProtoLen);
-    }
-    else
+    if (__match_algo(0, priv_proto, &session.securityPrivProto,
+                     &session.securityPrivProtoLen) != 0)
     {
         PyErr_Format(PyExc_ValueError,
                      "unsupported privacy protocol (%s)", priv_proto);
