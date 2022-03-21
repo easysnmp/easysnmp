@@ -1509,6 +1509,11 @@ static PyObject *create_session_capsule(SnmpSession *session)
                         "couldn't create SNMP handle");
         goto done;
     }
+    /*
+     * We have to free these here because we allocated the memory and `snmp_sess_open`
+     * does not use our instance. In fact, it creates a carbon copy. The call is as follows:
+     * snmp_sess_open -> _sess_open -> snmp_sess_add -> snmp_sess_add_ex -> snmp_sess_copy -> _sess_copy
+     */
     if (!(ctx = malloc(sizeof *ctx)))
     {
         PyErr_SetString(PyExc_RuntimeError,
@@ -1526,6 +1531,8 @@ static PyObject *create_session_capsule(SnmpSession *session)
                         "failed to create Python Capsule object");
         goto done;
     }
+    free(session->securityEngineID);
+    free(session->contextEngineID);
     /* init session context variables */
     ctx->handle = handle;
     ctx->invalid_oids = (bitarray *) ctx->invalid_oids_buf;
@@ -1540,7 +1547,8 @@ done:
     {
         free(ctx);
     }
-
+    free(session->securityEngineID);
+    free(session->contextEngineID);
     Py_XDECREF(capsule);
     return NULL;
 }
@@ -1698,7 +1706,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         hex_to_binary2((unsigned char *)sec_eng_id, STRLEN(sec_eng_id),
                        (char **) &session.securityEngineID);
     session.contextEngineIDLen =
-        hex_to_binary2((unsigned char *)context_eng_id, STRLEN(sec_eng_id),
+        hex_to_binary2((unsigned char *)context_eng_id, STRLEN(context_eng_id),
                        (char **) &session.contextEngineID);
     session.engineBoots = eng_boots;
     session.engineTime = eng_time;
