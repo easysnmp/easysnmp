@@ -1513,12 +1513,10 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1", "surrogateescape");
             if (!attr_bytes)
             {
-                /* Needs decrement? */
-                Py_XDECREF(attr);
+                Py_DECREF(attr);
                 return -1;
             }
             retval = PyBytes_AsStringAndSize(*attr_bytes, val, len);
-            //Py_DECREF(attr_bytes);
 #else
             retval = PyString_AsStringAndSize(attr, val, len);
 #endif
@@ -2265,7 +2263,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             {
                 py_log_msg(DEBUG, "netsnmp_get: bad varbind (%d)",
                            varlist_ind);
-                Py_XDECREF(varbind);
+                // Py_XDECREF(varbind); Double DECREF?
             }
 
             py_netsnmp_attr_set_string(varbind, "snmp_type", "NOSUCHNAME",
@@ -2363,7 +2361,7 @@ done:
     {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
@@ -2713,7 +2711,7 @@ done:
     {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
@@ -3160,7 +3158,7 @@ done:
     {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
@@ -3483,7 +3481,7 @@ done:
     {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args) {
@@ -3933,7 +3931,7 @@ done:
     {
         return NULL;
     }
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *netsnmp_set(PyObject *self, PyObject *args)
