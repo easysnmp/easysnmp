@@ -274,7 +274,7 @@ static int __match_algo(int is_auth, char *algo, oid **output, size_t *len)
         }
 #endif // NETSNMP_DISABLE_DES
 #ifdef HAVE_AES
-#ifndef NETSNMP_DISABLE_AES
+#ifndef NETSNMP_DISABLE_DES
         else if (strcmp(algo, "AES128") == 0 ||
 #else
         if (strcmp(algo, "AES128") == 0 ||
