@@ -2,11 +2,11 @@
  * function definitions, enums, etc.
  */
 
-/******************************************************************************/
-/*
-/* Defines for the 'interface.c' file are listed below
-/*
-/******************************************************************************/
+/******************************************************************************
+ *
+ * Defines for the 'interface.c' file are listed below
+ *
+ ******************************************************************************/
 
 /*
  * In snmpv1 when using retry_nosuch we need to track the
@@ -44,11 +44,11 @@
         }              \
     } while (0)
 
-/******************************************************************************/
-/*
-/* Data structures used in the 'interface.c' file are listed below
-/*
-/******************************************************************************/
+/******************************************************************************
+ *
+ * Data structures used in the 'interface.c' file are listed below
+ *
+ ******************************************************************************/
 
 typedef netsnmp_session SnmpSession;
 /*
@@ -96,11 +96,11 @@ enum
     EXCEPTION
 };
 
-/******************************************************************************/
-/*
-/* Function definitions for the 'interface.c' file are listed below
-/*
-/******************************************************************************/
+/******************************************************************************
+ *
+ * Function definitions for the 'interface.c' file are listed below
+ *
+ ******************************************************************************/
 
 static PyObject *create_session_capsule(SnmpSession *ss);
 static void *get_session_handle_from_capsule(PyObject *session_capsule);
