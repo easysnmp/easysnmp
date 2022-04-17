@@ -1,7 +1,7 @@
 Easy SNMP
 =========
 
-|Build Status| |Coverage Status| |Discussions| |License|
+|Build Status| |Discussions| |License|
 
 .. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build
    :target: https://github.com/kamakazikamikaze/easysnmp/actions

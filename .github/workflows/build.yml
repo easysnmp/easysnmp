@@ -13,7 +13,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Replace version number
         run: |
-          sed -ir "s/version='[0-9a-z.]+'/version='${{ github.event.inputs.tag }}'/" setup.py
+          sed -E -i "s/version='[0-9a-z.]+'/version='${{ github.event.inputs.tag }}'/" setup.py
+          git add setup.py
           git config --global user.name 'EasySNMP Release Action'
           git config --global user.email 'easysnmp@users.noreply.github.com'
           git commit -am "Version bump to ${{ github.events.inputs.tag }} for release"
