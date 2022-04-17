@@ -3,10 +3,8 @@ Easy SNMP
 
 |Build Status| |Coverage Status| |Discussions| |License|
 
-.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build-release
+.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build
    :target: https://github.com/kamakazikamikaze/easysnmp/actions
-.. |Coverage Status| image:: https://coveralls.io/repos/kamakazikamikaze/easysnmp/badge.svg
-   :target: https://coveralls.io/r/kamakazikamikaze/easysnmp
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE
 .. |Discussions| image:: https://img.shields.io/github/discussions/kamakazikamikaze/easysnmp

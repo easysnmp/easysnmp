@@ -5,7 +5,6 @@ on:
       - 'master'
       - 'actions'
   pull_request:
-  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -127,7 +126,7 @@ jobs:
         with:
           path: ./pytest-results
           name: pytest-results
-      - name: Create mutli-file output listing
+      - name: Create multi-file output listing
         run: |
           echo 'pytest_multiple_files<<EOF' >> $GITHUB_ENV
           export test_xml=($(ls -d ${{ steps.download.outputs.download-path }}/*.xml | sort ))

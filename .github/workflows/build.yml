@@ -1,0 +1,93 @@
+name: build
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to use'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Replace version number
+        run: |
+          sed -ir "s/version='[0-9a-z.]+'/version='${{ github.event.inputs.tag }}'/" setup.py
+          git config --global user.name 'EasySNMP Release Action'
+          git config --global user.email 'easysnmp@users.noreply.github.com'
+          git commit -am "Version bump to ${{ github.events.inputs.tag }} for release"
+          git tag ${{ github.events.inputs.tag }}
+          git push
+          git push --tags
+
+  generate-wheels:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+    needs: bump-version
+    steps:
+      - name: Set up dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            sudo apt-get update
+            sudo apt-get install -y libsnmp-dev
+          elif [ "$RUNNER_OS" == "macOS" ]
+          then
+            brew install easysnmp/netsnmp-easysnmp/net-snmp
+            echo 'export PATH="/usr/local/opt/net-snmp/bin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/bin:$PATH"
+            echo 'export PATH="/usr/local/opt/net-snmp/sbin:$PATH"' >> /Users/runner/.bash_profile
+            export PATH="/usr/local/opt/net-snmp/sbin:$PATH"
+          else
+            echo "$RUNNER_OS not currently supported"
+            exit 1
+          fi
+        shell: bash
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install pip dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Generate wheel
+        run: python setup.py bdist_wheel
+      - name: Build source dist
+        run: python setup.py sdist
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+      - name: Upload wheel
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: dist/*.whl
+
+  push-pypi:
+    runs-on: ubuntu-latest
+    needs: generate-wheels
+    steps:
+      - name: Create dist folder
+        run: mkdir dist
+      - name: Download pytest artifacts
+        id: download
+        uses: actions/download-artifact@v3
+        with:
+          path: ./dist/wheels.zip
+          name: wheels
+      - name: Unzip wheels
+        run: sudo apt install -y unzip && cd ./dist/ && unzip wheels.zip && rm wheels.zip && cd ..
+      - name: Publish to PyPi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
+          print_hash: true
