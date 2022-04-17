@@ -1,27 +1,8 @@
 name: build
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Release tag to use'
+  release:
 
 jobs:
-  bump-version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Replace version number
-        run: |
-          sed -E -i "s/version='[0-9a-z.]+'/version='${{ github.event.inputs.tag }}'/" setup.py
-          git add setup.py
-          git config --global user.name 'EasySNMP Release Action'
-          git config --global user.email 'easysnmp@users.noreply.github.com'
-          git commit -am "Version bump to ${{ github.events.inputs.tag }} for release"
-          git tag ${{ github.events.inputs.tag }}
-          git push
-          git push --tags
-
   generate-wheels:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -29,7 +10,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
-    needs: bump-version
     steps:
       - name: Set up dependencies
         run: |
