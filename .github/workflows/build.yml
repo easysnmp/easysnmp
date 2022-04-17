@@ -55,16 +55,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: generate-wheels
     steps:
-      - name: Create dist folder
-        run: mkdir dist
       - name: Download pytest artifacts
         id: download
         uses: actions/download-artifact@v3
         with:
-          path: ./dist/wheels.zip
+          path: ./dist/
           name: wheels
-      - name: Unzip wheels
-        run: sudo apt install -y unzip && cd ./dist/ && unzip wheels.zip && rm wheels.zip && cd ..
       - name: Publish to PyPi
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
