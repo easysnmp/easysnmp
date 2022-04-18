@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: wheels
-          path: dist/*.whl
+          path: dist/*
 
   macos-wheels:
     runs-on: macos-latest
@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: wheels
-          path: dist/*.whl
+          path: dist/*
 
   publish-wheels:
     runs-on: ubuntu-latest
