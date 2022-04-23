@@ -2,6 +2,7 @@ from __future__ import unicode_literals, absolute_import
 
 import os
 import re
+from warnings import warn
 
 # Don't attempt to import the C interface if building docs on RTD
 if not os.environ.get('READTHEDOCS', False):  # noqa
@@ -88,6 +89,12 @@ class Session(object):
     """
     A Net-SNMP session which may be setup once and then used to query and
     manipulate SNMP data.
+
+    .. note:: This class transparently uses ``interface`` to create a session
+              instance from the Net-SNMP library. Most variable values are not
+              synchronized between the ``Session`` and ``interface``. If you
+              intend to make changes to the ``Session`` instead of creating a
+              new one, you must manually call the ``.update_session()`` method
 
     :param hostname: hostname or IP address of SNMP agent
     :param version: the SNMP version to use; 1, 2 (equivalent to 2c) or 3
@@ -230,61 +237,10 @@ class Session(object):
         self.error_index = 0
 
         # Check for transports that may be tunneled
-        tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
+        self.tunneled = re.match('^(tls|dtls|ssh)', self.hostname)
 
-        # Calculate our timeout in microseconds
-        timeout_microseconds = int(self.timeout * 1000000)
-
-        # Tunneled
-        if tunneled:
-            # TODO: Determine the best way to test this
-            self.sess_ptr = interface.session_tunneled(
-                self.version,
-                self.connect_hostname,
-                self.local_port,
-                self.retries,
-                timeout_microseconds,
-                self.security_username,
-                SECURITY_LEVEL_MAPPING[self.security_level],
-                self.context_engine_id,
-                self.context,
-                self.our_identity,
-                self.their_identity,
-                self.their_hostname,
-                self.trust_cert
-            )
-
-        # SNMP v3
-        elif self.version == 3:
-            self.sess_ptr = interface.session_v3(
-                self.version,
-                self.connect_hostname,
-                self.local_port,
-                self.retries,
-                timeout_microseconds,
-                self.security_username,
-                SECURITY_LEVEL_MAPPING[self.security_level],
-                self.security_engine_id,
-                self.context_engine_id,
-                self.context,
-                self.auth_protocol,
-                self.auth_password,
-                self.privacy_protocol,
-                self.privacy_password,
-                self.engine_boots,
-                self.engine_time
-            )
-
-        # SNMP v1 & v2
-        else:
-            self.sess_ptr = interface.session(
-                self.version,
-                self.community,
-                self.connect_hostname,
-                self.local_port,
-                self.retries,
-                timeout_microseconds
-            )
+        # Create interface instance
+        self.update_session()
 
     @property
     def connect_hostname(self):
@@ -292,6 +248,11 @@ class Session(object):
             return '{0}:{1}'.format(self.hostname, self.remote_port)
         else:
             return self.hostname
+
+    @property
+    def timeout_microseconds(self):
+        # Calculate our timeout in microseconds
+        return int(self.timeout * 1000000)
 
     def get(self, oids):
         """
@@ -503,3 +464,60 @@ class Session(object):
 
         # Return a list of variables
         return varlist
+
+    def update_session(self, **kwargs):
+        for keyword, value in kwargs.items():
+            if keyword in self.__dict__:
+                self.__setattr__(keyword, value)
+            else:
+                warn('Keyword argument "{}" is not an attribute'.format(keyword))
+        # Tunneled
+        if self.tunneled:
+            # TODO: Determine the best way to test this
+            self.sess_ptr = interface.session_tunneled(
+                self.version,
+                self.connect_hostname,
+                self.local_port,
+                self.retries,
+                self.timeout_microseconds,
+                self.security_username,
+                SECURITY_LEVEL_MAPPING[self.security_level],
+                self.context_engine_id,
+                self.context,
+                self.our_identity,
+                self.their_identity,
+                self.their_hostname,
+                self.trust_cert
+            )
+
+        # SNMP v3
+        elif self.version == 3:
+            self.sess_ptr = interface.session_v3(
+                self.version,
+                self.connect_hostname,
+                self.local_port,
+                self.retries,
+                self.timeout_microseconds,
+                self.security_username,
+                SECURITY_LEVEL_MAPPING[self.security_level],
+                self.security_engine_id,
+                self.context_engine_id,
+                self.context,
+                self.auth_protocol,
+                self.auth_password,
+                self.privacy_protocol,
+                self.privacy_password,
+                self.engine_boots,
+                self.engine_time
+            )
+
+        # SNMP v1 & v2
+        else:
+            self.sess_ptr = interface.session(
+                self.version,
+                self.community,
+                self.connect_hostname,
+                self.local_port,
+                self.retries,
+                self.timeout_microseconds
+            )

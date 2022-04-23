@@ -371,3 +371,19 @@ def test_session_walk_all(sess):
         assert res[5].oid_index == '0'
         assert res[5].value == 'my original location'
         assert res[5].snmp_type == 'OCTETSTR'
+
+
+def test_session_update():
+    s = Session(version=3)
+    ptr = s.sess_ptr
+    s.version = 1
+    s.update_session()
+    assert ptr != s.sess_ptr
+    s.tunneled = True
+    ptr = s.sess_ptr
+    with pytest.raises(ValueError):
+        s.update_session()
+    assert ptr == s.sess_ptr
+    s.update_session(tunneled=False, version=2)
+    assert s.version == 2
+    assert s.tunneled is False
