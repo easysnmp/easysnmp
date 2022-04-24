@@ -29,7 +29,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the Alabaster
 # documentation at https://github.com/bitprophet/alabaster.
 html_theme_options = {
-    'github_user': 'fgimian',
+    'github_user': 'kamakazikamikaze',
     'github_repo': 'easysnmp',
     'github_banner': True,
     'logo': 'easysnmp.svg',

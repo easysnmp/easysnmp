@@ -18,12 +18,12 @@ def strip_non_printable(value):
     # Filter all non-printable characters
     # (note that we must use join to account for the fact that Python 3
     # returns a generator)
-    printable_value = ''.join(filter(lambda c: c in string.printable, value))
+    printable_value = "".join(filter(lambda c: c in string.printable, value))
 
     if printable_value != value:
         if printable_value:
-            printable_value += ' '
-        printable_value += '(contains binary)'
+            printable_value += " "
+        printable_value += "(contains binary)"
 
     return printable_value
 
