@@ -34,10 +34,11 @@ Why Another Library?
 
 Installation
 ------------
-Easy SNMP has been tested and is supported on systems running Net-SNMP
-5.7.x.
+EasySNMP has been tested and is supported on systems running Net-SNMP
+5.7.x and newer. All non-EOL versions of Python 3 are fully supported, with 2.7
+and recent EOL versions of Python 3 receiving partial support.
 
-If your OS ships with this version of Net-SNMP, then you can install it
+If your OS ships with a supported version of Net-SNMP, then you can install it
 without compiling it via your package manager:
 
 On RHEL / CentOS systems:
@@ -52,9 +53,15 @@ On Debian / Ubuntu systems:
 
     sudo apt-get install libsnmp-dev snmp-mibs-downloader
 
-If your OS doesn't ship with Net-SNMP 5.7.x, please follow instructions
-provided on the [Net-SNMP install page](http://www.net-snmp.org/docs/INSTALL.html)
-to build and install Net-SNMP 5.7.x on your system.
+On macOS systems:
+
+.. code-block:: bash
+
+    brew install net-snmp
+
+If your OS doesn't ship with Net-SNMP 5.7.x or newer, please follow instructions
+provided on the `Net-SNMP install page <http://www.net-snmp.org/docs/INSTALL.html>`_
+to build and install Net-SNMP on your system.
 
 You'll also need to ensure that you have the following packages installed so
 that Easy SNMP installs correctly:
@@ -70,6 +77,12 @@ On Debian / Ubuntu systems:
 .. code-block:: bash
 
     sudo apt-get install gcc python-dev
+
+On macOS systems:
+
+.. code-block:: bash
+
+    brew install gcc
 
 Install Easy SNMP via pip as follows:
 

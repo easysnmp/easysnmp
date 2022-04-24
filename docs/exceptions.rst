@@ -1,7 +1,7 @@
 Exceptions
 ----------
 
-.. module:: easysnmp
+.. currentmodule:: easysnmp
 
 .. autoclass:: EasySNMPError
 .. autoclass:: EasySNMPConnectionError
