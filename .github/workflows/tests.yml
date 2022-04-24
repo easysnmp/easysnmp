@@ -7,8 +7,30 @@ on:
   pull_request:
 
 jobs:
+  check-source-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run_job: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - name: Checkout changes
+        uses: actions/checkout@v3
+      - name: Check for changes in source code
+        id: changed-files
+        uses: tj-actions/changed-files@v18.7
+        with:
+          files: |
+            easysnmp/*.py
+            easysnmp/*.c
+            easysnmp/*.h
+            setup.py
+            setup.cfg
+            setup-py2.7.cfg
+            .github/workflows/*.yml
+
   build-and-test:
     runs-on: ${{ matrix.os }}
+    needs: check-source-changes
+    if: needs.check-source-changes.outputs.run_job == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +60,7 @@ jobs:
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
         shell: bash
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
