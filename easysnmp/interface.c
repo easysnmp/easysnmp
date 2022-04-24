@@ -9,9 +9,9 @@
  * to provide backwards compatibility.
  */
 #if (                                  \
-    ((PY_VERSION_HEX < 0x02070000) ||  \
-     (PY_VERSION_HEX >= 0x03000000) && \
-         (PY_VERSION_HEX < 0x03010000)))
+    (PY_VERSION_HEX < 0x02070000) ||   \
+    ((PY_VERSION_HEX >= 0x03000000) && \
+     (PY_VERSION_HEX < 0x03010000)))
 
 #define USE_DEPRECATED_COBJECT_API
 
