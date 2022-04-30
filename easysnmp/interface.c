@@ -1633,13 +1633,14 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 {
     int version;
     char *community;
+    char *localname;
     char *peer;
     int lport;
     int retries;
     int timeout;
     SnmpSession session = {0};
 
-    if (!PyArg_ParseTuple(args, "issiii", &version, &community, &peer, &lport,
+    if (!PyArg_ParseTuple(args, "isssiii", &version, &community, &localname, &peer, &lport,
                           &retries, &timeout))
     {
         goto done;
@@ -1673,6 +1674,7 @@ static PyObject *netsnmp_create_session(PyObject *self, PyObject *args)
 
     session.community_len = STRLEN((char *)community);
     session.community = (u_char *)community;
+    session.localname = localname;
     session.peername = peer;
     session.local_port = lport;
     session.retries = retries; /* 5 */
@@ -1688,6 +1690,7 @@ done:
 static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
 {
     int version;
+    char *localname;
     char *peer;
     int lport;
     int retries;
@@ -1705,8 +1708,8 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
     int eng_time;
     SnmpSession session = {0};
 
-    if (!PyArg_ParseTuple(args, "isiiisisssssssii", &version,
-                          &peer, &lport, &retries, &timeout,
+    if (!PyArg_ParseTuple(args, "issiiisisssssssii", &version,
+                          &localname, &peer, &lport, &retries, &timeout,
                           &sec_name, &sec_level, &sec_eng_id,
                           &context_eng_id, &context,
                           &auth_proto, &auth_pass,
@@ -1729,6 +1732,7 @@ static PyObject *netsnmp_create_session_v3(PyObject *self, PyObject *args)
         goto done;
     }
 
+    session.localname = localname;
     session.peername = peer;
     session.retries = retries; /* 5 */
     session.timeout = timeout; /* 1000000L */
@@ -1807,6 +1811,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
                                                  PyObject *args)
 {
     int version;
+    char *localname;
     char *peer;
     int lport;
     int retries;
@@ -1821,8 +1826,9 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
     char *trust_cert;
     SnmpSession session = {0};
 
-    if (!PyArg_ParseTuple(args, "isiiisissssss", &version,
-                          &peer, &lport, &retries, &timeout,
+    if (!PyArg_ParseTuple(args, "issiiisissssss", &version,
+                          &localname,&peer,
+                          &lport, &retries, &timeout,
                           &sec_name, &sec_level,
                           &context_eng_id, &context,
                           &our_identity, &their_identity,
@@ -1841,6 +1847,7 @@ static PyObject *netsnmp_create_session_tunneled(PyObject *self,
 
     snmp_sess_init(&session);
 
+    session.localname = localname;
     session.peername = peer;
     session.retries = retries; /* 5 */
     session.timeout = timeout; /* 1000000L */

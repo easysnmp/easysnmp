@@ -201,6 +201,7 @@ class Session(object):
         best_guess=0,
         retry_no_such=False,
         abort_on_nonexistent=False,
+        src_addr='localhost'
     ):
         # Validate and extract the remote port
         if ":" in hostname:
@@ -242,6 +243,7 @@ class Session(object):
         self.best_guess = best_guess
         self.retry_no_such = retry_no_such
         self.abort_on_nonexistent = abort_on_nonexistent
+        self.src_addr = src_addr
 
         # The following variables are required for internal use as they are
         # passed to the C interface
@@ -517,6 +519,7 @@ class Session(object):
             # TODO: Determine the best way to test this
             self.sess_ptr = interface.session_tunneled(
                 self.version,
+                self.src_addr,
                 self.connect_hostname,
                 self.local_port,
                 self.retries,
@@ -535,6 +538,7 @@ class Session(object):
         elif self.version == 3:
             self.sess_ptr = interface.session_v3(
                 self.version,
+                self.src_addr,
                 self.connect_hostname,
                 self.local_port,
                 self.retries,
@@ -557,6 +561,7 @@ class Session(object):
             self.sess_ptr = interface.session(
                 self.version,
                 self.community,
+                self.src_addr,
                 self.connect_hostname,
                 self.local_port,
                 self.retries,
