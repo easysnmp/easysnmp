@@ -1,19 +1,19 @@
 Easy SNMP
 =========
 
-|Build Status| |Coverage Status| |Discussions| |License|
+|Python Code Style| |Build Status| |Discussions| |License|
 
-.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build-release
+.. |Python Code Style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build
    :target: https://github.com/kamakazikamikaze/easysnmp/actions
-.. |Coverage Status| image:: https://coveralls.io/repos/kamakazikamikaze/easysnmp/badge.svg
-   :target: https://coveralls.io/r/kamakazikamikaze/easysnmp
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE
 .. |Discussions| image:: https://img.shields.io/github/discussions/kamakazikamikaze/easysnmp
    :alt: Join the Discussions!
    :target: https://github.com/kamakazikamikaze/easysnmp
 
-.. image:: https://raw.githubusercontent.com/fgimian/easysnmp/master/images/easysnmp-logo.png
+.. image:: https://raw.githubusercontent.com/kamakazikamikaze/easysnmp/master/images/easysnmp-logo.png
     :alt: Easy SNMP Logo
 
 Artwork courtesy of `Open Clip Art

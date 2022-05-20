@@ -1,6 +1,25 @@
 Changelog
 ---------
 
+Queued
+++++++
+
+- New method for (re)creating the underlying Net-SNMP interface object (`e75aab <https://github.com/kamakazikamikaze/easysnmp/commit/94ad101be880a7a739e34d343dd0d0da679a48fb>`_)
+- Developer requirements updated and are now using `Black <https://github.com/psf/black>`_ for Python formatting
+
+`0.2.6a <https://github.com/kamakazikamikaze/easysnmp/releases/tag/0.2.6a1>`_ (2022-04-17)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+- CI/CD builds and publishes wheels and source code to PyPI
+
+`0.2.6a <https://github.com/kamakazikamikaze/easysnmp/releases/tag/0.2.6>`_ (2022-04-17)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+- Finally fixed underlying memory leaks (`PR#142 <https://github.com/kamakazikamikaze/easysnmp/pull/142>`_)
+- Proper handling of errors caused within Python that prevented exception raises (`PR#129 <https://github.com/kamakazikamikaze/easysnmp/pull/129>`_)
+- Added modern SNMPv3 privacy/auth algorithms (`PR#143 <https://github.com/kamakazikamikaze/easysnmp/pull/143>`_, `94ad10 <https://github.com/kamakazikamikaze/easysnmp/commit/94ad101be880a7a739e34d343dd0d0da679a48fb>`_)
+- CI/CD moved to Github Actions (`PR#137 <https://github.com/kamakazikamikaze/easysnmp/pull/137>`_)
+
 `0.2.5 <https://github.com/kamakazikamikaze/easysnmp/releases/tag/0.2.5>`_ (2017-06-14)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

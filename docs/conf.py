@@ -15,8 +15,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Easy SNMP'
-copyright = '2015, Fotis Gimian'
-author = 'Fotis Gimian'
+copyright = '2015-2022, Fotis Gimian, Kent Coble'
+author = 'Fotis Gimian, Kent Coble'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -29,7 +29,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the Alabaster
 # documentation at https://github.com/bitprophet/alabaster.
 html_theme_options = {
-    'github_user': 'fgimian',
+    'github_user': 'kamakazikamikaze',
     'github_repo': 'easysnmp',
     'github_banner': True,
     'logo': 'easysnmp.svg',

@@ -27,3 +27,9 @@ docs/_build/
 # vim stuff
 .ropeproject
 .idea/
+
+# Local development
+dev/
+.vscode
+*/*.log
+*.log
