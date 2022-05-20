@@ -2308,8 +2308,8 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
             len = __snprint_value((char *)str_buf, sizeof(session_ctx->buf),
                                   vars, tp, type, sprintval_flag);
             str_buf[len] = '\0';
-            py_netsnmp_attr_set_string(varbind, "value",
-                                       (char *)str_buf, type, len);
+            py_netsnmp_attr_set_by_type(varbind, "value",
+                                       (const char *) str_buf, type, len);
 
             Py_DECREF(varbind);
         }
