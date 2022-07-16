@@ -123,3 +123,8 @@ def reset_values():
     yield None
     snmp_set_via_cli("sysLocation.0", "my original location", "s")
     snmp_set_via_cli("nsCacheTimeout.1.3.6.1.2.1.2.2", "0", "i")
+
+
+@pytest.fixture
+def sess_v3():
+    return SESS_V3_ARGS
