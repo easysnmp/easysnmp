@@ -8,6 +8,7 @@
  *
  ******************************************************************************/
 
+#define APPNAME "python"
 /*
  * In snmpv1 when using retry_nosuch we need to track the
  * index of each bad OID in the responses using a bitarray;
@@ -130,3 +131,4 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
 
 static void py_log_msg(int log_level, char *printf_fmt, ...);
 static int __match_algo(int is_auth, char *algo, oid **output, size_t *len);
+static void __remove_user_from_cache(struct session_list *ss);
