@@ -5,15 +5,15 @@ Easy SNMP
 
 .. |Python Code Style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
-.. |Build Status| image:: https://img.shields.io/github/workflow/status/kamakazikamikaze/easysnmp/build
-   :target: https://github.com/kamakazikamikaze/easysnmp/actions
+.. |Build Status| image:: https://img.shields.io/github/workflow/status/easysnmp/easysnmp/build
+   :target: https://github.com/easysnmp/easysnmp/actions
 .. |License| image:: https://img.shields.io/badge/license-BSD-blue.svg
    :target: https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE
-.. |Discussions| image:: https://img.shields.io/github/discussions/kamakazikamikaze/easysnmp
+.. |Discussions| image:: https://img.shields.io/github/discussions/easysnmp/easysnmp
    :alt: Join the Discussions!
-   :target: https://github.com/kamakazikamikaze/easysnmp
+   :target: https://github.com/easysnmp/easysnmp
 
-.. image:: https://raw.githubusercontent.com/kamakazikamikaze/easysnmp/master/images/easysnmp-logo.png
+.. image:: https://raw.githubusercontent.com/easysnmp/easysnmp/master/images/easysnmp-logo.png
     :alt: Easy SNMP Logo
 
 Artwork courtesy of `Open Clip Art
@@ -144,19 +144,21 @@ possible:
 Running Tests
 -------------
 
-You may run the unit tests as follows:
+Tests use `Pytest <https://github.com/pytest-dev/pytest>`_. You can run
+them with the following:
 
 .. code:: bash
 
-    git clone https://github.com/fgimian/painter.git
-    cd painter
-    python setup.py test
+    git clone https://github.com/easysnmp/easysnmp.git
+    cd easysnmp
+    pip install pytest
+    pytest
 
 License
 -------
 
 Easy SNMP is released under the **BSD** license. Please see the
-`LICENSE <https://github.com/kamakazikamikaze/easysnmp/blob/master/LICENSE>`_
+`LICENSE <https://github.com/easysnmp/easysnmp/blob/master/LICENSE>`_
 file for more details.
 
 Copyright
