@@ -44,6 +44,7 @@ else:
     netsnmp_libs = check_output('net-snmp-config --libs', shell=True).decode()
 
     pass_next = False
+    # macOS-specific
     has_arg = ('-framework',)
     for flag in s_split(netsnmp_libs):
         if pass_next:
@@ -52,7 +53,7 @@ else:
         elif flag in has_arg:  # -framework CoreFoundation
             link_args.append(flag)
             pass_next = True
-        elif flag[:2] == '-f':  # -flat_namespace
+        elif flag == '-flat_namespace':
             link_args.append(flag)
             pass_next = False
 
@@ -62,17 +63,15 @@ else:
     incdirs = []
 
     if platform == 'darwin':  # OS X
-        brew = check_output('brew info net-snmp', shell=True).decode()
+        brew = check_output('brew list net-snmp', shell=True).decode()
         if 'command not found' not in brew:
-            # /usr/local/opt is the default brew `opt` prefix, however the user
-            # may have installed it elsewhere. The `brew info <pkg>` includes
-            # an apostrophe, which breaks shlex. We'll simply replace it
-            buildvars = list(
-                map(lambda e: e.split('"', 1)[1].strip('"'),
-                    filter(lambda var: '="' in var, brew.split())))
-            libdirs += [flag[2:] for flag in buildvars if flag[:2] == '-L']
-            incdirs += [flag[2:] for flag in buildvars if flag[:2] == '-I']
+            lines = brew.splitlines()
+            include_dir = list(filter(lambda l: 'include/net-snmp' in l, lines))[0]
+            incdirs.append(include_dir[:include_dir.index("include/net-snmp")+7])
+            lib_dir = list(filter(lambda l: "lib/libnetsnmp.dylib" in l, lines))[0]
+            libdirs.append(lib_dir[:lib_dir.index("lib/libnetsnmp.dylib")+3])
             # The homebrew version also depends on the Openssl keg
+            brew = check_output('brew info net-snmp', shell=True).decode()
             openssl_ver = list(filter(lambda o: 'openssl' in o, *map(str.split,
                                filter(lambda l: 'openssl' in l,
                                       str(brew.replace('\'', '')).split('\n')
@@ -81,6 +80,9 @@ else:
                 'brew info {0}'.format(openssl_ver),
                 shell=True
             ).decode()
+            # /usr/local/opt is the default brew `opt` prefix, however the user
+            # may have installed it elsewhere. The `brew info <pkg>` includes
+            # an apostrophe, which breaks shlex. We'll simply replace it
             buildvars = list(
                 map(lambda e: e.split('"', 1)[1].strip('"'),
                     filter(lambda var: '="' in var, brew.split())))
@@ -164,17 +166,10 @@ if platform == 'darwin':  # Newer Net-SNMP dylib may not be linked to properly
             ext
         ),
         shell=True).decode().strip()
-    target_libs = check_output(
-        "find {0} -name libnetsnmp.*.dylib".format(' '.join(libdirs)),
-        shell=True).decode().strip().split()
     prefix = check_output(
         "net-snmp-config --prefix",
         shell=True).decode().strip()
-    for lib in target_libs:
-        if prefix in lib:
-            target_lib = lib
-            break
     _ = check_output(
         'install_name_tool -change {0} {1} {2}/easysnmp/interface{3}'.format(
-            linked, target_lib, b.build_platlib, ext),
+            linked, lib_dir, b.build_platlib, ext),
         shell=True)
