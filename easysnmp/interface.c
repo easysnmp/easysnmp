@@ -1432,7 +1432,7 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             // Encode the provided attribute using latin-1 into bytes and
             // retrieve its value and length
             *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1", "surrogateescape");
-            if (!attr_bytes)
+            if (!(*attr_bytes))
             {
                 Py_DECREF(attr);
                 return -1;
