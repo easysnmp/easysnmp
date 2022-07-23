@@ -415,6 +415,14 @@ def test_snmp_walk_res(sess_args):
     assert res[5].snmp_type == "OCTETSTR"
 
 
+def test_snmp_walk_with_retry_no_such(sess_args):
+    res = snmp_walk(["iso.9"], retry_no_such=True, **sess_args)
+    # The above could trigger bug #162 as a PDU gets free'd by
+    # the Net-SNMP library, but since it was not passed by ref,
+    # it does not get set to NULL when leaving the function.
+    assert res == []
+
+
 def test_snmp_bulkwalk_res(sess_args):
     if sess_args["version"] == 1:
         with pytest.raises(EasySNMPError):
