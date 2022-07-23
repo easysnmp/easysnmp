@@ -1189,13 +1189,13 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
 
 /* takes ss and pdu as input and updates the 'response' argument */
 /* the input 'pdu' argument will be freed */
-static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
+static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu **pdu,
                            netsnmp_pdu **response, int retry_nosuch,
                            char *err_str, int *err_num, int *err_ind,
                            bitarray *invalid_oids)
 {
     int status = 0;
-    long command = pdu->command;
+    long command = (*pdu)->command;
     char *tmp_err_str;
     size_t retry_num = 0;
 
@@ -1220,7 +1220,7 @@ static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
 retry:
 
     Py_BEGIN_ALLOW_THREADS
-        status = snmp_sess_synch_response(ss, pdu, response);
+        status = snmp_sess_synch_response(ss, *pdu, response);
     Py_END_ALLOW_THREADS
 
         if ((*response == NULL) && (status == STAT_SUCCESS))
@@ -1285,13 +1285,13 @@ retry:
                  * (which indicates SNMP_ERR_NOERROR) or returns NULL
                  * likely indicating no more remaining variables.
                  */
-                pdu = snmp_fix_pdu(*response, command);
+                *pdu = snmp_fix_pdu(*response, command);
 
                 /*
                  * The condition when pdu==NULL will happen when
                  * there are no OIDs left to retry.
                  */
-                if (!pdu)
+                if (!*pdu)
                 {
                     status = STAT_SUCCESS;
                     goto done;
@@ -2092,7 +2092,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
         bitarray_clear_bits(invalid_oids, (size_t)varlist_len);
     }
 
-    status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+    status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch, err_str,
                              &err_num, &err_ind, invalid_oids);
 
     __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
@@ -2452,7 +2452,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
             }
         }
 
-        status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+        status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch, err_str,
                                  &err_num, &err_ind, invalid_oids);
 
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
@@ -2888,7 +2888,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         while (notdone)
         {
-            status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+            status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                      err_str, &err_num, &err_ind, invalid_oids);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
@@ -3230,7 +3230,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 goto done;
             }
 
-            status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+            status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                      err_str, &err_num, &err_ind, NULL);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
@@ -3652,7 +3652,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
             while (notdone)
             {
                 py_log_msg(DEBUG, "netsnmp_bulkwalk: Sending pdu req");
-                status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+                status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                          err_str, &err_num, &err_ind, NULL);
 
                 __py_netsnmp_update_session_errors(session, err_str, err_num,
@@ -4051,7 +4051,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
             }
         }
 
-        status = __send_sync_pdu(ss, pdu, &response, NO_RETRY_NOSUCH,
+        status = __send_sync_pdu(ss, &pdu, &response, NO_RETRY_NOSUCH,
                                  err_str, &err_num, &err_ind, NULL);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
 
