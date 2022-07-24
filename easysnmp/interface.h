@@ -124,8 +124,8 @@ static int __get_type_str(int type, char *str, int log_error);
 static int __get_label_iid(char *name, char **last_label, char **iid,
                            int flag);
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
-                              int *oid_arr_len, int *type, int best_guess);
-static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str);
+                              size_t *oid_arr_len, int *type, int best_guess);
+static int __concat_oid_str(oid *doid_arr, size_t *doid_arr_len, char *soid_str);
 static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
                              char *val, int len, int type);
 
