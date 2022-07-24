@@ -47,7 +47,7 @@ typedef unsigned int bitarray;
  * }
  */
 #define BITARRAY_DECLARE(name, nbits) \
-    bitarray (name)[1 + BITARRAY_NUM_BITS_TO_LIMBS((nbits))] = { nbits }
+    bitarray(name)[1 + BITARRAY_NUM_BITS_TO_LIMBS((nbits))] = {nbits}
 
 static inline size_t bitarray_num_limbs(bitarray *ba)
 {
@@ -123,38 +123,37 @@ static inline void bitarray_clear_bits(bitarray *ba, size_t nbits)
     }
 }
 
-
 /*
  * Allocation functions
  */
 static inline bitarray *bitarray_alloc(size_t nbits)
 {
-        bitarray *ba = NULL;
+    bitarray *ba = NULL;
 
-        size_t nlimbs = 1 + BITARRAY_NUM_BITS_TO_LIMBS(nbits);
+    size_t nlimbs = 1 + BITARRAY_NUM_BITS_TO_LIMBS(nbits);
 
-        ba = malloc(sizeof(bitarray) * nlimbs);
-        if (ba)
-        {
-            ba[0] = nbits;
-        }
+    ba = malloc(sizeof(bitarray) * nlimbs);
+    if (ba)
+    {
+        ba[0] = nbits;
+    }
 
-        return ba;
+    return ba;
 }
 
 static inline bitarray *bitarray_calloc(size_t nbits)
 {
-        bitarray *ba = NULL;
+    bitarray *ba = NULL;
 
-        size_t nlimbs = 1 + BITARRAY_NUM_BITS_TO_LIMBS(nbits);
+    size_t nlimbs = 1 + BITARRAY_NUM_BITS_TO_LIMBS(nbits);
 
-        ba = calloc(sizeof(bitarray), nlimbs);
-        if (ba)
-        {
-            ba[0] = nbits;
-        }
+    ba = calloc(sizeof(bitarray), nlimbs);
+    if (ba)
+    {
+        ba[0] = nbits;
+    }
 
-        return ba;
+    return ba;
 }
 
 static inline void bitarray_free(bitarray *ba)
@@ -219,7 +218,7 @@ static inline void bitarray_print_base16(bitarray *ba)
     bitarray i;
     size_t num_limbs = bitarray_num_limbs(ba);
 
-    printf("DEBUG numbits=%lu\n", (unsigned long) ba[0]);
+    printf("DEBUG numbits=%lu\n", (unsigned long)ba[0]);
     printf("DEBUG sizeof(limb)=%lu\n", sizeof(ba[0]));
     printf("DEBUG num_limbs=%lu\n", num_limbs);
     for (i = 0; i <= num_limbs; i++)
@@ -232,7 +231,7 @@ static inline void bitarray_print_base16(bitarray *ba)
         {
             /* mask the byte we want to print in hex */
             unsigned long mask = (0xFFUL) << (j * CHAR_BIT);
-            c = (unsigned char) ((ba[i] & mask) >> (j * CHAR_BIT));
+            c = (unsigned char)((ba[i] & mask) >> (j * CHAR_BIT));
             printf("%02x", c);
         }
 
@@ -240,20 +239,6 @@ static inline void bitarray_print_base16(bitarray *ba)
     }
 
     printf("\n");
-}
-
-
-/* ignore unused function warnings */
-static void wno_unused_function_simple_bitarray_h(void)
-{
-    (void) bitarray_num_bits(NULL);
-    (void) bitarray_change_bit(NULL, 0);
-    (void) bitarray_clear_bit(NULL, 0);
-    (void) bitarray_clear_bits(NULL, 0);
-    (void) bitarray_alloc(0);
-    (void) bitarray_calloc(0);
-    (void) bitarray_free(NULL);
-    return;
 }
 
 #endif

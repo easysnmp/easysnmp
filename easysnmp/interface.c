@@ -1467,23 +1467,6 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
     return val;
 }
 
-static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
-{
-    void *val = NULL;
-
-    if (obj && attr_name && PyObject_HasAttrString(obj, attr_name))
-    {
-        PyObject *attr = PyObject_GetAttrString(obj, attr_name);
-        if (attr)
-        {
-            val = PyLong_AsVoidPtr(attr);
-            Py_DECREF(attr);
-        }
-    }
-
-    return val;
-}
-
 static int py_netsnmp_attr_set_string(PyObject *obj, char *attr_name,
                                       char *val, size_t len)
 {
