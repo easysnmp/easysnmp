@@ -4128,7 +4128,7 @@ done:
 
 static void py_log_msg(int log_level, char *printf_fmt, ...)
 {
-    PyObject *log_msg = NULL, *pval;
+    PyObject *log_msg = NULL, *pval = NULL;
     PyObject *type, *value, *traceback;
     va_list fmt_args;
     PyErr_Fetch(&type, &value, &traceback);
