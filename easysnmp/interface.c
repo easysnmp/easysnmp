@@ -796,9 +796,8 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
         }
         lcp--;
     }
-
-    if (!found_label ||
-        (!isdigit((int)*(icp + 1)) && (flag & FAIL_ON_NULL_IID)))
+    // get_bulk with OID SysUpTime can cause us to access one byte past the string length
+    if (!found_label || (((icp + 1) < &(name[len + 1])) && !isdigit((int)*(icp + 1)) && (flag & FAIL_ON_NULL_IID)))
     {
         return FAILURE;
     }
@@ -2738,7 +2737,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
         Py_XDECREF(varlist_iter);
 
-        oid_arr_len = calloc(varlist_len, sizeof(int));
+        oid_arr_len = calloc(varlist_len, sizeof(size_t));
         oid_arr_broken_check_len = calloc(varlist_len, sizeof(int));
 
         oid_arr = calloc(varlist_len, sizeof(oid *));
@@ -3095,7 +3094,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     size_t out_len = 0;
     int buf_over = 0;
     char *tag;
-    char *iid;
+    char *iid = NULL;
     int getlabel_flag = NO_FLAGS;
     int sprintval_flag = USE_BASIC;
     int old_format;
@@ -3506,7 +3505,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
         }
         Py_XDECREF(varlist_iter);
 
-        oid_arr_len = calloc(varlist_len, sizeof(int));
+        oid_arr_len = calloc(varlist_len, sizeof(size_t));
         oid_arr = calloc(varlist_len, sizeof(oid *));
         // initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
         oid_str_arr = calloc(varlist_len, sizeof(char *));
@@ -4094,14 +4093,12 @@ static PyObject *py_get_logger(char *logger_name)
      * https://docs.python.org/3.4/howto/logging.html#library-config recommends:
      * >>> logging.getLogger('foo').addHandler(logging.NullHandler())
      *
-     * However NullHandler doesn't come with python <2.6 and <3.1, so we need
-     * to improvise by using an identical copy in easysnmp.compat.
      */
 
-    null_handler = PyObject_CallMethod(easysnmp_compat_import, "NullHandler", NULL);
+    null_handler = PyObject_CallMethod(logging_import, "NullHandler", NULL);
     if (null_handler == NULL)
     {
-        const char *err_msg = "failed to call easysnmp.compat.NullHandler()";
+        const char *err_msg = "failed to call logging.NullHandler()";
         PyErr_SetString(PyExc_RuntimeError, err_msg);
         goto done;
     }

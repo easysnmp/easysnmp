@@ -95,7 +95,7 @@ static inline void bitarray_clear_bits(bitarray *ba, size_t nbits)
     }
     else
     {
-        size_t nbytes = 0;
+        size_t nbytes = ba[0] / CHAR_BIT;
 
         /*
          * cases:
