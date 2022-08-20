@@ -102,7 +102,7 @@ def snmp_get_bulk(oids, non_repeaters=0, max_repetitions=10, **session_kargs):
     return session.get_bulk(oids, non_repeaters, max_repetitions)
 
 
-def snmp_walk(oids='.1.3.6.1.2.1', **session_kargs):
+def snmp_walk(oids=".1.3.6.1.2.1", **session_kargs):
     """
     Uses SNMP GETNEXT operation to automatically retrieve multiple
     pieces of information in an OID for you.
@@ -122,8 +122,7 @@ def snmp_walk(oids='.1.3.6.1.2.1', **session_kargs):
 
 
 def snmp_bulkwalk(
-    oids='.1.3.6.1.2.1', non_repeaters=0, max_repetitions=10,
-    **session_kargs
+    oids=".1.3.6.1.2.1", non_repeaters=0, max_repetitions=10, **session_kargs
 ):
     """
     Uses SNMP GETBULK operation using the prepared session to

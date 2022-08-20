@@ -1,7 +1,9 @@
-import logging
 import sys
 
 PY3 = sys.version_info[0] == 3
+
+if PY3:  # Clear Flake8 warnings
+    unicode = None
 
 if PY3:
     text_type = str
@@ -11,29 +13,15 @@ if PY3:
 
     def urepr(s):
         return repr(s)
+
 else:
-    text_type = unicode  # noqa
+    text_type = unicode
 
     def ub(s):
-        return s.decode('latin-1')
+        return s.decode("latin-1")
 
     def urepr(s):
-        if isinstance(s, unicode):  # noqa
+        if isinstance(s, unicode):
             return repr(s)[1:]
         else:
             return repr(s)
-
-
-class NullHandler(logging.Handler):
-    """
-    This handler does nothing. It's intended to be used to avoid the
-    "No handlers could be found for logger XXX" one-off warning.
-    """
-    def handle(self, record):
-        pass
-
-    def emit(self, record):
-        pass
-
-    def createLock(self):
-        self.lock = None

@@ -7,8 +7,37 @@ on:
   pull_request:
 
 jobs:
+  check-source-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run_job: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - name: Checkout changes
+        uses: actions/checkout@v3
+      - name: Check for changes in source code
+        id: changed-files
+        uses: tj-actions/changed-files@v18.7
+        with:
+          files: |
+            easysnmp/*.py
+            easysnmp/*.c
+            easysnmp/*.h
+            setup.py
+            setup.cfg
+            setup-py2.7.cfg
+            .github/workflows/*.yml
+  
+  lint-black-formatting:
+    runs-on: ubuntu-latest
+    needs: check-source-changes
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+
   build-and-test:
     runs-on: ${{ matrix.os }}
+    needs: lint-black-formatting
+    if: needs.check-source-changes.outputs.run_job == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +67,7 @@ jobs:
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
         shell: bash
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -50,7 +79,7 @@ jobs:
           then
             pip install pytest wheel six
           else
-            pip install flake8 pytest pytest-flake8 pytest-cov wheel
+            pip install flake8 pytest pytest-cov wheel
           fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build source
@@ -75,6 +104,9 @@ jobs:
       - name: Lint with flake8
         uses: py-actions/flake8@v2
         continue-on-error: true
+        with:
+          max-line-length: "88"
+          path: "easysnmp tests"
       - name: Run tests
         run: |
           if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
