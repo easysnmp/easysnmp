@@ -105,7 +105,7 @@ jobs:
         uses: py-actions/flake8@v2
         continue-on-error: true
         with:
-          max-line-lenth: "88"
+          max-line-length: "88"
           path: "easysnmp tests"
       - name: Run tests
         run: |
