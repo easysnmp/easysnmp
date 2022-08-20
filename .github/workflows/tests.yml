@@ -26,10 +26,17 @@ jobs:
             setup.cfg
             setup-py2.7.cfg
             .github/workflows/*.yml
+  
+  lint-black-formatting:
+    runs-on: ubuntu-latest
+    needs: check-source-changes
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
 
   build-and-test:
     runs-on: ${{ matrix.os }}
-    needs: check-source-changes
+    needs: lint-black-formatting
     if: needs.check-source-changes.outputs.run_job == 'true'
     strategy:
       fail-fast: false
@@ -72,7 +79,7 @@ jobs:
           then
             pip install pytest wheel six
           else
-            pip install flake8 pytest pytest-flake8 pytest-cov wheel
+            pip install flake8 pytest pytest-cov wheel
           fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build source
@@ -97,6 +104,9 @@ jobs:
       - name: Lint with flake8
         uses: py-actions/flake8@v2
         continue-on-error: true
+        with:
+          max-line-lenth: "88"
+          path: "easysnmp tests"
       - name: Run tests
         run: |
           if [[ "${{ matrix.python-version }}" =~ "2.7" ]]

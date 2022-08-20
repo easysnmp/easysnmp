@@ -137,7 +137,7 @@ setup(
     url="https://github.com/kamakazikamikaze/easysnmp",
     license="BSD",
     packages=["easysnmp"],
-    tests_require=["pytest-cov", "pytest-flake8", "pytest-sugar", "pytest"],
+    tests_require=["pytest-cov", "pytest-sugar", "pytest"],
     cmdclass={"test": PyTest},
     ext_modules=[
         Extension(
