@@ -66,10 +66,10 @@ else:
     if platform == "darwin":  # OS X
         # Check if net-snmp is installed via Brew
         try:
-            brew = check_output("brew list net-snmp", shell=True).decode()
+            brew = check_output("brew list net-snmp 2>/dev/null", shell=True).decode()
         except CalledProcessError:
-            brew = "command not found"
-        if not any(output in brew for output in ["command not found", "No such keg"]):
+            pass
+        else:
             lines = brew.splitlines()
             include_dir = list(filter(lambda l: "include/net-snmp" in l, lines))[0]
             incdirs.append(include_dir[: include_dir.index("include/net-snmp") + 7])
@@ -140,10 +140,10 @@ class RelinkLibraries(BuildCommand):
         BuildCommand.run(self)
         if platform == "darwin":  # Newer Net-SNMP dylib may not be linked to properly
             try:
-                brew = check_output("brew list net-snmp", shell=True).decode()
+                brew = check_output(
+                    "brew list net-snmp 2>/dev/null", shell=True
+                ).decode()
             except CalledProcessError:
-                return
-            if any(output in brew for output in ["command not found", "No such keg"]):
                 return
             lib_dir = list(filter(lambda l: "lib/libnetsnmp.dylib" in l, lines))[0]
             b = build.build(dist.Distribution())  # Dynamically determine build path
