@@ -45,6 +45,17 @@
         }              \
     } while (0)
 
+// Available from 5.6.x and older
+#ifdef HAVE_EVP_MD_CTX_CREATE
+struct session_list
+{
+    struct session_list *next;
+    netsnmp_session *session;
+    netsnmp_transport *transport;
+    struct snmp_internal_session *internal;
+};
+#endif
+
 /******************************************************************************
  *
  * Data structures used in the 'interface.c' file are listed below

@@ -1,10 +1,11 @@
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 from sys import argv, platform, exit
 from shlex import split as s_split
 
 from distutils import sysconfig
 from distutils.command import build
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext as BuildCommand
 from setuptools.command.test import test as TestCommand
 from setuptools import dist
 
@@ -63,8 +64,12 @@ else:
     incdirs = []
 
     if platform == "darwin":  # OS X
-        brew = check_output("brew list net-snmp", shell=True).decode()
-        if "command not found" not in brew:
+        # Check if net-snmp is installed via Brew
+        try:
+            brew = check_output("brew list net-snmp 2>/dev/null", shell=True).decode()
+        except CalledProcessError:
+            pass
+        else:
             lines = brew.splitlines()
             include_dir = list(filter(lambda l: "include/net-snmp" in l, lines))[0]
             incdirs.append(include_dir[: include_dir.index("include/net-snmp") + 7])
@@ -121,6 +126,53 @@ class PyTest(TestCommand):
         exit(errno)
 
 
+class RelinkLibraries(BuildCommand):
+    """Fix dylib path for macOS
+
+    Depending on system configuration and Brew setup, interface.so may get linked to
+    the wrong dylib file (prioritizing the system's 5.6.2.1 over brew's 5.8+). This
+    will change the path if net-snmp is installed via `brew`.
+
+    Non-brew installations and non-macOS systems will not be affected.
+    """
+
+    def run(self):
+        BuildCommand.run(self)
+        if platform == "darwin":  # Newer Net-SNMP dylib may not be linked to properly
+            try:
+                brew = check_output(
+                    "brew list net-snmp 2>/dev/null", shell=True
+                ).decode()
+            except CalledProcessError:
+                return
+            lib_dir = list(filter(lambda l: "lib/libnetsnmp.dylib" in l, lines))[0]
+            b = build.build(dist.Distribution())  # Dynamically determine build path
+            b.finalize_options()
+            ext = sysconfig.get_config_var("EXT_SUFFIX") or ".so"  # None for Python 2
+            linked = (
+                check_output(
+                    (
+                        "otool -L {0}/easysnmp/interface{1} | "
+                        r"egrep 'libnetsnmp\.' | "
+                        "tr -s '\t' ' ' | "
+                        "cut -d' ' -f2"
+                    ).format(b.build_platlib, ext),
+                    shell=True,
+                )
+                .decode()
+                .strip()
+            )
+            prefix = (
+                check_output("net-snmp-config --prefix", shell=True).decode().strip()
+            )
+            _ = check_output(
+                "install_name_tool -change {0} {1} {2}/easysnmp/interface{3}".format(
+                    linked, lib_dir, b.build_platlib, ext
+                ),
+                shell=True,
+            )
+
+
 # Read the long description from README.rst
 with open("README.rst") as f:
     long_description = f.read()
@@ -138,7 +190,7 @@ setup(
     license="BSD",
     packages=["easysnmp"],
     tests_require=["pytest-cov", "pytest-sugar", "pytest"],
-    cmdclass={"test": PyTest},
+    cmdclass={"test": PyTest, "build_ext": RelinkLibraries},
     ext_modules=[
         Extension(
             "easysnmp.interface",
@@ -167,28 +219,3 @@ setup(
         "Topic :: System :: Networking :: Monitoring",
     ],
 )
-
-if platform == "darwin":  # Newer Net-SNMP dylib may not be linked to properly
-    b = build.build(dist.Distribution())  # Dynamically determine build path
-    b.finalize_options()
-    ext = sysconfig.get_config_var("EXT_SUFFIX") or ".so"  # None for Python 2
-    linked = (
-        check_output(
-            (
-                "otool -L {0}/easysnmp/interface{1} | "
-                r"egrep 'libnetsnmp\.' | "
-                "tr -s '\t' ' ' | "
-                "cut -d' ' -f2"
-            ).format(b.build_platlib, ext),
-            shell=True,
-        )
-        .decode()
-        .strip()
-    )
-    prefix = check_output("net-snmp-config --prefix", shell=True).decode().strip()
-    _ = check_output(
-        "install_name_tool -change {0} {1} {2}/easysnmp/interface{3}".format(
-            linked, lib_dir, b.build_platlib, ext
-        ),
-        shell=True,
-    )
