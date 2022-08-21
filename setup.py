@@ -1,4 +1,4 @@
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 from sys import argv, platform, exit
 from shlex import split as s_split
 
@@ -65,7 +65,10 @@ else:
 
     if platform == "darwin":  # OS X
         # Check if net-snmp is installed via Brew
-        brew = check_output("brew list net-snmp", shell=True).decode()
+        try:
+            brew = check_output("brew list net-snmp", shell=True).decode()
+        except CalledProcessError:
+            brew = "command not found"
         if not any(output in brew for output in ["command not found", "No such keg"]):
             lines = brew.splitlines()
             include_dir = list(filter(lambda l: "include/net-snmp" in l, lines))[0]
@@ -136,7 +139,10 @@ class RelinkLibraries(BuildCommand):
     def run(self):
         BuildCommand.run(self)
         if platform == "darwin":  # Newer Net-SNMP dylib may not be linked to properly
-            brew = check_output("brew list net-snmp", shell=True).decode()
+            try:
+                brew = check_output("brew list net-snmp", shell=True).decode()
+            except CalledProcessError:
+                return
             if any(output in brew for output in ["command not found", "No such keg"]):
                 return
             lib_dir = list(filter(lambda l: "lib/libnetsnmp.dylib" in l, lines))[0]
