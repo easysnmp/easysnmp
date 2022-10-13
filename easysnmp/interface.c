@@ -26,6 +26,8 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/snmpv3_api.h>
+#include <net-snmp/library/snmp_api.h>
+#include <net-snmp/library/snmpusm.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <errno.h>
@@ -234,7 +236,7 @@ static int __match_algo(int is_auth, char *algo, oid **output, size_t *len)
     return found;
 }
 
-void __libraries_init(char *appname)
+void __libraries_init()
 {
     static int have_inited = 0;
 
@@ -249,7 +251,7 @@ void __libraries_init(char *appname)
     /* completely disable logging otherwise it will default to stderr */
     netsnmp_register_loghandler(NETSNMP_LOGHANDLER_NONE, 0);
 
-    init_snmp(appname);
+    init_snmp(APPNAME);
 
     netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
                            NETSNMP_DS_LIB_DONT_BREAKDOWN_OIDS, 1);
@@ -257,6 +259,11 @@ void __libraries_init(char *appname)
                        NETSNMP_DS_LIB_PRINT_SUFFIX_ONLY, 1);
     netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
                        NETSNMP_OID_OUTPUT_SUFFIX);
+}
+
+void __libraries_free()
+{
+    snmp_shutdown(APPNAME);
 }
 
 static int __is_numeric_oid(char *oidstr)
@@ -1380,6 +1387,29 @@ done:
     return status;
 }
 
+/*
+ * Clears v3 user credentials from the local cache
+ */
+static void __remove_user_from_cache(struct session_list *ss)
+{
+    struct usmUser *actUser = usm_get_userList();
+    while (actUser != NULL)
+    {
+        struct usmUser *dummy = actUser;
+        if (
+            strcmp((const char *)dummy->secName, (const char *)ss->session->securityName) == 0 &&
+            strcmp((const char *)dummy->engineID, (const char *)ss->session->contextEngineID) == 0)
+        {
+            usm_remove_user(actUser);
+            actUser->next = NULL;
+            actUser->prev = NULL;
+            usm_free_user(actUser);
+            break;
+        }
+        actUser = dummy->next;
+    }
+}
+
 static PyObject *py_netsnmp_construct_varbind(void)
 {
     return PyObject_CallMethod(easysnmp_import, "SNMPVariable", NULL);
@@ -1711,6 +1741,8 @@ static void delete_session_capsule(void *session_ptr)
     struct session_capsule_ctx *ctx = session_ptr;
     if (ctx)
     {
+        // clear_user_list(); // Too dangerous, may disrupt other valid sessions
+        __remove_user_from_cache((struct session_list *)ctx->handle);
         snmp_sess_close(ctx->handle);
         free(ctx);
     }
@@ -1723,6 +1755,8 @@ static void delete_session_capsule(PyObject *session_capsule)
     struct session_capsule_ctx *ctx = PyCapsule_GetPointer(session_capsule, NULL);
     if (ctx)
     {
+        // clear_user_list(); // Too dangerous, may disrupt other valid sessions
+        __remove_user_from_cache((struct session_list *)ctx->handle);
         snmp_sess_close(ctx->handle);
         free(ctx);
     }
@@ -4331,7 +4365,11 @@ static struct PyModuleDef moduledef = {
     "interface",
     NULL,
     -1,
-    interface_methods};
+    interface_methods,
+    NULL,
+    NULL,
+    NULL,
+    __libraries_free};
 
 PyMODINIT_FUNC PyInit_interface(void)
 {
@@ -4415,7 +4453,7 @@ PyMODINIT_FUNC initinterface(void)
     }
 
     /* initialise the netsnmp library */
-    __libraries_init("python");
+    __libraries_init();
 
     py_log_msg(DEBUG, "initialised easysnmp.interface");
 
