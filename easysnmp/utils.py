@@ -15,10 +15,13 @@ def strip_non_printable(value):
     if value is None:
         return None
 
-    # Filter all non-printable characters
-    # (note that we must use join to account for the fact that Python 3
-    # returns a generator)
-    printable_value = "".join(filter(lambda c: c in string.printable, value))
+    try:
+        # Filter all non-printable characters
+        # (note that we must use join to account for the fact that Python 3
+        # returns a generator)
+        printable_value = "".join(filter(lambda c: c in string.printable, value))
+    except TypeError:
+        printable_value = value
 
     if printable_value != value:
         if printable_value:

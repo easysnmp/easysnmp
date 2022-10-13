@@ -36,7 +36,11 @@ class SNMPVariable(object):
         )
 
     def __setattr__(self, name, value):
-        self.__dict__[name] = tostr(value)
+        if isinstance(value, (int, float, bytes)):
+            v = value
+        else:
+            v = tostr(value)
+        self.__dict__[name] = v
 
 
 class SNMPVariableList(list):
