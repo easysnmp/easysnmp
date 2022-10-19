@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, absolute_import
 
+import ipaddress
 import string
 
 from .compat import ub, text_type
@@ -45,3 +46,12 @@ def tostr(value):
         return str(value)
     else:
         return ub(value)
+
+
+def hostname_is_IPv6(hostname):
+    try:
+        ipaddress.IPv6Address(hostname)
+    except ipaddress.AddressValueError:
+        return False
+    else:
+        return True
