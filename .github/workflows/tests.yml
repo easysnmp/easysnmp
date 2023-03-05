@@ -24,14 +24,13 @@ jobs:
             easysnmp/*.h
             setup.py
             setup.cfg
-            setup-py2.7.cfg
             .github/workflows/*.yml
   
   lint-black-formatting:
     runs-on: ubuntu-latest
     needs: check-source-changes
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: psf/black@stable
 
   build-and-test:
@@ -42,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Set up dependencies
         run: |
@@ -109,10 +108,6 @@ jobs:
           path: "easysnmp tests"
       - name: Run tests
         run: |
-          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
-          then
-            PYTEST_ARGS=( '-c' './setup-py2.7.cfg' )
-          fi
           if [[ "${{ matrix.python-version }}" =~ "3.10" ]] && [ "$RUNNER_OS" == "Linux" ]
           then
             wget https://raw.githubusercontent.com/python/cpython/main/Misc/valgrind-python.supp
