@@ -1,8 +1,7 @@
 name: tests
 on:
   push:
-    branches: [ feature/python3_11_support_issue_#185 ]
-    #branches-ignore: [ actions, actions-test]
+    branches-ignore: [ actions, actions-test]
   pull_request:
 
 jobs:
