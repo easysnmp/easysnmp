@@ -19,7 +19,7 @@ def test_snmp_variable_value():
 
 def test_snmp_variable_repr():
     var = SNMPVariable("sysDescr", "0", "my thingo", "OCTETSTR")
-    assert var.__repr__() == (
+    assert var == (
         "<SNMPVariable value='my thingo' "
         "(oid='sysDescr', oid_index='0', snmp_type='OCTETSTR')>"
     )
@@ -29,7 +29,7 @@ def test_snmp_variable_repr_binary():
     var = SNMPVariable(
         "sysDescr", "0", ub(chr(20)) + "my thingo" + ub(chr(155)), "OCTETSTR"
     )
-    assert var.__repr__() == (
+    assert var == (
         "<SNMPVariable value='my thingo (contains binary)' "
         "(oid='sysDescr', oid_index='0', snmp_type='OCTETSTR')>"
     )
@@ -37,7 +37,7 @@ def test_snmp_variable_repr_binary():
 
 def test_snmp_variable_repr_binary_only():
     var = SNMPVariable("sysDescr", "0", ub(chr(20)) + ub(chr(155)), "OCTETSTR")
-    assert var.__repr__() == (
+    assert var == (
         "<SNMPVariable value='(contains binary)' "
         "(oid='sysDescr', oid_index='0', snmp_type='OCTETSTR')>"
     )
@@ -45,7 +45,7 @@ def test_snmp_variable_repr_binary_only():
 
 def test_snmp_variable_repr_none():
     var = SNMPVariable()
-    assert var.__repr__() == (
+    assert var == (
         "<SNMPVariable value=None (oid=None, oid_index=None, snmp_type=None)>"
     )
 

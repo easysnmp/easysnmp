@@ -38,6 +38,9 @@ class SNMPVariable(object):
     def __setattr__(self, name, value):
         self.__dict__[name] = tostr(value)
 
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+    
 
 class SNMPVariableList(list):
     """

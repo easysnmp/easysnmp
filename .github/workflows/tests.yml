@@ -1,9 +1,10 @@
 name: tests
 on:
   push:
-    branches-ignore:
-      - 'master'
-      - 'actions'
+    branches: [ feature/eq_for_SNMPVariable ]
+    #branches-ignore:
+    #  - 'master'
+    #  - 'actions'
   pull_request:
 
 jobs:
