@@ -50,6 +50,30 @@ def test_snmp_variable_repr_none():
     )
 
 
+def test_snmp_variable_eq_():
+    var1 = SNMPVariable(
+        "sysDescr", "0", ub(chr(20)) + "my thingo 1" + ub(chr(155)), "OCTETSTR"
+    )
+
+    var2 = SNMPVariable(
+        "sysDescr", "0", ub(chr(20)) + "my thingo 1" + ub(chr(155)), "OCTETSTR"
+    )
+
+    assert var1 == var2
+
+
+def test_snmp_variable_not_eq_():
+    var1 = SNMPVariable(
+        "sysDescr", "0", ub(chr(20)) + "my thingo 1" + ub(chr(155)), "OCTETSTR"
+    )
+
+    var2 = SNMPVariable(
+        "sysDescr", "0", ub(chr(20)) + "my thingo 2" + ub(chr(155)), "OCTETSTR"
+    )
+
+    assert var1 != var2
+
+
 def test_snmp_variable_extract_oid_index():
     var = SNMPVariable("sysDescr.0")
     assert var.oid == "sysDescr"
