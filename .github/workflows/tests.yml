@@ -77,7 +77,7 @@ jobs:
       - name: Install pip dependencies
         run: |
           python -m pip install --upgrade pip
-          if [[ "${{ matrix.python-version }}" =~ "3.11" ]]
+          if [[ "${{ matrix.python-version }}" =~ "3.8" ]]
           then
             pip install flake8 pytest pytest-cov wheel
           else
@@ -116,7 +116,7 @@ jobs:
 
       - name: Run tests
         run: |
-          if [[ "${{ matrix.python-version }}" =~ "3.11" ]] && [ "$RUNNER_OS" == "Linux" ]
+          if [[ "${{ matrix.python-version }}" =~ "3.8" ]] && [ "$RUNNER_OS" == "Linux" ]
           then
             wget https://raw.githubusercontent.com/python/cpython/main/Misc/valgrind-python.supp
             VALGRIND=(
