@@ -3,19 +3,13 @@ from __future__ import unicode_literals
 import logging
 import pytest
 from sys import version_info
-
-assert version_info[0] == 3 and version_info[1] >= 8
-
 from subprocess import Popen, DEVNULL
-
 
 import easysnmp
 
-
+assert version_info[0] == 3 and version_info[1] >= 8
 class SNMPSetCLIError(Exception):
     """An exception raised when an SNMP SET fails via the CLI."""
-
-    pass
 
     def snmp_set_via_cli(oid, value, type):
         """
