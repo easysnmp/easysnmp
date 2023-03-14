@@ -48,6 +48,64 @@ def test_session_invalid_port(version):
         session.get("sysContact.0")
 
 
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_address(version):
+    session = Session(hostname="2001:db8::", version=version)
+    assert session.hostname == "2001:db8::"
+    assert session.connect_hostname == "2001:db8::"
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_address_and_remote_port(version):
+    session = Session(
+        hostname="fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa",
+        remote_port=162,
+        version=version,
+    )
+    assert session.hostname == "fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa"
+    assert session.remote_port == 162
+    assert session.connect_hostname == "[fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa]:162"
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_address_and_remote_port_split(version):
+    session = Session(hostname="[2001:db8::]:161", version=version)
+    assert session.hostname == "[2001:db8::]"
+    assert session.remote_port == 161
+    assert session.connect_hostname == "[2001:db8::]:161"
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_address_with_protocol_and_remote_port_split(version):
+    session = Session(hostname="udp6:[2001:db8::]:162", version=version)
+    assert session.hostname == "udp6:[2001:db8::]"
+    assert session.remote_port == 162
+    assert session.connect_hostname == "udp6:[2001:db8::]:162"
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_address_with_protocol(version):
+    session = Session(hostname="udp6:[2001:db8::]", version=version)
+    assert session.hostname == "udp6:[2001:db8::]"
+    assert session.connect_hostname == "udp6:[2001:db8::]"
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_is_not_ipv6(version):
+    with pytest.raises(ValueError):
+        Session(hostname="[foo::bar]:161", version=version)
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_session_ipv6_invalid_hostname_and_remote_port(version):
+    with pytest.raises(ValueError):
+        Session(
+            hostname="[fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa]:161",
+            remote_port=162,
+            version=version,
+        )
+
+
 def test_session_set_multiple_next(sess, reset_values):
     # Destroy succeeds even if no row exists
     sess.set(".1.3.6.1.6.3.12.1.2.1.9.116.101.115.116", 6)
