@@ -203,10 +203,10 @@ class Session(object):
         retry_no_such=False,
         abort_on_nonexistent=False,
     ):
-
         # Validate and extract the remote port
         connection_string = re.match(
-            r"^((?:tcp6?:|udp6?:)?\[?([^\[\]]+?)\]?)\:(\d+)$", hostname)
+            r"^((?:tcp6?:|udp6?:)?\[?([^\[\]]+?)\]?)\:(\d+)$", hostname
+        )
         if connection_string:
             if remote_port:
                 raise ValueError(
@@ -216,9 +216,7 @@ class Session(object):
             else:
                 full_address, hostname, remote_port = connection_string.groups()
                 if ":" in hostname and not hostname_is_IPv6(hostname):
-                    raise ValueError(
-                        "an invalid IPv6 address was specified"
-                    )
+                    raise ValueError("an invalid IPv6 address was specified")
                 hostname = full_address
                 remote_port = int(remote_port)
 
@@ -275,7 +273,6 @@ class Session(object):
 
     @property
     def connect_hostname(self):
-
         def format_hostname(hostname):
             return "[{}]".format(hostname) if hostname_is_IPv6(hostname) else hostname
 

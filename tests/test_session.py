@@ -57,7 +57,11 @@ def test_session_ipv6_address(version):
 
 @pytest.mark.parametrize("version", [1, 2, 3])
 def test_session_ipv6_address_and_remote_port(version):
-    session = Session(hostname="fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa", remote_port=162, version=version)
+    session = Session(
+        hostname="fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa",
+        remote_port=162,
+        version=version,
+    )
     assert session.hostname == "fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa"
     assert session.remote_port == 162
     assert session.connect_hostname == "[fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa]:162"
@@ -95,7 +99,11 @@ def test_session_ipv6_is_not_ipv6(version):
 @pytest.mark.parametrize("version", [1, 2, 3])
 def test_session_ipv6_invalid_hostname_and_remote_port(version):
     with pytest.raises(ValueError):
-        Session(hostname="[fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa]:161", remote_port=162, version=version)
+        Session(
+            hostname="[fd5d:12c9:2201:1:bc9c:f8ff:fe5c:57fa]:161",
+            remote_port=162,
+            version=version,
+        )
 
 
 def test_session_set_multiple_next(sess, reset_values):
