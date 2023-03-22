@@ -458,7 +458,7 @@ static int __snprint_value(char *buf, size_t buf_len,
                            netsnmp_variable_list *var,
                            struct tree *tp, int type, int flag)
 {
-    int len = 0;
+    size_t len = 0;
     u_char *ip;
     struct enum_list *ep;
 
@@ -796,9 +796,8 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
         }
         lcp--;
     }
-
-    if (!found_label ||
-        (!isdigit((int)*(icp + 1)) && (flag & FAIL_ON_NULL_IID)))
+    // get_bulk with OID SysUpTime can cause us to access one byte past the string length
+    if (!found_label || (((icp + 1) < &(name[len + 1])) && !isdigit((int)*(icp + 1)) && (flag & FAIL_ON_NULL_IID)))
     {
         return FAILURE;
     }
@@ -848,7 +847,7 @@ static int __get_label_iid(char *name, char **last_label, char **iid,
 /* Convert a tag (string) to an OID array              */
 /* Tag can be either a symbolic name, or an OID string */
 static struct tree *__tag2oid(char *tag, char *iid, oid *oid_arr,
-                              int *oid_arr_len, int *type, int best_guess)
+                              size_t *oid_arr_len, int *type, int best_guess)
 {
     struct tree *tp = NULL;
     struct tree *rtp = NULL;
@@ -1007,7 +1006,7 @@ done:
  *
  * returns : SUCCESS, FAILURE
  */
-static int __concat_oid_str(oid *doid_arr, int *doid_arr_len, char *soid_str)
+static int __concat_oid_str(oid *doid_arr, size_t *doid_arr_len, char *soid_str)
 {
     char *soid_buf;
     char *cp;
@@ -1189,13 +1188,13 @@ static int __add_var_val_str(netsnmp_pdu *pdu, oid *name, int name_length,
 
 /* takes ss and pdu as input and updates the 'response' argument */
 /* the input 'pdu' argument will be freed */
-static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
+static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu **pdu,
                            netsnmp_pdu **response, int retry_nosuch,
                            char *err_str, int *err_num, int *err_ind,
                            bitarray *invalid_oids)
 {
     int status = 0;
-    long command = pdu->command;
+    long command = (*pdu)->command;
     char *tmp_err_str;
     size_t retry_num = 0;
 
@@ -1220,7 +1219,7 @@ static int __send_sync_pdu(netsnmp_session *ss, netsnmp_pdu *pdu,
 retry:
 
     Py_BEGIN_ALLOW_THREADS
-        status = snmp_sess_synch_response(ss, pdu, response);
+        status = snmp_sess_synch_response(ss, *pdu, response);
     Py_END_ALLOW_THREADS
 
         if ((*response == NULL) && (status == STAT_SUCCESS))
@@ -1264,7 +1263,7 @@ retry:
                     /* we haven't seen an errindex yet */
                     bitarray_set_bit(invalid_oids, (*response)->errindex - 1);
                 }
-                else if (last_errindex > (*response)->errindex)
+                else if (last_errindex > (long unsigned int)(*response)->errindex)
                 {
                     /* case (1) where error index is in descending order */
                     bitarray_set_bit(invalid_oids, (*response)->errindex - 1);
@@ -1285,13 +1284,13 @@ retry:
                  * (which indicates SNMP_ERR_NOERROR) or returns NULL
                  * likely indicating no more remaining variables.
                  */
-                pdu = snmp_fix_pdu(*response, command);
+                *pdu = snmp_fix_pdu(*response, command);
 
                 /*
                  * The condition when pdu==NULL will happen when
                  * there are no OIDs left to retry.
                  */
-                if (!pdu)
+                if (!*pdu)
                 {
                     status = STAT_SUCCESS;
                     goto done;
@@ -1432,7 +1431,7 @@ static int py_netsnmp_attr_string(PyObject *obj, char *attr_name, char **val,
             // Encode the provided attribute using latin-1 into bytes and
             // retrieve its value and length
             *attr_bytes = PyUnicode_AsEncodedString(attr, "latin-1", "surrogateescape");
-            if (!attr_bytes)
+            if (!(*attr_bytes))
             {
                 Py_DECREF(attr);
                 return -1;
@@ -1460,23 +1459,6 @@ static long long py_netsnmp_attr_long(PyObject *obj, char *attr_name)
         if (attr)
         {
             val = PyLong_AsLong(attr);
-            Py_DECREF(attr);
-        }
-    }
-
-    return val;
-}
-
-static void *py_netsnmp_attr_void_ptr(PyObject *obj, char *attr_name)
-{
-    void *val = NULL;
-
-    if (obj && attr_name && PyObject_HasAttrString(obj, attr_name))
-    {
-        PyObject *attr = PyObject_GetAttrString(obj, attr_name);
-        if (attr)
-        {
-            val = PyLong_AsVoidPtr(attr);
             Py_DECREF(attr);
         }
     }
@@ -1606,7 +1588,7 @@ static PyObject *create_session_capsule(SnmpSession *session)
     ctx->handle = handle;
     ctx->invalid_oids = (bitarray *)ctx->invalid_oids_buf;
     bitarray_buf_init(ctx->invalid_oids, sizeof(ctx->invalid_oids_buf));
-    return (capsule);
+    return capsule;
 done:
     if (handle)
     {
@@ -1967,7 +1949,7 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss = NULL;
     oid *oid_arr = NULL;
-    int oid_arr_len = 0;
+    size_t oid_arr_len = 0;
     u_char *str_buf = NULL;
     u_char *str_bufp = NULL;
     char *err_str = NULL;
@@ -2121,11 +2103,11 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
         bitarray_clear_bits(invalid_oids, (size_t)varlist_len);
     }
 
-    status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+    status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch, err_str,
                              &err_num, &err_ind, invalid_oids);
 
     __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
-    if (status != 0)
+    if (status != STAT_SUCCESS)
     {
         error = 1;
         goto done;
@@ -2322,8 +2304,8 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     PyObject *err_bytes = NULL;
     PyObject *tag_bytes = NULL;
     PyObject *iid_bytes = NULL;
-    int varlist_len = 0;
-    int varlist_ind;
+    unsigned int varlist_len = 0;
+    unsigned int varlist_ind;
     struct session_capsule_ctx *session_ctx = NULL;
     netsnmp_session *ss;
     netsnmp_pdu *pdu = NULL;
@@ -2332,7 +2314,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid *oid_arr;
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
@@ -2487,7 +2469,7 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
             }
         }
 
-        status = __send_sync_pdu(ss, pdu, &response, retry_nosuch, err_str,
+        status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch, err_str,
                                  &err_num, &err_ind, invalid_oids);
 
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
@@ -2697,7 +2679,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid **oid_arr = NULL;
-    int *oid_arr_len = NULL;
+    size_t *oid_arr_len = NULL;
     oid **oid_arr_broken_check = NULL;
     int *oid_arr_broken_check_len = NULL;
     int type;
@@ -2796,7 +2778,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
         Py_XDECREF(varlist_iter);
 
-        oid_arr_len = calloc(varlist_len, sizeof(int));
+        oid_arr_len = calloc(varlist_len, sizeof(size_t));
         oid_arr_broken_check_len = calloc(varlist_len, sizeof(int));
 
         oid_arr = calloc(varlist_len, sizeof(oid *));
@@ -2929,7 +2911,7 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
 
         while (notdone)
         {
-            status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+            status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                      err_str, &err_num, &err_ind, invalid_oids);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
@@ -3143,7 +3125,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     struct tree *tp;
     int len;
     oid *oid_arr;
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     char type_str[MAX_TYPE_NAME_LEN];
     int status;
@@ -3153,7 +3135,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
     size_t out_len = 0;
     int buf_over = 0;
     char *tag;
-    char *iid;
+    char *iid = NULL;
     int getlabel_flag = NO_FLAGS;
     int sprintval_flag = USE_BASIC;
     int old_format;
@@ -3277,7 +3259,7 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
                 goto done;
             }
 
-            status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+            status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                      err_str, &err_num, &err_ind, NULL);
             __py_netsnmp_update_session_errors(session, err_str, err_num,
                                                err_ind);
@@ -3472,7 +3454,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
     struct tree *tp = NULL;
     int len;
     oid **oid_arr = NULL;
-    int *oid_arr_len = NULL;
+    size_t *oid_arr_len = NULL;
     // char **initial_oid_str_arr = NULL;
     char **oid_str_arr = NULL;
     char **oid_idx_str_arr = NULL;
@@ -3576,7 +3558,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
         }
         Py_XDECREF(varlist_iter);
 
-        oid_arr_len = calloc(varlist_len, sizeof(int));
+        oid_arr_len = calloc(varlist_len, sizeof(size_t));
         oid_arr = calloc(varlist_len, sizeof(oid *));
         // initial_oid_str_arr = calloc(varlist_len, sizeof(char *));
         oid_str_arr = calloc(varlist_len, sizeof(char *));
@@ -3705,7 +3687,7 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
             while (notdone)
             {
                 py_log_msg(DEBUG, "netsnmp_bulkwalk: Sending pdu req");
-                status = __send_sync_pdu(ss, pdu, &response, retry_nosuch,
+                status = __send_sync_pdu(ss, &pdu, &response, retry_nosuch,
                                          err_str, &err_num, &err_ind, NULL);
 
                 __py_netsnmp_update_session_errors(session, err_str, err_num,
@@ -3930,7 +3912,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
     char *type_str;
     int len;
     oid *oid_arr = calloc(MAX_OID_LEN, sizeof(oid));
-    int oid_arr_len = MAX_OID_LEN;
+    size_t oid_arr_len = MAX_OID_LEN;
     int type;
     u_char tmp_val_str[STR_BUF_SIZE];
     int use_enums;
@@ -4065,7 +4047,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
                     goto done;
                 }
                 memset(tmp_val_str, 0, sizeof(tmp_val_str));
-                if (tmplen >= sizeof(tmp_val_str))
+                if (tmplen >= (long int)sizeof(tmp_val_str))
                 {
                     tmplen = sizeof(tmp_val_str) - 1;
                 }
@@ -4110,7 +4092,7 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
             }
         }
 
-        status = __send_sync_pdu(ss, pdu, &response, NO_RETRY_NOSUCH,
+        status = __send_sync_pdu(ss, &pdu, &response, NO_RETRY_NOSUCH,
                                  err_str, &err_num, &err_ind, NULL);
         __py_netsnmp_update_session_errors(session, err_str, err_num, err_ind);
 
@@ -4170,14 +4152,12 @@ static PyObject *py_get_logger(char *logger_name)
      * https://docs.python.org/3.4/howto/logging.html#library-config recommends:
      * >>> logging.getLogger('foo').addHandler(logging.NullHandler())
      *
-     * However NullHandler doesn't come with python <2.6 and <3.1, so we need
-     * to improvise by using an identical copy in easysnmp.compat.
      */
 
-    null_handler = PyObject_CallMethod(easysnmp_compat_import, "NullHandler", NULL);
+    null_handler = PyObject_CallMethod(logging_import, "NullHandler", NULL);
     if (null_handler == NULL)
     {
-        const char *err_msg = "failed to call easysnmp.compat.NullHandler()";
+        const char *err_msg = "failed to call logging.NullHandler()";
         PyErr_SetString(PyExc_RuntimeError, err_msg);
         goto done;
     }
@@ -4204,7 +4184,7 @@ done:
 
 static void py_log_msg(int log_level, char *printf_fmt, ...)
 {
-    PyObject *log_msg = NULL, *pval;
+    PyObject *log_msg = NULL, *pval = NULL;
     PyObject *type, *value, *traceback;
     va_list fmt_args;
     PyErr_Fetch(&type, &value, &traceback);
