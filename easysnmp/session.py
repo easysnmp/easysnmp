@@ -168,6 +168,7 @@ class Session(object):
     :param abort_on_nonexistent: raise an exception if no object or no
                                  instance is found for the given oid and
                                  oid index
+    :param use_16bit_ids: limit usage of IDs to 16 bits
     """
 
     def __init__(
@@ -201,6 +202,7 @@ class Session(object):
         best_guess=0,
         retry_no_such=False,
         abort_on_nonexistent=False,
+        use_16bit_ids=False
     ):
         # Validate and extract the remote port
         if ":" in hostname:
@@ -242,6 +244,7 @@ class Session(object):
         self.best_guess = best_guess
         self.retry_no_such = retry_no_such
         self.abort_on_nonexistent = abort_on_nonexistent
+        self.use_16bit_ids = use_16bit_ids
 
         # The following variables are required for internal use as they are
         # passed to the C interface

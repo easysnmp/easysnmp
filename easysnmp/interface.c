@@ -1909,6 +1909,29 @@ done:
     return NULL;
 }
 
+// static PyObject *netsnmp_use_16bit_ids(PyObject *self, PyObject *args)
+// {
+//     PyObject *session = NULL;
+//     long use = 0;
+//     int x;
+
+//     if (!args) {
+//         Py_RETURN_NONE;
+//     }
+
+//     if(!PyArg_ParseTuple(args, "O", &session)) {
+//         Py_RETURN_NONE;
+//     }
+
+//     if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+//         netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+//     } else {
+//         netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+//     }
+
+//     Py_RETURN_NONE;
+// }
+
 static PyObject *netsnmp_get(PyObject *self, PyObject *args)
 {
     PyObject *session = NULL;
@@ -2007,6 +2030,12 @@ static PyObject *netsnmp_get(PyObject *self, PyObject *args)
     }
     best_guess = py_netsnmp_attr_long(session, "best_guess");
     retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
+
+    if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+        netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+    } else {
+        netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+    }
 
     pdu = snmp_pdu_create(SNMP_MSG_GET);
 
@@ -2359,6 +2388,12 @@ static PyObject *netsnmp_getnext(PyObject *self, PyObject *args)
         }
         best_guess = py_netsnmp_attr_long(session, "best_guess");
         retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
+
+        if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+           netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+        } else {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+        }
 
         pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
@@ -2724,6 +2759,12 @@ static PyObject *netsnmp_walk(PyObject *self, PyObject *args)
         }
         best_guess = py_netsnmp_attr_long(session, "best_guess");
         retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
+
+        if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+        } else {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+        }
 
         pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 
@@ -3157,6 +3198,12 @@ static PyObject *netsnmp_getbulk(PyObject *self, PyObject *args)
             best_guess = py_netsnmp_attr_long(session, "best_guess");
             retry_nosuch = py_netsnmp_attr_long(session, "retry_no_such");
 
+            if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+                netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+            } else {
+                netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+            }
+
             pdu = snmp_pdu_create(SNMP_MSG_GETBULK);
 
             pdu->errstat = nonrepeaters;
@@ -3490,6 +3537,12 @@ static PyObject *netsnmp_bulkwalk(PyObject *self, PyObject *args)
         if (py_netsnmp_attr_long(session, "use_sprint_value"))
         {
             sprintval_flag = USE_SPRINT_VALUE;
+        }
+
+        if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+        } else {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
         }
 
         best_guess = py_netsnmp_attr_long(session, "best_guess");
@@ -3900,6 +3953,12 @@ static PyObject *netsnmp_set(PyObject *self, PyObject *args)
 
         best_guess = py_netsnmp_attr_long(session, "best_guess");
 
+        if (py_netsnmp_attr_long(session, "use_16bit_ids")) {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 1);
+        } else {
+            netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_16BIT_IDS, 0);
+        }
+
         pdu = snmp_pdu_create(SNMP_MSG_SET);
 
         if (varlist)
@@ -4222,6 +4281,10 @@ static PyMethodDef interface_methods[] =
          netsnmp_bulkwalk,
          METH_VARARGS,
          "perform an SNMP BULKWALK operation."},
+        // {"use_16bit_ids",
+        //  netsnmp_use_16bit_ids,
+        //  METH_VARARGS,
+        //  "Setup if 16bit ids should be forced."},
         {NULL,
          NULL,
          0,
