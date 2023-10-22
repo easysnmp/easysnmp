@@ -2,8 +2,7 @@ from subprocess import check_output, CalledProcessError
 from sys import argv, platform, exit
 from shlex import split as s_split
 
-from distutils import sysconfig
-from distutils.command import build
+import sysconfig
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as BuildCommand
 from setuptools.command.test import test as TestCommand
@@ -146,7 +145,7 @@ class RelinkLibraries(BuildCommand):
             except CalledProcessError:
                 return
             lib_dir = list(filter(lambda l: "lib/libnetsnmp.dylib" in l, lines))[0]
-            b = build.build(dist.Distribution())  # Dynamically determine build path
+            b = setup.build(dist.Distribution())  # Dynamically determine build path
             b.finalize_options()
             ext = sysconfig.get_config_var("EXT_SUFFIX") or ".so"  # None for Python 2
             linked = (
@@ -180,7 +179,7 @@ with open("README.rst") as f:
 
 setup(
     name="easysnmp",
-    version="0.3.0a",
+    version="0.3.0a0",
     description="A blazingly fast and Pythonic SNMP library based on the "
     "official Net-SNMP bindings",
     long_description=long_description,
