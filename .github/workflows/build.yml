@@ -3,9 +3,7 @@ on:
   release:
     types: [published]
   push:
-    branches:
-      - 'actions'
-      - 'actions-test'
+    branches: [ actions, actions-test]
 
 jobs:
   linux-wheels:
