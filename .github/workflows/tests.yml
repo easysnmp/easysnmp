@@ -22,6 +22,8 @@ jobs:
             easysnmp/*.py
             easysnmp/*.c
             easysnmp/*.h
+            tests/*.py
+            tests/*.conf
             setup.py
             setup.cfg
             setup-py2.7.cfg
