@@ -156,7 +156,7 @@ jobs:
     steps:
       - name: Download pytest artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ./pytest-results
           name: pytest-results
@@ -190,7 +190,7 @@ jobs:
     steps:
       - name: Download valgrind artifact
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ./valgrind-report
           name: valgrind-report

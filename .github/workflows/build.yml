@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Download wheel artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ./dist
           name: wheels
