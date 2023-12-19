@@ -5,8 +5,15 @@
 
 version: 2
 updates:
+  # Maintain dependencies for github-actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       # Check for updates to GitHub Actions every weekday
+      interval: "daily"
+
+  # Maintain dependencies for pip
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
       interval: "daily"
