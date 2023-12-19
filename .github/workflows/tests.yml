@@ -225,7 +225,7 @@ jobs:
           body: ${{ steps.get-comment-body.outputs.body }}
 
       - name: Create comment for Push
-        uses: peter-evans/commit-comment@v1
+        uses: peter-evans/commit-comment@v3
         if: github.event_name == 'push'
         with:
           body: ${{ steps.get-comment-body.outputs.body }}
