@@ -3,14 +3,11 @@ from __future__ import unicode_literals
 import logging
 import pytest
 from sys import version_info
-
-if version_info[0] >= 3:
-    from subprocess import Popen, DEVNULL
-else:
-    from subprocess import Popen
-    from os import devnull
+from subprocess import Popen, DEVNULL
 
 import easysnmp
+
+assert version_info[0] == 3 and version_info[1] >= 8
 
 
 class SNMPSetCLIError(Exception):
@@ -19,63 +16,31 @@ class SNMPSetCLIError(Exception):
     pass
 
 
-if version_info[0] >= 3:  # Required to avoid UnboundLocalError in Python 3
+def snmp_set_via_cli(oid, value, type):
+    """
+    Sets an SNMP variable using the snmpset command.
 
-    def snmp_set_via_cli(oid, value, type):
-        """
-        Sets an SNMP variable using the snmpset command.
-
-        :param oid: the OID to update
-        :param value: the new value to set the OID to
-        :param type: a single character type as required by the snmpset command
-                     (i: INTEGER, u: unsigned INTEGER, t: TIMETICKS,
-                      a: IPADDRESS o: OBJID, s: STRING, x: HEX STRING,
-                      d: DECIMAL STRING, b: BITS U: unsigned int64,
-                      I: signed int64, F: float, D: double)
-        """
-        process = Popen(
-            "snmpset -v2c -c public localhost:11161 {} {} {}".format(
-                oid, type, '"{}"'.format(value) if type == "s" else value
-            ),
-            stdout=DEVNULL,
-            stderr=DEVNULL,
-            shell=True,
+    :param oid: the OID to update
+    :param value: the new value to set the OID to
+    :param type: a single character type as required by the snmpset command
+                    (i: INTEGER, u: unsigned INTEGER, t: TIMETICKS,
+                    a: IPADDRESS o: OBJID, s: STRING, x: HEX STRING,
+                    d: DECIMAL STRING, b: BITS U: unsigned int64,
+                    I: signed int64, F: float, D: double)
+    """
+    process = Popen(
+        "snmpset -v2c -c public localhost:11161 {} {} {}".format(
+            oid, type, '"{}"'.format(value) if type == "s" else value
+        ),
+        stdout=DEVNULL,
+        stderr=DEVNULL,
+        shell=True,
+    )
+    process.communicate()
+    if process.returncode != 0:
+        raise SNMPSetCLIError(
+            "failed to set {0} to {1} (type {2})".format(oid, value, type)
         )
-        process.communicate()
-        if process.returncode != 0:
-            raise SNMPSetCLIError(
-                "failed to set {0} to {1} (type {2})".format(oid, value, type)
-            )
-
-else:
-
-    def snmp_set_via_cli(oid, value, type):
-        """
-        Sets an SNMP variable using the snmpset command.
-
-        :param oid: the OID to update
-        :param value: the new value to set the OID to
-        :param type: a single character type as required by the snmpset command
-                     (i: INTEGER, u: unsigned INTEGER, t: TIMETICKS,
-                      a: IPADDRESS o: OBJID, s: STRING, x: HEX STRING,
-                      d: DECIMAL STRING, b: BITS U: unsigned int64,
-                      I: signed int64, F: float, D: double)
-        """
-        DEVNULL = open(devnull, "w")
-        process = Popen(
-            "snmpset -v2c -c public localhost:11161 {} {} {}".format(
-                oid, type, '"{}"'.format(value) if type == "s" else value
-            ),
-            stdout=DEVNULL,
-            stderr=DEVNULL,
-            shell=True,
-        )
-        process.communicate()
-        if process.returncode != 0:
-            raise SNMPSetCLIError(
-                "failed to set {0} to {1} (type {2})".format(oid, value, type)
-            )
-        DEVNULL.close()
 
 
 # Disable logging for the C interface

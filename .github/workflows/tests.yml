@@ -1,9 +1,7 @@
 name: tests
 on:
   push:
-    branches-ignore:
-      - 'master'
-      - 'actions'
+    branches-ignore: [ actions, actions-test]
   pull_request:
 
 jobs:
@@ -26,14 +24,13 @@ jobs:
             tests/*.conf
             setup.py
             setup.cfg
-            setup-py2.7.cfg
             .github/workflows/*.yml
   
   lint-black-formatting:
     runs-on: ubuntu-latest
     needs: check-source-changes
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: psf/black@stable
 
   build-and-test:
@@ -44,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Set up dependencies
         run: |
@@ -68,26 +65,27 @@ jobs:
           mkdir -m 0755 ~/.snmp
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
         shell: bash
+
       - name: Checkout repo
         uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install pip dependencies
         run: |
           python -m pip install --upgrade pip
-          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
-          then
-            pip install pytest wheel six
-          else
-            pip install flake8 pytest pytest-cov wheel
-          fi
+          pip install flake8 pytest pytest-cov wheel
+
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
       - name: Build source
         run: |
           python setup.py build
           pip install -e .
+
       - name: Start SNMP daemon
         run: |
           if [ "$RUNNER_OS" == "Linux" ]
@@ -103,18 +101,16 @@ jobs:
             SNMPD=$(which.exe snmpd)
           fi
           $SNMPD -C -c tests/snmpd.conf -r -Le $mibdir -m ALL
+
       - name: Lint with flake8
         uses: py-actions/flake8@v2
         continue-on-error: true
         with:
           max-line-length: "88"
           path: "easysnmp tests"
+
       - name: Run tests
         run: |
-          if [[ "${{ matrix.python-version }}" =~ "2.7" ]]
-          then
-            PYTEST_ARGS=( '-c' './setup-py2.7.cfg' )
-          fi
           if [[ "${{ matrix.python-version }}" =~ "3.10" ]] && [ "$RUNNER_OS" == "Linux" ]
           then
             wget https://raw.githubusercontent.com/python/cpython/main/Misc/valgrind-python.supp
@@ -129,6 +125,7 @@ jobs:
             echo 'PYTHONMALLOC=malloc' >> $GITHUB_ENV
           fi
           ${VALGRIND[@]} python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./test-outputs_${{ matrix.os }}_${{ matrix.python-version }}.log
+
       - name: Upload test results
         uses: actions/upload-artifact@v2
         with:
@@ -136,14 +133,17 @@ jobs:
           path: |
             test-results_*.xml
             test-outputs_*.log
+
       - name: Upload valgrind report
         uses: actions/upload-artifact@v2
         if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
         with:
           name: valgrind-report
           path: ./valgrind.out
+
       - name: Generate wheel
         run: python setup.py bdist_wheel
+
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
@@ -160,6 +160,7 @@ jobs:
         with:
           path: ./pytest-results
           name: pytest-results
+
       - name: Create multi-file output listing
         run: |
           echo 'pytest_multiple_files<<EOF' >> $GITHUB_ENV
@@ -170,6 +171,7 @@ jobs:
             echo "$(echo ${test_log[$i]} | cut -d_ -f2) - $(echo ${test_log[$i]%.*} | cut -d_ -f3), ${test_log[$i]}, ${test_xml[$i]}" >> $GITHUB_ENV
           done
           echo 'EOF' >> $GITHUB_ENV
+
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
@@ -192,6 +194,7 @@ jobs:
         with:
           path: ./valgrind-report
           name: valgrind-report
+
       - name: Parse valgrind report
         run: |
           python - << "EOF"
@@ -213,12 +216,14 @@ jobs:
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}" 
           echo "::set-output name=body::$body"
+
       - name: Create comment for PR
         uses: peter-evans/create-or-update-comment@v1
         if: github.event_name == 'pull_request'
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
+
       - name: Create comment for Push
         uses: peter-evans/commit-comment@v1
         if: github.event_name == 'push'
