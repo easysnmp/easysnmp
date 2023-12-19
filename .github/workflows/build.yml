@@ -24,7 +24,7 @@ jobs:
       - name: Remove linux_x86_64
         run: rm dist/*linux_x86_64.whl
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/*
@@ -50,7 +50,7 @@ jobs:
           CIBW_BEFORE_BUILD_MACOS: python setup.py build
         run: python -m cibuildwheel --output-dir dist
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/*

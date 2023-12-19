@@ -127,7 +127,7 @@ jobs:
           ${VALGRIND[@]} python -m pytest ${PYTEST_ARGS[@]} --junitxml=test-results_${{ matrix.os }}_${{ matrix.python-version }}.xml | tee ./test-outputs_${{ matrix.os }}_${{ matrix.python-version }}.log
 
       - name: Upload test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-results
           path: |
@@ -135,7 +135,7 @@ jobs:
             test-outputs_*.log
 
       - name: Upload valgrind report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
         with:
           name: valgrind-report
@@ -145,7 +145,7 @@ jobs:
         run: python setup.py bdist_wheel
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/*.whl
