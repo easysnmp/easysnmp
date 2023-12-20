@@ -2,11 +2,11 @@ from subprocess import check_output, CalledProcessError
 from sys import argv, platform, exit
 from shlex import split as s_split
 
-from distutils import sysconfig
-from distutils.command import build
+import sysconfig
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as BuildCommand
 from setuptools.command.test import test as TestCommand
+from setuptools.command.build import build
 from setuptools import dist
 
 # Determine if a base directory has been provided with the --basedir option
