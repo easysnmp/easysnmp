@@ -172,6 +172,7 @@ class RelinkLibraries(BuildCommand):
                 shell=True,
             )
 
+
 setup(
     tests_require=["pytest-cov", "pytest-sugar", "pytest"],
     cmdclass={"test": PyTest, "build_ext": RelinkLibraries},
