@@ -1,8 +1,10 @@
 name: tests
 on:
   push:
-    branches-ignore: [ actions, actions-test]
+    branches: [ feature/setup_cfg ]
+
   pull_request:
+    branches: [ feature/integration_v3.0.0 ]
 
 jobs:
   check-source-changes:
