@@ -3,7 +3,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [ feature/integration_v3.0.0, feature/setup_cfg]
+    branches: [ feature/integration_v3.0.0]
 
 jobs:
   linux-wheels:
